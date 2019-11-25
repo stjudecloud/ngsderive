@@ -1,5 +1,7 @@
 # ngsderive
 
+[![CI status](https://github.com/claymcleod/ngsderive/workflows/CI/badge.svg)](https://github.com/claymcleod/ngsderive/actions)
+
 `ngsderive` is a set of utilities developed to backwards compute various attributes from
 next-generation sequencing data. This command line utility only implements
 commands which were not available at the time of writing in common NGS utilities
