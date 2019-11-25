@@ -3,37 +3,44 @@
 """
 
 Usage:
-  ngsderive readlen <ngsfiles>...
-  ngsderive machine <ngsfiles>...
+  ngsderive readlen <ngsfiles>... [--outfile=<outfile>]
+  ngsderive instrument <ngsfiles>... [--outfile=<outfile>]
   ngsderive (-h | --help)
   ngsderive --version
 
 Options:
-  -h --help     Show this screen.
-  --version     Show version.
+  -h --help            Show this screen.
+  --outfile=<outfile>  Output file [default: sys.stdout].
+  --version            Show version.
 """
 
 import sys
 
 from docopt import docopt
-from ngsderive.commands import readlen, machine
+from ngsderive.commands import readlen, instrument
 
-def write(line):
-    sys.stdout.write(line + "\n")
-    sys.stdout.flush()
+def write(line, stream=sys.stdout):
+    stream.write(line + "\n")
+    stream.flush()
 
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='1.0.0')
+    outfile = arguments["--outfile"]
+    if outfile == "sys.stdout":
+      outfile = sys.stdout
+    else:
+      outfile = open(outfile, "w")
+
     if arguments["readlen"]:
-        write("File\tRead Length")
+        write("File\tRead Length", outfile)
         for ngsfile in arguments["<ngsfiles>"]:
             readlen = readlen.main(ngsfile)
             line = "\t".join([ngsfile, str(readlen)])
-            write(ngsfile + "\t" + str(readlen))
-    if arguments["machine"]:
-        write("File\tMachine\tConfidence\tBased on")
+            write(ngsfile + "\t" + str(readlen), outfile)
+    if arguments["instrument"]:
+        write("File\tInstrument\tConfidence\tBasis", outfile)
         for ngsfile in arguments["<ngsfiles>"]:
-            instruments, confidence, based_on = machine.main(ngsfile)
+            instruments, confidence, based_on = instrument.main(ngsfile)
             line = "\t".join([ngsfile, " or ".join(instruments), confidence, based_on])
-            write(line)
+            write(line, outfile)

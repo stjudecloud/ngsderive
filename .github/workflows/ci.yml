@@ -1,0 +1,27 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ '3.7' ]
+    name: Python ${{ matrix.python-version }}
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup python
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: x64
+    - name: Install ngsderive 
+      run: |
+        python3 setup.py install
+    - name: Test with pytest
+      run: |
+        python3 -m pip install pytest
+        cd tests/
+        python3 -m pytest
+
