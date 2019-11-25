@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+
+"""
+
+Usage:
+  ngsderive readlen <ngsfiles>...
+  ngsderive machine <ngsfiles>...
+  ngsderive (-h | --help)
+  ngsderive --version
+
+Options:
+  -h --help     Show this screen.
+  --version     Show version.
+"""
+
+import sys
+
+from docopt import docopt
+from ngsderive.commands import readlen, machine
+
+def write(line):
+    sys.stdout.write(line + "\n")
+    sys.stdout.flush()
+
+
+if __name__ == '__main__':
+    arguments = docopt(__doc__, version='1.0.0')
+    if arguments["readlen"]:
+        write("File\tRead Length")
+        for ngsfile in arguments["<ngsfiles>"]:
+            readlen = readlen.main(ngsfile)
+            line = "\t".join([ngsfile, str(readlen)])
+            write(ngsfile + "\t" + str(readlen))
+    if arguments["machine"]:
+        write("File\tMachine\tConfidence\tBased on")
+        for ngsfile in arguments["<ngsfiles>"]:
+            instruments, confidence, based_on = machine.main(ngsfile)
+            line = "\t".join([ngsfile, " or ".join(instruments), confidence, based_on])
+            write(line)
