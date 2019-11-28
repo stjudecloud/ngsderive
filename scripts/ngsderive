@@ -26,6 +26,8 @@ def get_args():
   common.add_argument('--version', action='version', version='%(prog)s 1.0.0')
 
   readlen = subparsers.add_parser("readlen", parents=[common], formatter_class=SaneFormatter)
+  readlen.add_argument("-c", "--majority-vote-cutoff", type=float, help="To call a majority readlen, the maximum read length must have at least `majority-vote-cutoff`%% reads in support.", default=0.7)
+  readlen.add_argument("-n", "--n-samples", type=int, help="How many reads to sample.", default=1000000)
 
   instrument = subparsers.add_parser("instrument", parents=[common], formatter_class=SaneFormatter)
 
@@ -106,7 +108,11 @@ if __name__ == '__main__':
   process_args(args)
 
   if args.subcommand == "readlen":
-    readlen.main(args.ngsfiles, outfile)
+    readlen.main(args.ngsfiles,
+                 outfile=args.outfile,
+                 delimiter=args.delimiter,
+                 n_samples=args.n_samples,
+                 majority_vote_cutoff=args.majority_vote_cutoff)
   if args.subcommand == "instrument":
     instrument.main(args.ngsfiles, outfile)
   if args.subcommand == "strandedness":

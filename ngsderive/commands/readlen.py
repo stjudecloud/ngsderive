@@ -1,31 +1,58 @@
 import csv
 import itertools
+import logging
 import pysam
+import sys
+
 from collections import defaultdict
 
-def main(ngsfiles, outfile, n_samples=10000, cutoff=0.7):
-  writer = csv.DictWriter(outfile, fieldnames=["File", "ReadLength"], delimiter="\t")
-  writer.writeheader()
+logger = logging.getLogger('readlen')
 
-  for ngsfile in ngsfiles:
-    readlengths = defaultdict(int)
-    samfile = pysam.AlignmentFile(ngsfile, "rb")
+def main(ngsfiles,
+         outfile=sys.stdout,
+         delimiter="\t",
+         n_samples=100000,
+         majority_vote_cutoff=0.7):
 
-    # accumulate read lengths
-    for read in itertools.islice(samfile, n_samples):
-      readlengths[len(read.query)] += 1
+    writer = csv.DictWriter(
+        outfile,
+        fieldnames=["File", "Evidence", "MajorityPctDetected", "Consensusread length"],
+        delimiter=delimiter)
+    writer.writeheader()
 
-    # normalize values
-    for readlen in readlengths:
-      readlengths[readlen] /= n_samples
+    for ngsfile in ngsfiles:
+        read_lengths = defaultdict(int)
+        samfile = pysam.AlignmentFile(ngsfile, "rb")
 
-    max_readlen = sorted(readlengths.keys(), reverse=True)[0]
+        # accumulate read lengths
+        total_reads_sampled = 0
+        for read in itertools.islice(samfile, n_samples):
+            total_reads_sampled += 1
+            read_lengths[len(read.query)] += 1
 
-    # ensure % of max readlength > [cutoff]
-    # if not, cannot determine
-    result = {
-      "File": ngsfile,
-      "ReadLength": max_readlen if readlengths[max_readlen] > cutoff else -1
-    }
+        read_length_keys_sorted = sorted([int(k) for k in read_lengths.keys()], reverse=True)
+        putative_max_readlen = read_length_keys_sorted[0]
 
-    writer.writerow(result)
+        # note that simply picking the read length with the highest amount of evidence
+        # doesn't make sense — things like adapter trimming might shorten the read length,
+        # but the read length should never grow past the maximum value.
+
+        # if not, cannot determine, return -1
+        pct = read_lengths[putative_max_readlen] / total_reads_sampled 
+        logger.info("Max read length percentage: {}".format(pct))
+        majority_readlen = putative_max_readlen if pct > majority_vote_cutoff else -1
+
+        result = {
+            "File":
+            ngsfile,
+            "Evidence":
+            ";".join([
+                "{}={}".format(k, read_lengths[k])
+                for k in read_length_keys_sorted
+            ]),
+            "MajorityPctDetected": round(pct, 4),
+            "ConsensusReadLength":
+            majority_readlen
+        }
+
+        writer.writerow(result)
