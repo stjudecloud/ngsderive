@@ -1,30 +1,40 @@
 #!/usr/bin/env python3
 
-"""
-
-Usage:
-  ngsderive readlen <ngsfiles>... [--outfile=<outfile>] [-v]
-  ngsderive instrument <ngsfiles>... [--outfile=<outfile>] [-v]
-  ngsderive strandedness <ngsfiles>... --gff-file=<gfffile> [--outfile=<outfile>] [-v]
-  ngsderive (-h | --help)
-  ngsderive --version
-
-Options:
-  -h --help             Show this screen.
-  --gff-file=<gtffile>  Gene model as GFF file.
-  --outfile=<outfile>   Output file [default: sys.stdout].
-  -v --verbose          Verbose output. 
-  --version             Show version.
-"""
-
+import argparse
+import csv
 import logging
 import sys
 
-from docopt import docopt
 from ngsderive import utils
 from ngsderive.commands import readlen, instrument, strandedness
 
 logger = logging.getLogger('ngsderive')
+
+def get_args():
+  parser = argparse.ArgumentParser(description="Derive useful information (or best guess) from next-generation sequencing files.")
+  subparsers = parser.add_subparsers(dest="subcommand")
+
+  common = argparse.ArgumentParser(add_help=False)
+  common.add_argument("ngsfiles", type=str, nargs="+", help="Next-generation sequencing files to process (BAM or FASTQ).")
+  common.add_argument("-o", "--out-file", type=str, help="Write to filename rather than standard out.", default=None)
+  common.add_argument("--delim", default="\t", help="Delimiter for the outfile.")
+  common.add_argument("--debug", default=False, action="store_true", help="Enable DEBUG log level.")
+  common.add_argument('--version', action='version', version='%(prog)s 1.0.0')
+
+  readlen = subparsers.add_parser("readlen", parents=[common])
+
+  instrument = subparsers.add_parser("instrument", parents=[common])
+
+  strandedness = subparsers.add_parser("strandedness", parents=[common])
+  strandedness.add_argument("-g", "--gene-model", help="Gene model as a GFF/GTF file.", required=True)
+  
+  args = parser.parse_args()
+  if not args.subcommand:
+    parser.print_help()
+    sys.exit(1)
+
+  return args
+
 
 def setup_logging(log_level=logging.INFO):
     """Set up the logging.
@@ -63,47 +73,25 @@ def write(line, stream=sys.stdout):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='1.0.0')
+  args = get_args()
 
-    log_level = logging.INFO
-    if arguments["--verbose"]:
-      log_level = logging.DEBUG
+  log_level = logging.INFO
+  if args.debug:
+    log_level = logging.DEBUG
 
-    setup_logging(log_level)
+  outfile = args.out_file
+  if outfile:
+    outfile = open(outfile, "w")
+  else:
+    outfile = sys.stdout
 
-    outfile = arguments["--outfile"]
-    if outfile == "sys.stdout":
-      outfile = sys.stdout
-    else:
-      outfile = open(outfile, "w")
+  setup_logging(log_level)
 
-    if arguments["readlen"]:
-        write("File\tRead Length\n", outfile)
-        for ngsfile in arguments["<ngsfiles>"]:
-            readlen = readlen.main(ngsfile)
-            line = "\t".join([ngsfile, str(readlen)])
-            write(ngsfile + "\t" + str(readlen), outfile)
-    if arguments["instrument"]:
-        write("File\tInstrument\tConfidence\tBasis\n", outfile)
-        for ngsfile in arguments["<ngsfiles>"]:
-            instruments, confidence, based_on = instrument.main(ngsfile)
-            line = "\t".join([ngsfile, " or ".join(instruments), confidence, based_on])
-            write(line, outfile)
-    if arguments["strandedness"]:
-      gene_model_file = arguments["--gff-file"]
-      logger.debug("Reading gene model.")
-      gtf = utils.GFF(gene_model_file, feature_filter=["gene"])
-      write("File\tTotalReads\tForward\tReverse\tPredicted\n", outfile)
-      for ngsfile in arguments["<ngsfiles>"]:
-          forward, reverse, total = strandedness.main(ngsfile, gtf, gene_model_file)
-          forward_pct = round(forward / total, 4)
-          reverse_pct = round(reverse / total, 4)
-
-          predicted = "Inconclusive"
-          if 0.4 <= forward_pct and forward_pct <= 0.6:
-            predicted = "Unstranded"
-          if 0.8 <= forward_pct:
-            predicted = "Stranded-Forward"
-          elif 0.8 <= reverse_pct:
-            predicted = "Stranded-Reverse"
-          write("\t".join([ngsfile, str(total), str(forward_pct), str(reverse_pct), predicted]) + "\n")
+  if args.subcommand == "readlen":
+    readlen.main(args.ngsfiles, outfile)
+  if args.subcommand == "instrument":
+    instrument.main(args.ngsfiles, outfile)
+  if args.subcommand == "strandedness":
+    logger.debug("Reading gene model.")
+    gtf = utils.GFF(args.gene_model, feature_filter=["gene"])
+    strandedness.main(args.ngsfiles, gtf, args.gene_model, outfile)

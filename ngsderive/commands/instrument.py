@@ -1,3 +1,4 @@
+import csv
 import itertools
 import pysam
 import re
@@ -131,27 +132,37 @@ def resolve_instrument(possible_instruments_by_iid, possible_instruments_by_fcid
     return overlapping_instruments, "high confidence", "instrument id and flowcell id"
 
 
-def main(ngsfile, n_samples=10):
-  readlengths = defaultdict(int)
-  samfile = pysam.AlignmentFile(ngsfile, "rb")
+def main(ngsfiles, outfile, n_samples=10):
+  writer = csv.DictWriter(outfile, fieldnames=["File", "Instrument", "Confidence", "Basis"], delimiter="\t")
+  writer.writeheader()
 
-  instruments = set()
-  flowcells = set()
+  for ngsfile in ngsfiles:
+    samfile = pysam.AlignmentFile(ngsfile, "rb")
 
-  # accumulate read lengths
-  for read in itertools.islice(samfile, n_samples):
-    parts = read.query_name.split(":")
-    iid, fcid = parts[0], parts[2]
-    instruments.add(iid)
-    flowcells.add(fcid)
+    instruments = set()
+    flowcells = set()
 
-  possible_instruments_by_iid, detected_instrument_by_iid = predict_instrument_from_iids(instruments)
-  possible_instruments_by_fcid, detected_instrument_by_fcid = predict_instrument_from_fcids(flowcells)
-  
-  instruments, confidence, based_on = resolve_instrument(possible_instruments_by_iid, possible_instruments_by_fcid, detected_instrument_by_iid | detected_instrument_by_fcid)
-  for upgrade_set in upgrade_sets:
-    if instruments.issubset(upgrade_set[0]):
-      instruments = upgrade_set[1]
-      break
+    # accumulate read lengths
+    for read in itertools.islice(samfile, n_samples):
+      parts = read.query_name.split(":")
+      iid, fcid = parts[0], parts[2]
+      instruments.add(iid)
+      flowcells.add(fcid)
 
-  return instruments, confidence, based_on
+    possible_instruments_by_iid, detected_instrument_by_iid = predict_instrument_from_iids(instruments)
+    possible_instruments_by_fcid, detected_instrument_by_fcid = predict_instrument_from_fcids(flowcells)
+    
+    instruments, confidence, based_on = resolve_instrument(possible_instruments_by_iid, possible_instruments_by_fcid, detected_instrument_by_iid | detected_instrument_by_fcid)
+    for upgrade_set in upgrade_sets:
+      if instruments.issubset(upgrade_set[0]):
+        instruments = upgrade_set[1]
+        break
+
+    result = {
+      "File": ngsfile,
+      "Instrument": " or ".join(instruments),
+      "Confidence": confidence,
+      "Basis": based_on
+    }
+
+    writer.writerow(result)
