@@ -1,10 +1,14 @@
 import itertools
+import logging
 import pysam
 import random
 import tabix
+
 from collections import defaultdict
 
 from .. import utils
+
+logger = logging.getLogger('strandedness')
 
 def get_filtered_reads_from_region(samfile, gene, min_quality=30, apply_filters=True):
   for read in samfile.fetch(gene['seqname'], gene["start"], gene["end"]):
@@ -13,10 +17,13 @@ def get_filtered_reads_from_region(samfile, gene, min_quality=30, apply_filters=
     yield read
 
 
-def filter_gene(gene, gtf_tabix, only_consider_protein_genes=True):
+def disqualify_gene(gene, gtf_tabix, only_consider_protein_genes=True):
   # potentially only consider protein coding genes.
-  if only_consider_protein_genes and not "protein" in gene['attribute']:
-    return False
+  if only_consider_protein_genes:
+    if not "attr_gene_type" in gene: 
+      return True
+    if not "protein" in gene['attr_gene_type']:
+      return True 
 
   # if there are overlapping features on the positive and negative strand
   # ignore this gene.
@@ -38,35 +45,41 @@ def filter_gene(gene, gtf_tabix, only_consider_protein_genes=True):
       break
   
   if has_positive_gene and has_negative_gene:
-    return False
+    return True 
 
-  return True
+  return False
 
 
-def main(ngsfile, gene_model_file, n_genes=500, minimum_reads_per_gene=10):
+def main(ngsfile, gtf, gene_model_file, n_genes=100, minimum_reads_per_gene=50):
+  logger.debug("Loading SAM file.")
   samfile = pysam.AlignmentFile(ngsfile, "rb")
+  logger.debug("Creating opening tabix version of gene model.")
   gtf_tabix = tabix.open(gene_model_file)
-  gtf = utils.GFF(gene_model_file, feature_filter=["gene"])
 
-  n_genes_we_tried = 0
   n_tested_genes = 0
   n_reads_observed = 0
   overall_evidence = defaultdict(int)
   gene_blacklist = set()
 
+  logger.debug("Starting sampling (n={}).".format(n_genes))
   while True:
     if n_tested_genes >= n_genes:
       break
 
     gene = random.choice(gtf.entries)
 
-    if gene["seqname"] in gene_blacklist:
+    if gene["attr_gene_id"] in gene_blacklist:
       continue
 
-    if filter_gene(gene, gtf_tabix):
+    if disqualify_gene(gene, gtf_tabix):
       continue
 
-    gene_blacklist.add(gene["seqname"])
+    logging.debug("== Candidate Gene ==")
+    logging.debug("  [*] Name: {}".format(gene['attr_gene_name']))
+    logging.debug("  [*] Location: {}:{}-{} ({})".format(gene['seqname'], gene['start'], gene['end'], gene['strand']))
+    logging.debug("  [*] Actions:")
+
+    gene_blacklist.add(gene["attr_gene_id"])
     relevant_reads = get_filtered_reads_from_region(samfile, gene)
 
     reads_in_gene = 0
@@ -93,15 +106,17 @@ def main(ngsfile, gene_model_file, n_genes=500, minimum_reads_per_gene=10):
       this_genes_evidence[read_id + read_strand_id + gene_strand_id] += 1
 
     if reads_in_gene >= minimum_reads_per_gene:
+      logging.debug("    - Sufficient read count ({} >= {})".format(reads_in_gene, minimum_reads_per_gene))
+      logging.debug("    - {}".format(" ".join(["{}:{}".format(k, v) for k, v in this_genes_evidence.items()])))
       for key in this_genes_evidence.keys():
         overall_evidence[key] += this_genes_evidence[key]
 
       n_tested_genes += 1
       n_reads_observed += reads_in_gene
+    else:
+      logging.debug("    - Read count too low ({} < {})".format(reads_in_gene, minimum_reads_per_gene))
 
-    n_genes_we_tried += 1
 
-  print("Number of genes we tried: {}".format(n_genes_we_tried))
   evidence_stranded_forward = overall_evidence["1++"] + overall_evidence["1--"] + overall_evidence["2+-"] + overall_evidence["2-+"]
   evidence_stranded_reverse = overall_evidence["1+-"] + overall_evidence["1-+"] + overall_evidence["2++"] + overall_evidence["2--"]
   total = evidence_stranded_forward + evidence_stranded_reverse

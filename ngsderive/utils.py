@@ -25,7 +25,7 @@ class GFF:
       if self.feature_filter and not feature in self.feature_filter:
         continue
 
-      self.entries.append({
+      result = {
         "seqname": seqname,
         "source": source,
         "feature": feature,
@@ -33,9 +33,14 @@ class GFF:
         "end": int(end),
         "score": score,
         "strand": strand,
-        "frame": frame,
-        "attribute": attribute
-      })
+        "frame": frame
+      }
+
+      for attr_raw in attribute.split(";"):
+        [key, value] = attr_raw.split("=")
+        result["attr_" + key] = value.strip()
+
+      self.entries.append(result)
 
   def __iter__(self):
     self.i = 0
