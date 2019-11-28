@@ -11,22 +11,33 @@ from ngsderive.commands import readlen, instrument, strandedness
 logger = logging.getLogger('ngsderive')
 
 def get_args():
-  parser = argparse.ArgumentParser(description="Derive useful information (or best guess) from next-generation sequencing files.")
+  class SaneFormatter(argparse.RawTextHelpFormatter, argparse.ArgumentDefaultsHelpFormatter):
+    pass
+
+  parser = argparse.ArgumentParser(description="Derive useful information (or best guess) from next-generation sequencing files.", formatter_class=SaneFormatter)
   subparsers = parser.add_subparsers(dest="subcommand")
 
-  common = argparse.ArgumentParser(add_help=False)
+  common = argparse.ArgumentParser(add_help=False, formatter_class=SaneFormatter)
   common.add_argument("ngsfiles", type=str, nargs="+", help="Next-generation sequencing files to process (BAM or FASTQ).")
-  common.add_argument("-o", "--out-file", type=str, help="Write to filename rather than standard out.", default=None)
-  common.add_argument("--delim", default="\t", help="Delimiter for the outfile.")
+  common.add_argument("-o", "--outfile", type=str, help="Write to filename rather than standard out.", default="stdout")
+  common.add_argument("--delimiter", default="<tab>", help="Delimiter for the outfile.")
   common.add_argument("--debug", default=False, action="store_true", help="Enable DEBUG log level.")
+  common.add_argument("-v", "--verbose", default=False, action="store_true", help="Enable INFO log level.")
   common.add_argument('--version', action='version', version='%(prog)s 1.0.0')
 
-  readlen = subparsers.add_parser("readlen", parents=[common])
+  readlen = subparsers.add_parser("readlen", parents=[common], formatter_class=SaneFormatter)
 
-  instrument = subparsers.add_parser("instrument", parents=[common])
+  instrument = subparsers.add_parser("instrument", parents=[common], formatter_class=SaneFormatter)
 
-  strandedness = subparsers.add_parser("strandedness", parents=[common])
+  strandedness = subparsers.add_parser("strandedness", parents=[common], formatter_class=SaneFormatter)
   strandedness.add_argument("-g", "--gene-model", help="Gene model as a GFF/GTF file.", required=True)
+  strandedness.add_argument("-m", "--minimum-reads-per-gene", type=int, help="Filter any genes that don't have at least `m` reads.", default=10)
+  strandedness.add_argument("-n", "--n-genes", type=int, help="How many genes to sample.", default=100)
+  strandedness.add_argument("-q", "--min-mapq", type=int, help="Minimum MAPQ to consider for reads.", default=30)
+  protein_coding_parser = strandedness.add_mutually_exclusive_group(required=False)
+  protein_coding_parser.add_argument('--only-protein-coding-genes', dest='only_protein_coding_genes', action='store_true', help="Only consider protein coding genes")
+  protein_coding_parser.add_argument('--no-only-protein-coding-genes', dest='only_protein_coding_genes', action='store_false')
+  strandedness.set_defaults(only_protein_coding_genes=True)
   
   args = parser.parse_args()
   if not args.subcommand:
@@ -67,31 +78,42 @@ def setup_logging(log_level=logging.INFO):
     logger = logging.getLogger('')
     logger.setLevel(log_level)
 
-def write(line, stream=sys.stdout):
-    stream.write(line)
-    stream.flush()
+def process_args(args):
+  # setup logging
+  log_level = logging.WARN
+  
+  if args.verbose:
+    log_level = logging.INFO
+
+  if args.debug:
+    log_level = logging.DEBUG
+
+  setup_logging(log_level)
+
+  # set output file
+  if args.outfile == "stdout":
+    args.outfile = sys.stdout
+  else:
+    args.outfile = open(outfile, "w")
+
+  # set delimiter
+  if args.delimiter == "<tab>":
+    args.delimiter = "\t"
 
 
 if __name__ == '__main__':
   args = get_args()
-
-  log_level = logging.INFO
-  if args.debug:
-    log_level = logging.DEBUG
-
-  outfile = args.out_file
-  if outfile:
-    outfile = open(outfile, "w")
-  else:
-    outfile = sys.stdout
-
-  setup_logging(log_level)
+  process_args(args)
 
   if args.subcommand == "readlen":
     readlen.main(args.ngsfiles, outfile)
   if args.subcommand == "instrument":
     instrument.main(args.ngsfiles, outfile)
   if args.subcommand == "strandedness":
-    logger.debug("Reading gene model.")
-    gtf = utils.GFF(args.gene_model, feature_filter=["gene"])
-    strandedness.main(args.ngsfiles, gtf, args.gene_model, outfile)
+    strandedness.main(args.ngsfiles, args.gene_model, 
+                      outfile=args.outfile,
+                      delimiter=args.delimiter,
+                      n_genes=args.n_genes,
+                      minimum_reads_per_gene=args.minimum_reads_per_gene,
+                      only_protein_coding_genes=args.only_protein_coding_genes,
+                      min_mapq=args.min_mapq)

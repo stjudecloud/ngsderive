@@ -4,7 +4,7 @@ class GFF:
   def __init__(self, filename, feature_filter=None):
     self._handle = gzip.open(filename, "r")
     self.feature_filter = feature_filter
-    self.entries = []
+    self.features = []
 
     while True:
       line = self._handle.readline().decode("utf-8")
@@ -40,15 +40,15 @@ class GFF:
         [key, value] = attr_raw.split("=")
         result["attr_" + key] = value.strip()
 
-      self.entries.append(result)
+      self.features.append(result)
 
   def __iter__(self):
     self.i = 0
     return self
 
   def __next__(self):
-    if self.i < len(self.entries):
+    if self.i < len(self.features):
       self.i += 1
-      return self.entries[self.i - 1]
+      return self.features[self.i - 1]
     else:
       raise StopIteration
