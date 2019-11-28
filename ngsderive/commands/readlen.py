@@ -1,24 +1,31 @@
+import csv
 import itertools
 import pysam
 from collections import defaultdict
 
-def main(ngsfile, n_samples=10000, cutoff=0.8):
-  readlengths = defaultdict(int)
-  samfile = pysam.AlignmentFile(ngsfile, "rb")
+def main(ngsfiles, outfile, n_samples=10000, cutoff=0.7):
+  writer = csv.DictWriter(outfile, fieldnames=["File", "ReadLength"], delimiter="\t")
+  writer.writeheader()
 
-  # accumulate read lengths
-  for read in itertools.islice(samfile, n_samples):
-    readlengths[len(read.query)] += 1
+  for ngsfile in ngsfiles:
+    readlengths = defaultdict(int)
+    samfile = pysam.AlignmentFile(ngsfile, "rb")
 
-  # normalize values
-  for readlen in readlengths:
-    readlengths[readlen] /= n_samples
+    # accumulate read lengths
+    for read in itertools.islice(samfile, n_samples):
+      readlengths[len(read.query)] += 1
 
-  max_readlen = sorted(readlengths.keys(), reverse=True)[0]
+    # normalize values
+    for readlen in readlengths:
+      readlengths[readlen] /= n_samples
 
-  # ensure % of max readlength > [cutoff]
-  # if not, cannot determine
-  if readlengths[max_readlen] > cutoff:
-    return max_readlen
-  else:
-    return -1
+    max_readlen = sorted(readlengths.keys(), reverse=True)[0]
+
+    # ensure % of max readlength > [cutoff]
+    # if not, cannot determine
+    result = {
+      "File": ngsfile,
+      "ReadLength": max_readlen if readlengths[max_readlen] > cutoff else -1
+    }
+
+    writer.writerow(result)
