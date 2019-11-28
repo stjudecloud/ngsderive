@@ -3,29 +3,74 @@
 """
 
 Usage:
-  ngsderive readlen <ngsfiles>... [--outfile=<outfile>]
-  ngsderive instrument <ngsfiles>... [--outfile=<outfile>]
+  ngsderive readlen <ngsfiles>... [--outfile=<outfile>] [-v]
+  ngsderive instrument <ngsfiles>... [--outfile=<outfile>] [-v]
+  ngsderive strandedness <ngsfiles>... --gff-file=<gfffile> [--outfile=<outfile>] [-v]
   ngsderive (-h | --help)
   ngsderive --version
 
 Options:
-  -h --help            Show this screen.
-  --outfile=<outfile>  Output file [default: sys.stdout].
-  --version            Show version.
+  -h --help             Show this screen.
+  --gff-file=<gtffile>  Gene model as GFF file.
+  --outfile=<outfile>   Output file [default: sys.stdout].
+  -v --verbose          Verbose output. 
+  --version             Show version.
 """
 
+import logging
 import sys
 
 from docopt import docopt
-from ngsderive.commands import readlen, instrument
+from ngsderive import utils
+from ngsderive.commands import readlen, instrument, strandedness
+
+logger = logging.getLogger('ngsderive')
+
+def setup_logging(log_level=logging.INFO):
+    """Set up the logging.
+    
+    Forked from MIT code here: https://github.com/MisterWil/abodepy.
+    """
+    logging.basicConfig(level=log_level)
+    fmt = ("%(asctime)s %(levelname)s (%(threadName)s) "
+           "[%(name)s] %(message)s")
+    colorfmt = "%(log_color)s{}%(reset)s".format(fmt)
+    datefmt = '%H:%M:%S'
+
+    try:
+        from colorlog import ColoredFormatter
+        logging.getLogger().handlers[0].setFormatter(ColoredFormatter(
+            colorfmt,
+            datefmt=datefmt,
+            reset=True,
+            log_colors={
+                'DEBUG': 'cyan',
+                'INFO': 'green',
+                'WARNING': 'yellow',
+                'ERROR': 'red',
+                'CRITICAL': 'red',
+            }
+        ))
+    except ImportError:
+        pass
+
+    logger = logging.getLogger('')
+    logger.setLevel(log_level)
 
 def write(line, stream=sys.stdout):
-    stream.write(line + "\n")
+    stream.write(line)
     stream.flush()
 
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='1.0.0')
+
+    log_level = logging.INFO
+    if arguments["--verbose"]:
+      log_level = logging.DEBUG
+
+    setup_logging(log_level)
+
     outfile = arguments["--outfile"]
     if outfile == "sys.stdout":
       outfile = sys.stdout
@@ -33,14 +78,32 @@ if __name__ == '__main__':
       outfile = open(outfile, "w")
 
     if arguments["readlen"]:
-        write("File\tRead Length", outfile)
+        write("File\tRead Length\n", outfile)
         for ngsfile in arguments["<ngsfiles>"]:
             readlen = readlen.main(ngsfile)
             line = "\t".join([ngsfile, str(readlen)])
             write(ngsfile + "\t" + str(readlen), outfile)
     if arguments["instrument"]:
-        write("File\tInstrument\tConfidence\tBasis", outfile)
+        write("File\tInstrument\tConfidence\tBasis\n", outfile)
         for ngsfile in arguments["<ngsfiles>"]:
             instruments, confidence, based_on = instrument.main(ngsfile)
             line = "\t".join([ngsfile, " or ".join(instruments), confidence, based_on])
             write(line, outfile)
+    if arguments["strandedness"]:
+      gene_model_file = arguments["--gff-file"]
+      logger.debug("Reading gene model.")
+      gtf = utils.GFF(gene_model_file, feature_filter=["gene"])
+      write("File\tTotalReads\tForward\tReverse\tPredicted\n", outfile)
+      for ngsfile in arguments["<ngsfiles>"]:
+          forward, reverse, total = strandedness.main(ngsfile, gtf, gene_model_file)
+          forward_pct = round(forward / total, 4)
+          reverse_pct = round(reverse / total, 4)
+
+          predicted = "Inconclusive"
+          if 0.4 <= forward_pct and forward_pct <= 0.6:
+            predicted = "Unstranded"
+          if 0.8 <= forward_pct:
+            predicted = "Stranded-Forward"
+          elif 0.8 <= reverse_pct:
+            predicted = "Stranded-Reverse"
+          write("\t".join([ngsfile, str(total), str(forward_pct), str(reverse_pct), predicted]) + "\n")

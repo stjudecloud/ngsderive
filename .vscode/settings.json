@@ -3,5 +3,5 @@
     "python.linting.pylintEnabled": false,
     "python.linting.mypyEnabled": true,
     "python.linting.enabled": true,
-    "python.pythonPath": "/Users/cmcleod/anaconda3/envs/ngsderive/bin/python3"
+    "python.pythonPath": "/Users/cmcleod/conda/envs/ngsderive/bin/python"
 }
