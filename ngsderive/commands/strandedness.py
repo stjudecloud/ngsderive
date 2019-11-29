@@ -8,7 +8,7 @@ import sys
 
 from collections import defaultdict
 
-from .. import utils
+from ..utils import NGSFile, NGSFileType, GFF
 
 logger = logging.getLogger('strandedness')
 
@@ -93,7 +93,7 @@ def main(ngsfiles,
     logger.info("  - Split by RG: {}".format(split_by_rg))
 
     logger.info("Reading gene model...")
-    gtf = utils.GFF(gene_model_file, feature_filter=["gene"])
+    gtf = GFF(gene_model_file, feature_filter=["gene"])
     logger.info("  - {} features processed.".format(len(gtf.features)))
     gtf_tabix = tabix.open(gene_model_file)
     logger.info("  - Tabix loaded for feature lookup.")
@@ -108,9 +108,12 @@ def main(ngsfiles,
                             delimiter=delimiter)
     writer.writeheader()
 
-    for ngsfile in ngsfiles:
-        logger.info("Processing {}...".format(ngsfile))
-        samfile = pysam.AlignmentFile(ngsfile, "rb")
+    for ngsfilepath in ngsfiles:
+        logger.info("Processing {}...".format(ngsfilepath))
+        ngsfile = NGSFile(ngsfilepath)
+        if ngsfile.filetype != NGSFileType.BAM:
+          raise RuntimeError("Invalid file: {}. `strandedness` only supports aligned BAM files!".format(ngsfilepath))
+        samfile = ngsfile.handle
 
         n_tested_genes = 0
         n_reads_observed = 0
@@ -202,7 +205,7 @@ def main(ngsfiles,
             predicted = get_predicted_strandedness(forward_pct, reverse_pct)
 
             result = {
-                "File": ngsfile,
+                "File": ngsfilepath,
                 "ReadGroup": rg,
                 "TotalReads": total_reads,
                 "ForwardPct": forward_pct,
@@ -225,7 +228,7 @@ def main(ngsfiles,
           predicted = get_predicted_strandedness(forward_pct, reverse_pct)
 
           result = {
-              "File": ngsfile,
+              "File": ngsfilepath,
               "TotalReads": total_reads,
               "ForwardPct": forward_pct,
               "ReversePct": reverse_pct,

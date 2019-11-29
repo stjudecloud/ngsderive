@@ -7,6 +7,8 @@ import sys
 import logging
 from collections import defaultdict
 
+from ..utils import NGSFile
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -157,19 +159,19 @@ def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=10000):
         delimiter=delimiter)
     writer.writeheader()
 
-    for ngsfile in ngsfiles:
-        samfile = pysam.AlignmentFile(ngsfile, "rb")
+    for ngsfilepath in ngsfiles:
+        ngsfile = NGSFile(ngsfilepath)
 
         instruments = set()
         flowcells = set()
 
         # accumulate read lengths
-        for read in itertools.islice(samfile, n_samples):
-            parts = read.query_name.split(":")
+        for read in itertools.islice(ngsfile, n_samples):
+            parts = read['query_name'].split(":")
             iid, fcid = parts[0], parts[2]
             instruments.add(iid)
             flowcells.add(fcid)
-
+            
         possible_instruments_by_iid, detected_instrument_by_iid = predict_instrument_from_iids(
             instruments)
         possible_instruments_by_fcid, detected_instrument_by_fcid = predict_instrument_from_fcids(
@@ -184,7 +186,7 @@ def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=10000):
                 break
 
         result = {
-            "File": ngsfile,
+            "File": ngsfilepath,
             "Instrument": " or ".join(instruments),
             "Confidence": confidence,
             "Basis": based_on
