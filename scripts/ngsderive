@@ -30,6 +30,7 @@ def get_args():
   readlen.add_argument("-n", "--n-samples", type=int, help="How many reads to sample.", default=1000000)
 
   instrument = subparsers.add_parser("instrument", parents=[common], formatter_class=SaneFormatter)
+  instrument.add_argument("-n", "--n-samples", type=int, help="How many reads to sample.", default=10000)
 
   strandedness = subparsers.add_parser("strandedness", parents=[common], formatter_class=SaneFormatter)
   strandedness.add_argument("-g", "--gene-model", help="Gene model as a GFF/GTF file.", required=True)
@@ -114,7 +115,10 @@ if __name__ == '__main__':
                  n_samples=args.n_samples,
                  majority_vote_cutoff=args.majority_vote_cutoff)
   if args.subcommand == "instrument":
-    instrument.main(args.ngsfiles, outfile)
+    instrument.main(args.ngsfiles, 
+                    outfile=args.outfile,
+                    delimiter=args.delimiter,
+                    n_samples=args.n_samples)
   if args.subcommand == "strandedness":
     strandedness.main(args.ngsfiles, args.gene_model, 
                       outfile=args.outfile,
