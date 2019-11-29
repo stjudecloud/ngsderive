@@ -40,7 +40,10 @@ def get_args():
   protein_coding_parser = strandedness.add_mutually_exclusive_group(required=False)
   protein_coding_parser.add_argument('--only-protein-coding-genes', dest='only_protein_coding_genes', action='store_true', help="Only consider protein coding genes")
   protein_coding_parser.add_argument('--no-only-protein-coding-genes', dest='only_protein_coding_genes', action='store_false')
-  strandedness.set_defaults(only_protein_coding_genes=True)
+  split_by_rg_parser = strandedness.add_mutually_exclusive_group(required=False)
+  split_by_rg_parser.add_argument('--split-by-rg', dest='split_by_rg', action='store_true', help="Contain one entry per read group.")
+  split_by_rg_parser.add_argument('--no-split-by-rg', dest='split_by_rg', action='store_false')
+  strandedness.set_defaults(only_protein_coding_genes=True, split_by_rg=False)
   
   args = parser.parse_args()
   if not args.subcommand:
@@ -126,4 +129,5 @@ if __name__ == '__main__':
                       n_genes=args.n_genes,
                       minimum_reads_per_gene=args.minimum_reads_per_gene,
                       only_protein_coding_genes=args.only_protein_coding_genes,
-                      min_mapq=args.min_mapq)
+                      min_mapq=args.min_mapq,
+                      split_by_rg=args.split_by_rg)
