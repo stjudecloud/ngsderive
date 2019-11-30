@@ -100,17 +100,47 @@ a read is evidence for forward-strandedness or reverse-strandedness:
 
 By default, the strandedness check is designed to work with the
 [GENCODE][gencode-website] geneset. Either a GTF or GFF file can be used as the
-gene model — you can use the following one liners to prepare the latest geneset
-at the time of writing for hg19 and hg38 respectively.
+gene model — you can use the following one liner to prepare the latest geneset
+for hg38.
 
 ```bash
-# hg19
-curl ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/GRCh37_mapping/gencode.v32lift37.annotation.gtf.gz | gunzip -c | sort -k1,1 -k4,4n -k5,5n | bgzip > gencode.v32lift37.annotation.gtf.gz
-tabix -p gff gencode.v32lift37.annotation.gtf.gz
 
 # hg38
 curl ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.annotation.gff3.gz | gunzip -c | sort -k1,1 -k4,4n -k5,5n | bgzip > gencode.v32.annotation.gff3.gz
 tabix -p gff gencode.v32.annotation.gff3.gz
+```
+
+If you would like to use the script on hg19, it takes a little more finesse (given the different formats of the attribute column between versions):
+
+```bash
+# hg19
+curl ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/GRCh37_mapping/gencode.v32lift37.annotation.gtf.gz | gunzip -c | sort -k1,1 -k4,4n -k5,5n | python <(cat 
+<<END    
+import re 
+import sys
+
+for line in [l.strip() for l in sys.stdin]:
+  if line.startswith("#"):
+    print(line)                     
+  else:                       
+    columns = line.split('\t')
+    if len(columns) != 9:                                                    
+      raise RuntimeError("Unexpected column number: {}".format(len(columns)))
+    
+    print('\t'.join(columns[0:8]), end="\t")
+    
+    attrs_post = []
+    for attr in columns[8].split(";"):                        
+      groups = re.match(r"\s?(\S+) (\S+)\s?", attr)
+      if groups:             
+        key = groups.group(1)                    
+        value = groups.group(2).replace("\"", "").replace(" ", ",")
+        attrs_post.append(key + "=" + value)
+
+    print(";".join(attrs_post))
+END
+) | sed 's/^chrM/chrMT/g' | sed 's/^chr//g' | bgzip > gencode.v32lift37.annotation.gtf.gz
+tabix -p gff gencode.v32lift37.annotation.gtf.gz
 ```
 
 At the time of writing, the algorithm works roughly like this:
