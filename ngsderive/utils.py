@@ -1,6 +1,7 @@
 import enum
 import gzip
 import logging
+import os
 import pysam
 
 logger = logging.getLogger('utils')
@@ -13,7 +14,8 @@ class NGSFileType(enum.Enum):
 class NGSFile:
   def __init__(self, filename):
     self.filename = filename
-    self.ext = ".".join(filename.split(".")[1:])
+    self.basename = os.path.basename(self.filename)
+    self.ext = ".".join(self.basename.split(".")[1:])
     self.readmode = "r"
     self.gzipped = False
 
@@ -21,25 +23,25 @@ class NGSFile:
       self.readmode = "rb"
       self.gzipped = True
 
-    if self.ext.endswith(".fastq") or \
-       self.ext.endswith(".fq") or \
-       self.ext.endswith(".fastq.gz") or \
-       self.ext.endswith(".fq.gz"):
+    if self.ext.endswith("fastq") or \
+       self.ext.endswith("fq") or \
+       self.ext.endswith("fastq.gz") or \
+       self.ext.endswith("fq.gz"):
       self.filetype = NGSFileType.FASTQ
       if self.gzipped:
         self.handle = gzip.open(self.filename, mode=self.readmode)
       else:
         self.handle = open(self.filename, mode=self.readmode)
-    elif self.ext.endswith(".sam"):
+    elif self.ext.endswith("sam"):
       self.filetype = NGSFileType.SAM
       self.handle = pysam.AlignmentFile(self.filename, self.readmode)
-    elif self.ext.endswith(".bam"):
+    elif self.ext.endswith("bam"):
       self.filetype = NGSFileType.BAM
       self.handle = pysam.AlignmentFile(self.filename, self.readmode)
     else:
       raise RuntimeError("Could not determine NGS file type: {}".format(self.filename))
 
-    logger.info("Opened NGS file '{}' as {}".format(self.filename, self.filetype))
+    logger.debug("Opened NGS file '{}' as {}".format(self.filename, self.filetype))
     logger.debug("Gzipped: {}".format(self.gzipped))
     logger.debug("Readmode: {}".format(self.readmode))
     
@@ -109,7 +111,10 @@ class GFF:
         "frame": frame
       }
 
-      for attr_raw in attribute.split(";"):
+      for attr_raw in [s.strip() for s in attribute.split(";")]:
+        if not attr_raw or attr_raw == "":
+          continue
+
         [key, value] = attr_raw.split("=")
         result["attr_" + key] = value.strip()
 
