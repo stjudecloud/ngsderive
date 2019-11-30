@@ -100,7 +100,7 @@ def process_args(args):
   if args.outfile == "stdout":
     args.outfile = sys.stdout
   else:
-    args.outfile = open(outfile, "w")
+    args.outfile = open(args.outfile, "w")
 
   # set delimiter
   if args.delimiter == "<tab>":
