@@ -107,6 +107,7 @@ def main(ngsfiles,
                             fieldnames=fieldnames,
                             delimiter=delimiter)
     writer.writeheader()
+    outfile.flush()
 
     for ngsfilepath in ngsfiles:
         logger.info("Processing {}...".format(ngsfilepath))
@@ -214,6 +215,7 @@ def main(ngsfiles,
             }
 
             writer.writerow(result)
+            outfile.flush()
         else:
           evidence_stranded_forward = 0
           evidence_stranded_reverse = 0
@@ -236,3 +238,4 @@ def main(ngsfiles,
           }
 
           writer.writerow(result)
+          outfile.flush()
