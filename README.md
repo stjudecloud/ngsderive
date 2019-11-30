@@ -26,6 +26,16 @@ To get started with `ngsderive`, you can install it using pip:
 pip install git+https://github.com/claymcleod/ngsderive.git
 ```
 
+### Development
+
+To get started on a development version of the code, just run the following:
+
+```bash
+conda create -n ngsderive-dev python=3.7 -y
+conda activate ngsderive-dev
+git clone git@github.com:claymcleod/ngsderive.git
+cd ngsderive && python setup.py develop
+```
 ## Usage
 
 ### Illumina machine type
@@ -73,7 +83,7 @@ particular read:
 * Whether the read is read 1 or read 2 ("read ordinal").
 * Whether the read was aligned to the + or - strand ("read strand")
 * Given a gene model, whether a feature of interest (usually a gene) falls on
-  the + or - strand.
+  the + or - strand ("gene strand").
 
 A shorthand notation for the state of a read can be achieved by simply
 concatenating the three characteristics above (e.g., `1+-` means that a read 1
@@ -132,6 +142,15 @@ this would mean its not uncommon to have all of the evidence at the beginning of
 `chr1`. Anecdotally, this method differs in that it is slightly slower than
 `infer_experiment.py` but is expected to be more robust to biases caused by
 which reads are sampled.
+
+This lookup table is used for the classification of strandedness based on the evidence:
+
+| Lookup                            | Value              |
+| --------------------------------- | ------------------ |
+| 40% <= `forward_reads_pct` <= 60% | `Unstranded`       |
+| 80% <= `forward_reads_pct`        | `Stranded-Forward` |
+| 80% <= `reverse_reads_pct`        | `Stranded-Reverse` |
+| Else                              | `Inconclusive`     |
 
 ### Limitations
 
