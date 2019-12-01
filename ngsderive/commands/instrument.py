@@ -158,6 +158,7 @@ def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=10000):
         fieldnames=["File", "Instrument", "Confidence", "Basis"],
         delimiter=delimiter)
     writer.writeheader()
+    outfile.flush()
 
     for ngsfilepath in ngsfiles:
         ngsfile = NGSFile(ngsfilepath)
@@ -193,3 +194,4 @@ def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=10000):
         }
 
         writer.writerow(result)
+        outfile.flush()

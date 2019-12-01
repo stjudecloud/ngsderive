@@ -20,6 +20,7 @@ def main(ngsfiles,
         fieldnames=["File", "Evidence", "MajorityPctDetected", "ConsensusReadLength"],
         delimiter=delimiter)
     writer.writeheader()
+    outfile.flush()
 
     for ngsfilepath in ngsfiles:
         read_lengths = defaultdict(int)
@@ -57,3 +58,4 @@ def main(ngsfiles,
         }
 
         writer.writerow(result)
+        outfile.flush()
