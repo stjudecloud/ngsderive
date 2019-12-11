@@ -25,7 +25,7 @@ def get_filtered_reads_from_region(samfile,
         yield read
 
 
-def disqualify_gene(gene, gtf_tabix, only_consider_protein_genes=True):
+def disqualify_gene(gene, gff_tabix, only_consider_protein_genes=True):
     # potentially only consider protein coding genes.
     if only_consider_protein_genes:
         if not "attr_gene_type" in gene:
@@ -35,7 +35,7 @@ def disqualify_gene(gene, gtf_tabix, only_consider_protein_genes=True):
 
     # if there are overlapping features on the positive and negative strand
     # ignore this gene.
-    hits = gtf_tabix.query(gene['seqname'], gene['start'], gene['end'])
+    hits = gff_tabix.query(gene['seqname'], gene['start'], gene['end'])
     has_positive_gene = None
     has_negative_gene = None
 
@@ -93,9 +93,9 @@ def main(ngsfiles,
     logger.info("  - Split by RG: {}".format(split_by_rg))
 
     logger.info("Reading gene model...")
-    gtf = GFF(gene_model_file, feature_filter=["gene"])
-    logger.info("  - {} features processed.".format(len(gtf.features)))
-    gtf_tabix = tabix.open(gene_model_file)
+    gff = GFF(gene_model_file, feature_type="gene")
+    logger.info("  - {} features processed.".format(len(gff.entries)))
+    gff_tabix = tabix.open(gene_model_file)
     logger.info("  - Tabix loaded for feature lookup.")
 
     fieldnames = [ "TotalReads", "ForwardPct", "ReversePct", "Predicted"] 
@@ -146,12 +146,12 @@ def main(ngsfiles,
             if n_tested_genes >= n_genes:
                 break
 
-            gene = random.choice(gtf.features)
+            gene = random.choice(gff.entries)
 
             if gene["attr_gene_id"] in gene_blacklist:
                 continue
 
-            if disqualify_gene(gene, gtf_tabix, only_consider_protein_genes=only_protein_coding_genes):
+            if disqualify_gene(gene, gff_tabix, only_consider_protein_genes=only_protein_coding_genes):
                 continue
 
             logging.debug("== Candidate Gene ==")

@@ -2,131 +2,170 @@ import enum
 import gzip
 import logging
 import os
+import re
 import pysam
 
 logger = logging.getLogger('utils')
 
+
 class NGSFileType(enum.Enum):
-  FASTQ = 1
-  SAM = 2
-  BAM = 3
+    FASTQ = 1
+    SAM = 2
+    BAM = 3
+
 
 class NGSFile:
-  def __init__(self, filename):
-    self.filename = filename
-    self.basename = os.path.basename(self.filename)
-    self.ext = ".".join(self.basename.split(".")[1:])
-    self.readmode = "r"
-    self.gzipped = False
+    def __init__(self, filename):
+        self.filename = filename
+        self.basename = os.path.basename(self.filename)
+        self.ext = ".".join(self.basename.split(".")[1:])
+        self.readmode = "r"
+        self.gzipped = False
 
-    if self.ext.endswith(".gz") or self.ext.endswith(".bgz") or self.ext.endswith(".bam"):
-      self.readmode = "rb"
-      self.gzipped = True
+        if self.ext.endswith(".gz") or self.ext.endswith(
+                ".bgz") or self.ext.endswith(".bam"):
+            self.readmode = "rb"
+            self.gzipped = True
 
-    if self.ext.endswith("fastq") or \
-       self.ext.endswith("fq") or \
-       self.ext.endswith("fastq.gz") or \
-       self.ext.endswith("fq.gz"):
-      self.filetype = NGSFileType.FASTQ
-      if self.gzipped:
-        self.handle = gzip.open(self.filename, mode=self.readmode)
-      else:
-        self.handle = open(self.filename, mode=self.readmode)
-    elif self.ext.endswith("sam"):
-      self.filetype = NGSFileType.SAM
-      self.handle = pysam.AlignmentFile(self.filename, self.readmode)
-    elif self.ext.endswith("bam"):
-      self.filetype = NGSFileType.BAM
-      self.handle = pysam.AlignmentFile(self.filename, self.readmode)
-    else:
-      raise RuntimeError("Could not determine NGS file type: {}".format(self.filename))
+        if self.ext.endswith("fastq") or \
+           self.ext.endswith("fq") or \
+           self.ext.endswith("fastq.gz") or \
+           self.ext.endswith("fq.gz"):
+            self.filetype = NGSFileType.FASTQ
+            if self.gzipped:
+                self.handle = gzip.open(self.filename, mode=self.readmode)
+            else:
+                self.handle = open(self.filename, mode=self.readmode)
+        elif self.ext.endswith("sam"):
+            self.filetype = NGSFileType.SAM
+            self.handle = pysam.AlignmentFile(self.filename, self.readmode)
+        elif self.ext.endswith("bam"):
+            self.filetype = NGSFileType.BAM
+            self.handle = pysam.AlignmentFile(self.filename, self.readmode)
+        else:
+            raise RuntimeError("Could not determine NGS file type: {}".format(
+                self.filename))
 
-    logger.debug("Opened NGS file '{}' as {}".format(self.filename, self.filetype))
-    logger.debug("Gzipped: {}".format(self.gzipped))
-    logger.debug("Readmode: {}".format(self.readmode))
-    
-  def __iter__(self):
-    self.read_num = 0
-    return self
+        logger.debug("Opened NGS file '{}' as {}".format(
+            self.filename, self.filetype))
+        logger.debug("Gzipped: {}".format(self.gzipped))
+        logger.debug("Readmode: {}".format(self.readmode))
 
-  def __next__(self):
-    if self.filetype == NGSFileType.FASTQ:
-      query_name = self.handle.readline().strip()
-      if not query_name or query_name == "":
-        raise StopIteration()
+    def __iter__(self):
+        self.read_num = 0
+        return self
 
-      query = self.handle.readline().strip()
-      plusline = self.handle.readline().strip()
-      quality = self.handle.readline().strip()
+    def __next__(self):
+        if self.filetype == NGSFileType.FASTQ:
+            query_name = self.handle.readline().strip()
+            if not query_name or query_name == "":
+                raise StopIteration()
 
-      if self.gzipped:
-        query_name = query_name.decode("utf-8")
-        query = query.decode("utf-8")
+            query = self.handle.readline().strip()
+            plusline = self.handle.readline().strip()
+            quality = self.handle.readline().strip()
 
-      if query_name.startswith("@"):
-        query_name = query_name[1:]
+            if self.gzipped:
+                query_name = query_name.decode("utf-8")
+                query = query.decode("utf-8")
 
-    elif self.filetype == NGSFileType.SAM or self.filetype == NGSFileType.BAM:
-      read = next(self.handle)
-      query_name = read.query_name
-      query = read.query
+            if query_name.startswith("@"):
+                query_name = query_name[1:]
 
-    self.read_num += 1
+        elif self.filetype == NGSFileType.SAM or self.filetype == NGSFileType.BAM:
+            read = next(self.handle)
+            query_name = read.query_name
+            query = read.query
 
-    return {
-      "query_name": query_name,
-      "query": query
-    }
+        self.read_num += 1
+
+        return {"query_name": query_name, "query": query}
+
 
 class GFF:
-  def __init__(self, filename, feature_filter=None):
-    self._handle = gzip.open(filename, "r")
-    self.feature_filter = feature_filter
-    self.features = []
+    def __init__(self,
+                 filename,
+                 feature_type=None,
+                 filters=None,
+                 gene_blacklist=None):
+        self.gene_blacklist = None
+        if gene_blacklist:
+            self.gene_blacklist = set([
+                item.strip() for item in open(gene_blacklist, 'r').readlines()
+            ])
+        self._handle = gzip.open(filename, "r")
+        self.feature_type = feature_type
+        self.filters = filters
+        self.entries = []
+        self.attr_regexes = [r"(\S+)=(\S+)", r"(\S+) \"(\S+)\""]
 
-    while True:
-      line = self._handle.readline().decode("utf-8")
-      if not line:
-        break
+        while True:
+            line = self._handle.readline().decode("utf-8")
+            if not line:
+                break
 
-      if line.startswith("#"):
-        continue
+            if line.startswith("#"):
+                continue
 
-      [
-          seqname, source, feature, start, end, score, strand, frame,
-          attribute
-      ] = line.split("\t")
+            [
+                seqname, source, feature, start, end, score, strand, frame,
+                attribute
+            ] = line.split("\t")
 
-      if self.feature_filter and not feature in self.feature_filter:
-        continue
+            if self.feature_type and feature != self.feature_type:
+                continue
 
-      result = {
-        "seqname": seqname,
-        "source": source,
-        "feature": feature,
-        "start": int(start),
-        "end": int(end),
-        "score": score,
-        "strand": strand,
-        "frame": frame
-      }
+            entry_passes_gene_blacklist = True
+            if self.gene_blacklist:
+                for bad_gene in self.gene_blacklist:
+                    if bad_gene in attribute:
+                        entry_passes_gene_blacklist = False
+                        break
 
-      for attr_raw in [s.strip() for s in attribute.split(";")]:
-        if not attr_raw or attr_raw == "":
-          continue
+            if not entry_passes_gene_blacklist:
+                continue
 
-        [key, value] = attr_raw.split("=")
-        result["attr_" + key] = value.strip()
+            result = {
+                "seqname": seqname,
+                "source": source,
+                "feature": feature,
+                "start": int(start),
+                "end": int(end),
+                "score": score,
+                "strand": strand,
+                "frame": frame
+            }
 
-      self.features.append(result)
+            for attr_raw in [s.strip() for s in attribute.split(";")]:
+                if not attr_raw or attr_raw == "":
+                    continue
 
-  def __iter__(self):
-    self.i = 0
-    return self
+                for regex in self.attr_regexes:
+                    match = re.match(regex, attr_raw)
+                    if match:
+                        key, value = match.group(1), match.group(2)
+                        result["attr_" + key] = value.strip()
 
-  def __next__(self):
-    if self.i < len(self.features):
-      self.i += 1
-      return self.features[self.i - 1]
-    else:
-      raise StopIteration
+            entry_passes_filters = True
+            if entry_passes_filters and self.filters:
+                for (k, v) in self.filters.items():
+                    if k not in result or result[k] != v:
+                        entry_passes_filters = False
+                        break
+
+            if entry_passes_filters:
+                self.entries.append(result)
+
+    def filter(self, func):
+        self.entries = filter(func, self.entries)
+
+    def __iter__(self):
+        self.i = 0
+        return self
+
+    def __next__(self):
+        if self.i < len(self.entries):
+            self.i += 1
+            return self.entries[self.i - 1]
+        else:
+            raise StopIteration
