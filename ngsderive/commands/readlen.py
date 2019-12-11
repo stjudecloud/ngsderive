@@ -24,7 +24,19 @@ def main(ngsfiles,
 
     for ngsfilepath in ngsfiles:
         read_lengths = defaultdict(int)
-        ngsfile = NGSFile(ngsfilepath)
+        try:
+            ngsfile = NGSFile(ngsfilepath)
+        except:
+            result = {
+                "File": ngsfilepath,
+                "Evidence": "File not found.",
+                "MajorityPctDetected": "N/A",
+                "ConsensusReadLength": "N/A"
+            }
+
+            writer.writerow(result)
+            outfile.flush()
+            continue
 
         # accumulate read lengths
         total_reads_sampled = 0

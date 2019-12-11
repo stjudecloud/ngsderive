@@ -111,9 +111,26 @@ def main(ngsfiles,
 
     for ngsfilepath in ngsfiles:
         logger.info("Processing {}...".format(ngsfilepath))
-        ngsfile = NGSFile(ngsfilepath)
+        try:
+            ngsfile = NGSFile(ngsfilepath)
+        except:
+            result = {
+                "File": ngsfilepath,
+                "TotalReads": "N/A",
+                "ForwardPct": "N/A",
+                "ReversePct": "N/A",
+                "Predicted": "File not found." 
+            }
+
+            if args.split_by_rg:
+              result["ReadGroup"] = "N/A"
+
+            writer.writerow(result)
+            outfile.flush()
+            continue
+
         if ngsfile.filetype != NGSFileType.BAM:
-          raise RuntimeError("Invalid file: {}. `strandedness` only supports aligned BAM files!".format(ngsfilepath))
+            raise RuntimeError("Invalid file: {}. `strandedness` only supports aligned BAM files!".format(ngsfilepath))
         samfile = ngsfile.handle
 
         n_tested_genes = 0

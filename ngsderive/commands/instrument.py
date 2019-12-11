@@ -161,7 +161,19 @@ def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=10000):
     outfile.flush()
 
     for ngsfilepath in ngsfiles:
-        ngsfile = NGSFile(ngsfilepath)
+        try:
+            ngsfile = NGSFile(ngsfilepath)
+        except:
+            result = {
+                "File": ngsfilepath,
+                "Instrument": "File not found.",
+                "Confidence": "N/A",
+                "Basis": "N/A"
+            }
+
+            writer.writerow(result)
+            outfile.flush()
+            continue
 
         instruments = set()
         flowcells = set()
