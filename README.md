@@ -163,6 +163,20 @@ At the time of writing, the algorithm works roughly like this:
 4. For all reads that pass the above filters, compute the evidence and tally
    results.
 
+This lookup table is used for the classification of strandedness based on the evidence:
+
+| Lookup                            | Value              |
+| --------------------------------- | ------------------ |
+| 40% <= `forward_reads_pct` <= 60% | `Unstranded`       |
+| 80% <= `forward_reads_pct`        | `Stranded-Forward` |
+| 80% <= `reverse_reads_pct`        | `Stranded-Reverse` |
+| Else                              | `Inconclusive`     |
+
+The tool will repeat the strandedness test at most `--max-tries` times to try to find a
+non-`Inconclusive`prediction.
+
+### Differences from popular methods
+
 The most popular strandedness inference tool that the author is aware of is
 RSeQC's
 [infer_experiment.py](http://rseqc.sourceforge.net/#infer-experiment-py). The
@@ -173,14 +187,6 @@ this would mean its not uncommon to have all of the evidence at the beginning of
 `infer_experiment.py` but is expected to be more robust to biases caused by
 which reads are sampled.
 
-This lookup table is used for the classification of strandedness based on the evidence:
-
-| Lookup                            | Value              |
-| --------------------------------- | ------------------ |
-| 40% <= `forward_reads_pct` <= 60% | `Unstranded`       |
-| 80% <= `forward_reads_pct`        | `Stranded-Forward` |
-| 80% <= `reverse_reads_pct`        | `Stranded-Reverse` |
-| Else                              | `Inconclusive`     |
 
 ### Limitations
 
