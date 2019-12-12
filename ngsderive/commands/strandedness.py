@@ -57,12 +57,14 @@ def disqualify_gene(gene, gff_tabix, only_consider_protein_genes=True):
 
     return False
 
+
 def get_reads_rg(read, default="unknown"):
-  for (k, v) in read.tags:
-    if k == "RG":
-      return v
-    
-  return default
+    for (k, v) in read.tags:
+        if k == "RG":
+            return v
+
+    return default
+
 
 def get_predicted_strandedness(forward_evidence_pct, reverse_evidence_pct):
     predicted = "Inconclusive"
@@ -72,8 +74,9 @@ def get_predicted_strandedness(forward_evidence_pct, reverse_evidence_pct):
         predicted = "Stranded-Forward"
     elif 0.8 <= reverse_evidence_pct:
         predicted = "Stranded-Reverse"
-    
+
     return predicted
+
 
 def main(ngsfiles,
          gene_model_file,
@@ -87,8 +90,10 @@ def main(ngsfiles,
     logger.info("Arguments:")
     logger.info("  - Gene model file: {}".format(gene_model_file))
     logger.info("  - Number of genes: {}".format(n_genes))
-    logger.info("  - Minimum reads per gene: {}".format(minimum_reads_per_gene))
-    logger.info("  - Only consider protein coding genes: {}".format(only_protein_coding_genes))
+    logger.info(
+        "  - Minimum reads per gene: {}".format(minimum_reads_per_gene))
+    logger.info("  - Only consider protein coding genes: {}".format(
+        only_protein_coding_genes))
     logger.info("  - Minimum MAPQ: {}".format(min_mapq))
     logger.info("  - Split by RG: {}".format(split_by_rg))
 
@@ -98,10 +103,10 @@ def main(ngsfiles,
     gff_tabix = tabix.open(gene_model_file)
     logger.info("  - Tabix loaded for feature lookup.")
 
-    fieldnames = [ "TotalReads", "ForwardPct", "ReversePct", "Predicted"] 
+    fieldnames = ["TotalReads", "ForwardPct", "ReversePct", "Predicted"]
     if split_by_rg:
-      fieldnames = [ "ReadGroup" ] + fieldnames 
-    fieldnames = [ "File" ] + fieldnames
+        fieldnames = ["ReadGroup"] + fieldnames
+    fieldnames = ["File"] + fieldnames
 
     writer = csv.DictWriter(outfile,
                             fieldnames=fieldnames,
@@ -119,18 +124,20 @@ def main(ngsfiles,
                 "TotalReads": "N/A",
                 "ForwardPct": "N/A",
                 "ReversePct": "N/A",
-                "Predicted": "File not found." 
+                "Predicted": "File not found."
             }
 
             if args.split_by_rg:
-              result["ReadGroup"] = "N/A"
+                result["ReadGroup"] = "N/A"
 
             writer.writerow(result)
             outfile.flush()
             continue
 
         if ngsfile.filetype != NGSFileType.BAM:
-            raise RuntimeError("Invalid file: {}. `strandedness` only supports aligned BAM files!".format(ngsfilepath))
+            raise RuntimeError(
+                "Invalid file: {}. `strandedness` only supports aligned BAM files!"
+                .format(ngsfilepath))
         samfile = ngsfile.handle
 
         n_tested_genes = 0
@@ -151,7 +158,10 @@ def main(ngsfiles,
             if gene["attr_gene_id"] in gene_blacklist:
                 continue
 
-            if disqualify_gene(gene, gff_tabix, only_consider_protein_genes=only_protein_coding_genes):
+            if disqualify_gene(
+                    gene,
+                    gff_tabix,
+                    only_consider_protein_genes=only_protein_coding_genes):
                 continue
 
             logging.debug("== Candidate Gene ==")
@@ -161,7 +171,8 @@ def main(ngsfiles,
             logging.debug("  [*] Actions:")
 
             gene_blacklist.add(gene["attr_gene_id"])
-            relevant_reads = get_filtered_reads_from_region(samfile, gene, min_quality=min_mapq)
+            relevant_reads = get_filtered_reads_from_region(
+                samfile, gene, min_quality=min_mapq)
 
             reads_in_gene = 0
             this_genes_evidence = defaultdict(dict)
@@ -202,7 +213,8 @@ def main(ngsfiles,
 
                 for rg in this_genes_evidence.keys():
                     for state in this_genes_evidence[rg].keys():
-                        overall_evidence[rg][state] += this_genes_evidence[rg][state]
+                        overall_evidence[rg][state] += this_genes_evidence[rg][
+                            state]
 
                 n_tested_genes += 1
                 n_reads_observed += reads_in_gene
@@ -211,20 +223,54 @@ def main(ngsfiles,
                     reads_in_gene, minimum_reads_per_gene))
 
         if split_by_rg:
-          for rg in read_groups:
-            evidence_stranded_forward = overall_evidence[rg]["1++"] + overall_evidence[rg][ "1--"] + overall_evidence[rg]["2+-"] + overall_evidence[rg]["2-+"]
-            evidence_stranded_reverse = overall_evidence[rg]["1+-"] + overall_evidence[rg][ "1-+"] + overall_evidence[rg]["2++"] + overall_evidence[rg]["2--"]
-            total_reads = evidence_stranded_forward + evidence_stranded_reverse
-            if total_reads == 0 and rg == "unknown":
-              continue
+            for rg in read_groups:
+                evidence_stranded_forward = overall_evidence[rg][
+                    "1++"] + overall_evidence[rg]["1--"] + overall_evidence[
+                        rg]["2+-"] + overall_evidence[rg]["2-+"]
+                evidence_stranded_reverse = overall_evidence[rg][
+                    "1+-"] + overall_evidence[rg]["1-+"] + overall_evidence[
+                        rg]["2++"] + overall_evidence[rg]["2--"]
+                total_reads = evidence_stranded_forward + evidence_stranded_reverse
+                if total_reads == 0 and rg == "unknown":
+                    continue
 
-            forward_pct = -1 if total_reads == 0 else round(evidence_stranded_forward / total_reads, 4)
-            reverse_pct = -1 if total_reads == 0 else round(evidence_stranded_reverse / total_reads, 4)
+                forward_pct = -1 if total_reads == 0 else round(
+                    evidence_stranded_forward / total_reads, 4)
+                reverse_pct = -1 if total_reads == 0 else round(
+                    evidence_stranded_reverse / total_reads, 4)
+                predicted = get_predicted_strandedness(forward_pct,
+                                                       reverse_pct)
+
+                result = {
+                    "File": ngsfilepath,
+                    "ReadGroup": rg,
+                    "TotalReads": total_reads,
+                    "ForwardPct": forward_pct,
+                    "ReversePct": reverse_pct,
+                    "Predicted": predicted
+                }
+
+                writer.writerow(result)
+                outfile.flush()
+        else:
+            evidence_stranded_forward = 0
+            evidence_stranded_reverse = 0
+
+            for rg in read_groups:
+                evidence_stranded_forward += overall_evidence[rg][
+                    "1++"] + overall_evidence[rg]["1--"] + overall_evidence[
+                        rg]["2+-"] + overall_evidence[rg]["2-+"]
+                evidence_stranded_reverse += overall_evidence[rg][
+                    "1+-"] + overall_evidence[rg]["1-+"] + overall_evidence[
+                        rg]["2++"] + overall_evidence[rg]["2--"]
+
+            total_reads = evidence_stranded_forward + evidence_stranded_reverse
+            forward_pct = round(evidence_stranded_forward / total_reads, 4)
+            reverse_pct = round(evidence_stranded_reverse / total_reads, 4)
             predicted = get_predicted_strandedness(forward_pct, reverse_pct)
 
             result = {
                 "File": ngsfilepath,
-                "ReadGroup": rg,
                 "TotalReads": total_reads,
                 "ForwardPct": forward_pct,
                 "ReversePct": reverse_pct,
@@ -233,26 +279,3 @@ def main(ngsfiles,
 
             writer.writerow(result)
             outfile.flush()
-        else:
-          evidence_stranded_forward = 0
-          evidence_stranded_reverse = 0
-
-          for rg in read_groups:
-            evidence_stranded_forward += overall_evidence[rg]["1++"] + overall_evidence[rg][ "1--"] + overall_evidence[rg]["2+-"] + overall_evidence[rg]["2-+"]
-            evidence_stranded_reverse += overall_evidence[rg]["1+-"] + overall_evidence[rg][ "1-+"] + overall_evidence[rg]["2++"] + overall_evidence[rg]["2--"]
-
-          total_reads = evidence_stranded_forward + evidence_stranded_reverse
-          forward_pct = round(evidence_stranded_forward / total_reads, 4)
-          reverse_pct = round(evidence_stranded_reverse / total_reads, 4)
-          predicted = get_predicted_strandedness(forward_pct, reverse_pct)
-
-          result = {
-              "File": ngsfilepath,
-              "TotalReads": total_reads,
-              "ForwardPct": forward_pct,
-              "ReversePct": reverse_pct,
-              "Predicted": predicted
-          }
-
-          writer.writerow(result)
-          outfile.flush()

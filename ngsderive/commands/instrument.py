@@ -184,7 +184,7 @@ def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=10000):
             iid, fcid = parts[0], parts[2]
             instruments.add(iid)
             flowcells.add(fcid)
-            
+
         possible_instruments_by_iid, detected_instrument_by_iid = predict_instrument_from_iids(
             instruments)
         possible_instruments_by_fcid, detected_instrument_by_fcid = predict_instrument_from_fcids(
