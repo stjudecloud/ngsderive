@@ -1,5 +1,10 @@
 # ngsderive
 
+[![PyPI Version](https://img.shields.io/pypi/v/ngsderive.svg)](https://pypi.python.org/pypi/ngsderive/)
+[![PyPI Python Versions](https://img.shields.io/pypi/pyversions/ngsderive.svg)](https://pypi.python.org/pypi/ngsderive/)
+[![PyPI Project Status](https://img.shields.io/pypi/status/ngsderive.svg)](https://pypi.python.org/pypi/ngsderive/)
+
+
 [![CI
 status](https://github.com/claymcleod/ngsderive/workflows/CI/badge.svg)](https://github.com/claymcleod/ngsderive/actions)
 
@@ -208,6 +213,12 @@ which reads are sampled.
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of
 conduct, and the process for submitting pull requests to us.
+
+
+## Versioning
+
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). When increasing the version number, please increase the `__VERSION__` varianble in `setup.py`.
+
 
 ## License
 
