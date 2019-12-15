@@ -154,17 +154,16 @@ def determine_strandedness(ngsfilepath, gff, gff_tabix, n_genes=100, min_mapq=30
 
         for read in relevant_reads:
             reads_in_gene += 1
-            if not read.is_paired:
-                raise RuntimeError(
-                    "This tool currently only works for paired-end data! Please contact the author if you'd like SE data to be supported."
-                )
-
-            if read.is_read1:
-                read_id = "1"
-            elif read.is_read2:
-                read_id = "2"
+            if read.is_paired:
+                if read.is_read1:
+                    read_id = "1"
+                elif read.is_read2:
+                    read_id = "2"
+                else:
+                    raise RuntimeError("Read is not read 1 or read 2?")
             else:
-                raise RuntimeError("Read is not read 1 or read 2?")
+                # SE reads are equivalent to just assuming the read is read 1.
+                read_id = "1"
 
             if not read.is_reverse:
                 read_strand_id = "+"
