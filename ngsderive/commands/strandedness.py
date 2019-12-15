@@ -110,7 +110,11 @@ def determine_strandedness(ngsfilepath, gff, gff_tabix, n_genes=100, min_mapq=30
     n_tested_genes = 0
     n_reads_observed = 0
     gene_blacklist = set()
-    read_groups = [rg['ID'] for rg in samfile.header['RG']] + ["unknown"]
+
+    read_groups = ["unknown"]
+    if 'RG' in samfile.header:
+        read_groups += [rg['ID'] for rg in samfile.header['RG']]
+
     overall_evidence = defaultdict(dict)
 
     for rg in read_groups:
