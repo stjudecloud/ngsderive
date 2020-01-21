@@ -84,7 +84,7 @@ def get_predicted_strandedness(forward_evidence_pct, reverse_evidence_pct):
 
 def determine_strandedness(ngsfilepath, gff, gff_tabix, n_genes=100, min_mapq=30,
                            minimum_reads_per_gene=10, split_by_rg=False,
-                           only_protein_coding_genes=True):
+                           only_protein_coding_genes=True, max_iterations_per_try=1000):
     try:
         ngsfile = NGSFile(ngsfilepath)
     except:
@@ -121,7 +121,13 @@ def determine_strandedness(ngsfilepath, gff, gff_tabix, n_genes=100, min_mapq=30
         overall_evidence[rg] = defaultdict(int)
 
     logger.debug("Starting sampling...")
+    total_iterations = 0
     while True:
+        total_iterations += 1
+        if total_iterations > max_iterations_per_try:
+          logger.warn("Max iterations reached! Moving forward with prediction.")
+          break
+
         if n_tested_genes >= n_genes:
             break
 
@@ -206,9 +212,9 @@ def determine_strandedness(ngsfilepath, gff, gff_tabix, n_genes=100, min_mapq=30
             if total_reads == 0 and rg == "unknown":
                 continue
 
-            forward_pct = -1 if total_reads == 0 else round(
+            forward_pct = 0 if total_reads <= 0 else round(
                 evidence_stranded_forward / total_reads, 4)
-            reverse_pct = -1 if total_reads == 0 else round(
+            reverse_pct = 0 if total_reads <= 0 else round(
                 evidence_stranded_reverse / total_reads, 4)
             predicted = get_predicted_strandedness(forward_pct, reverse_pct)
 
@@ -234,8 +240,8 @@ def determine_strandedness(ngsfilepath, gff, gff_tabix, n_genes=100, min_mapq=30
                     "2++"] + overall_evidence[rg]["2--"]
 
         total_reads = evidence_stranded_forward + evidence_stranded_reverse
-        forward_pct = round(evidence_stranded_forward / total_reads, 4)
-        reverse_pct = round(evidence_stranded_reverse / total_reads, 4)
+        forward_pct = 0 if total_reads <= 0 else round(evidence_stranded_forward / total_reads, 4)
+        reverse_pct = 0 if total_reads <= 0 else round(evidence_stranded_reverse / total_reads, 4)
         predicted = get_predicted_strandedness(forward_pct, reverse_pct)
 
         return [{
@@ -256,7 +262,8 @@ def main(ngsfiles,
          only_protein_coding_genes=True,
          min_mapq=30,
          split_by_rg=False,
-         max_tries=3):
+         max_tries=3,
+         max_iterations_per_try=1000):
     logger.info("Arguments:")
     logger.info("  - Gene model file: {}".format(gene_model_file))
     logger.info("  - Number of genes: {}".format(n_genes))
@@ -266,6 +273,10 @@ def main(ngsfiles,
         only_protein_coding_genes))
     logger.info("  - Minimum MAPQ: {}".format(min_mapq))
     logger.info("  - Split by RG: {}".format(split_by_rg))
+
+    if max_iterations_per_try < n_genes:
+      logger.error("Max iteration per try cannot be less than number of genes to search!")
+      sys.exit(1)
 
     logger.info("Reading gene model...")
     gff = GFF(gene_model_file, feature_type="gene")
@@ -299,7 +310,8 @@ def main(ngsfiles,
                 min_mapq=min_mapq,
                 minimum_reads_per_gene=minimum_reads_per_gene,
                 split_by_rg=split_by_rg,
-                only_protein_coding_genes=only_protein_coding_genes)
+                only_protein_coding_genes=only_protein_coding_genes,
+                max_iterations_per_try=max_iterations_per_try)
 
             entries_contains_inconclusive = False
             for entry in entries:
