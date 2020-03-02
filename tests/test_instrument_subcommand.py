@@ -2,7 +2,7 @@ import csv
 from ngsderive.commands import instrument
 
 def test_iid_regexes_match():
-  with open("fixtures/instruments.mocked.tsv", "r") as f:
+  with open("tests/fixtures/instruments.mocked.tsv", "r") as f:
     reader = csv.DictReader(f, delimiter="\t")
     for row in reader:
       possible = instrument.derive_instrument_from_iid(row['Id']) 
@@ -10,7 +10,7 @@ def test_iid_regexes_match():
       assert possible == expected
 
 def test_fcid_regexes_match():
-  with open("fixtures/flowcells.mocked.tsv", "r") as f:
+  with open("tests/fixtures/flowcells.mocked.tsv", "r") as f:
     reader = csv.DictReader(f, delimiter="\t")
     for row in reader:
       possible = instrument.derive_instrument_from_fcid(row['Id']) 
