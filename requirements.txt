@@ -1,4 +1,4 @@
 colorlog==4.0.2
 pysam==0.15.3
-pytabix==0.1
+pytabix==0.0.2
 rstr==2.2.6
