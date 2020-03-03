@@ -109,7 +109,7 @@ def process_args(args):
     args.delimiter = "\t"
 
 
-if __name__ == '__main__':
+def run():
   args = get_args()
   process_args(args)
 
