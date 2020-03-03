@@ -38,6 +38,7 @@ pytabix = "^0.0.2"
 rstr = "^2.2.6"
 
 [tool.poetry.dev-dependencies]
+pytest = "^5.3.5"
 
 
 [tool.poetry.scripts]

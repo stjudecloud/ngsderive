@@ -34,10 +34,11 @@ pip install git+https://github.com/claymcleod/ngsderive.git
 To get started on a development version of the code, just run the following:
 
 ```bash
-conda create -n ngsderive-dev python=3.7 -y
+conda create -n ngsderive-dev python=3.7 poetry -y
 conda activate ngsderive-dev
 git clone git@github.com:claymcleod/ngsderive.git
-cd ngsderive && python setup.py develop
+cd ngsderive
+poetry install
 ```
 ## Usage
 
@@ -215,8 +216,7 @@ conduct, and the process for submitting pull requests to us.
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). When increasing the version number, please increase the `__VERSION__` varianble in `setup.py`.
-
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
 
 ## License
 
