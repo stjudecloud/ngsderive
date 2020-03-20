@@ -1,0 +1,17 @@
+site_name: "ngsderive"
+repo_url: "https://github.com/stjudecloud/ngsderive"
+
+site_description: "Forensic analysis tool useful in backwards computing information from next-generation sequencing data."
+site_author: "St. Jude Cloud"
+copyright: "© 2020 St. Jude Children's Research Hospital"
+
+google_analytics: ["UA-107924368-1", "stjudecloud.github.io/ngsderive"]
+
+nav:
+  - "Home": "index.md"
+  - "Subcommands":
+    - "strandedness": "subcommands/strandedness.md"
+    - "instrument": "subcommands/instrument.md"
+    - "readlen": "subcommands/readlen.md"
+
+theme: cosmo

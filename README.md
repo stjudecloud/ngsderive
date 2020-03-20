@@ -20,10 +20,6 @@
       <img alt="PyPI: Downloads"
           src="https://img.shields.io/pypi/pyversions/ngsderive?color=orange">
     </a>
-    <a href="https://codecov.io/gh/stjudecloud/ngsderive" target="_blank">
-      <img alt="Code Coverage"
-          src="https://codecov.io/gh/stjudecloud/ngsderive/branch/master/graph/badge.svg" />
-    </a>
     <a href="https://github.com/stjudecloud/ngsderive/blob/master/LICENSE.md" target="_blank">
     <img alt="License: MIT"
           src="https://img.shields.io/badge/License-MIT-blue.svg" />
@@ -46,11 +42,9 @@
   </p>
 </p>
 
-Notice: `ngsderive` is a forensic analysis tool useful in backwards computing information 
-from next-generation sequencing data. Notably, results are provided as a 'best guess' — the tool does not claim 100% accuracy and results should be considered with that understanding.
-
-Note that this utility only implements commands which were not available at the 
-time of writing in common NGS utilities (e.g. [Picard](https://broadinstitute.github.io/picard/)).
+> Notice: `ngsderive` is a forensic analysis tool useful in backwards computing information 
+> from next-generation sequencing data. Notably, results are provided as a 'best guess' — 
+> the tool does not claim 100% accuracy and results should be considered with that understanding.
 
 ## 🎨 Features
 
@@ -63,8 +57,6 @@ The following attributes can be guessed using ngsderive:
 ## 📚 Getting Started
 
 ### Installation
-
-#### Python Package Index
 
 You can install ngsderive using the Python Package Index ([PyPI](https://pypi.org/)).
 
@@ -102,8 +94,18 @@ Contributions, issues and feature requests are welcome!<br />Feel free to check 
 
 ## 📝 License
 
-Copyright © 2020 [St. Jude Cloud Team](https://github.com/stjudecloud).<br />
-This project is [MIT][license-md] licensed.
+This project is licensed as follows:
 
+* All code related to the `instrument` subcommand is licensed under the [AGPL
+  v2.0][agpl-v2]. This is not due any strict requirement, but out of deference
+  to some [code][10x-inspiration] I drew inspiration from (and copied patterns
+  from), the decision was made to license this code consistently.
+* The rest of the project is licensed under the MIT License - see the
+  [LICENSE.md](LICENSE.md) file for details.
+
+Copyright © 2020 [St. Jude Cloud Team](https://github.com/stjudecloud).<br />
+
+[10x-inspiration]: https://github.com/10XGenomics/supernova/blob/master/tenkit/lib/python/tenkit/illumina_instrument.py
+[agpl-v2]: http://www.affero.org/agpl2.html
 [contributing-md]: https://github.com/stjudecloud/ngsderive/blob/master/CONTRIBUTING.md
 [license-md]: https://github.com/stjudecloud/ngsderive/blob/master/LICENSE.md

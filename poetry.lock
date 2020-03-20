@@ -251,6 +251,25 @@ version = "0.5.6"
 
 [[package]]
 category = "dev"
+description = "Bootswatch themes for MkDocs"
+name = "mkdocs-bootswatch"
+optional = false
+python-versions = ">=3.5"
+version = "1.1"
+
+[package.dependencies]
+mkdocs = ">=1.1"
+
+[[package]]
+category = "dev"
+description = "Default theme for GitBook for Mkdocs"
+name = "mkdocs-gitbook"
+optional = false
+python-versions = "*"
+version = "0.0.1"
+
+[[package]]
+category = "dev"
 description = "More routines for operating on iterables, beyond itertools"
 name = "more-itertools"
 optional = false
@@ -539,7 +558,7 @@ python-versions = "*"
 version = "0.5.1"
 
 [metadata]
-content-hash = "d29c3736e9a0a02b90cab8df67395dd7acc0b340fbc6939be074544cde58cd3a"
+content-hash = "1861acd696f4615131529b45b06d08a25fc3a4ae9393a75914d89b91ae5e84e5"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -701,6 +720,14 @@ markupsafe = [
 mkdocs = [
     {file = "mkdocs-1.1-py2.py3-none-any.whl", hash = "sha256:1e385a70aea8a9dedb731aea4fd5f3704b2074801c4f96f06b2920999babda8a"},
     {file = "mkdocs-1.1.tar.gz", hash = "sha256:9243291392f59e20b655e4e46210233453faf97787c2cf72176510e868143174"},
+]
+mkdocs-bootswatch = [
+    {file = "mkdocs-bootswatch-1.1.tar.gz", hash = "sha256:cc999ba15a3ce2a46eab35fcaabea9907f5c74bc49e79d9c866b51d4b0fa7f33"},
+    {file = "mkdocs_bootswatch-1.1-py2.py3-none-any.whl", hash = "sha256:9cc2c8431a26026eba096c55abe7dd054de7881312ca8fc948c4a6a0da25840c"},
+]
+mkdocs-gitbook = [
+    {file = "mkdocs-gitbook-0.0.1.tar.gz", hash = "sha256:c094f9d77e47d54379a0d3816097b56511e760fedb23dcf89bc925f6ac4e75f3"},
+    {file = "mkdocs_gitbook-0.0.1-py2.py3-none-any.whl", hash = "sha256:e929c3caf655076eaa030128cfd104687b9ec14644d54f4a175d43e13ac60ef8"},
 ]
 more-itertools = [
     {file = "more-itertools-8.2.0.tar.gz", hash = "sha256:b1ddb932186d8a6ac451e1d95844b382f55e12686d51ca0c68b6f61f2ab7a507"},
