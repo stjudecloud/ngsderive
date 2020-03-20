@@ -46,6 +46,12 @@
   </p>
 </p>
 
+Notice: `ngsderive` is a forensic analysis tool useful in backwards computing information 
+from next-generation sequencing data. Notably, results are provided as a 'best guess' — the tool does not claim 100% accuracy and results should be considered with that understanding.
+
+Note that this utility only implements commands which were not available at the 
+time of writing in common NGS utilities (e.g. [Picard](https://broadinstitute.github.io/picard/)).
+
 ## 🎨 Features
 
 The following attributes can be guessed using ngsderive:
