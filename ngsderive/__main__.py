@@ -6,7 +6,7 @@ import logging
 import sys
 
 from ngsderive import utils
-from ngsderive.commands import readlen, instrument, strandedness
+from ngsderive.commands import readlen, instrument, strandedness, encoding
 
 logger = logging.getLogger('ngsderive')
 
@@ -47,6 +47,9 @@ def get_args():
   split_by_rg_parser.add_argument('--no-split-by-rg', dest='split_by_rg', action='store_false')
   strandedness.set_defaults(only_protein_coding_genes=True, split_by_rg=False)
   
+  encoding = subparsers.add_parser("encoding", parents=[common], formatter_class=SaneFormatter)
+  encoding.add_argument("-n", "--n-samples", type=int, help="How many reads to sample.", default=1000000)
+
   args = parser.parse_args()
   if not args.subcommand:
     parser.print_help()
@@ -134,3 +137,8 @@ def run():
                       min_mapq=args.min_mapq,
                       split_by_rg=args.split_by_rg,
                       max_iterations_per_try=args.max_iterations_per_try)
+  if args.subcommand == "encoding":
+    encoding.main(args.ngsfiles,
+                  outfile=args.outfile,
+                  delimiter=args.delimiter,
+                  n_samples=args.n_samples)
