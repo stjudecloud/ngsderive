@@ -119,13 +119,16 @@ def predict_instrument_from_fcids(fcids):
 
 def resolve_instrument(possible_instruments_by_iid,
                        possible_instruments_by_fcid,
-                       at_least_one_instrument_detected):
+                       at_least_one_instrument_detected,
+                       malformed_read_names_detected):
     if len(possible_instruments_by_iid) == 0 and len(
             possible_instruments_by_fcid) == 0:
         if at_least_one_instrument_detected:
             return set(
                 ["multiple instruments"]
             ), "unknown confidence", "multiple instruments were detected in this sample"
+        elif malformed_read_names_detected:
+            return set(["unknown"]), "no confidence", "read names not in Illumina format"
         else:
             return set(["unknown"]), "no confidence", "no match"
 
@@ -177,10 +180,14 @@ def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=10000):
 
         instruments = set()
         flowcells = set()
+        malformed_read_names = False
 
-        # accumulate read lengths
+        # accumulate instrument and flowcell IDs
         for read in itertools.islice(ngsfile, n_samples):
             parts = read['query_name'].split(":")
+            if len(parts) != 7: # not Illumina format
+                malformed_read_names = True
+                continue
             iid, fcid = parts[0], parts[2]
             instruments.add(iid)
             flowcells.add(fcid)
@@ -192,7 +199,8 @@ def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=10000):
 
         instruments, confidence, based_on = resolve_instrument(
             possible_instruments_by_iid, possible_instruments_by_fcid,
-            detected_instrument_by_iid | detected_instrument_by_fcid)
+            detected_instrument_by_iid | detected_instrument_by_fcid,
+            malformed_read_names)
         for upgrade_set in upgrade_sets:
             if instruments.issubset(upgrade_set[0]):
                 instruments = upgrade_set[1]
