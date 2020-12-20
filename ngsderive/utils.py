@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import pysam
+from gtfparse import read_gtf
 
 logger = logging.getLogger("utils")
 
@@ -103,22 +104,72 @@ class NGSFile:
 
 
 class GFF:
-    def __init__(self, filename, feature_type=None, filters=None, gene_blacklist=None):
+    def __init__(
+        self,
+        filename,
+        dataframe_mode=False,
+        feature_type=None,
+        filters=None,
+        gene_blacklist=None,
+        only_protein_coding_genes=False,
+    ):
+        self.df = None
         self.gene_blacklist = None
         if gene_blacklist:
             self.gene_blacklist = set(
                 [item.strip() for item in open(gene_blacklist, "r").readlines()]
             )
-        self._handle = gzip.open(filename, "r")
         self.feature_type = feature_type
-        self.filters = filters
-        self.entries = []
-        self.attr_regexes = [r"(\S+)=(\S+)", r"(\S+) \"(\S+)\""]
+        self.filters = filters  # TODO not sure what these are meant to be
 
+        if dataframe_mode:
+            self.df = read_gtf(filename)
+            if self.feature_type:
+                self.df = self.df[self.df["feature"] == self.feature_type]
+            if self.gene_blacklist:
+                self.df = self.df[self.df["gene_name"] not in self.gene_blacklist]
+            if only_protein_coding_genes:
+                if "gene_type" in self.df:  # Gencode
+                    self.df = self.df[self.df["gene_type"].str.contains("protein")]
+                elif "gene_biotype" in self.df:  # ENSEMBL
+                    self.df = self.df[self.df["gene_biotype"].str.contains("protein")]
+                else:
+                    logger.warning(
+                        "Could not isolate protein coding genes. Using all genes."
+                    )
+
+        else:
+            self._handle = gzip.open(filename, "r")
+            self._attr_regexes = [r"(\S+)=(\S+)", r"(\S+) \"(\S+)\""]
+
+    def sample(self):
+        if self.df is None:
+            raise NotImplementedError("sample() not implemented in iterator mode")
+        return self.df.sample().to_dict("records")[0]
+
+    def query(self, chr, start, end):
+        if self.df is None:
+            raise NotImplementedError("query() not implemented in iterator mode")
+        return self.df.query(
+            f"seqname=='{chr}' and start=={start} and end=={end}"
+        ).to_dict("records")
+
+    def filter(self, func):
+        # TODO unclear what this is for
+        self.df = filter(func, self.df)
+
+    def __iter__(self):
+        if self.df:
+            raise NotImplementedError("iteration in Dataframe mode not implemented")
+        return self
+
+    def __next__(self):
+        if self.df:
+            raise NotImplementedError("iteration in Dataframe mode not implemented")
         while True:
             line = self._handle.readline().decode("utf-8")
             if not line:
-                break
+                raise StopIteration
 
             if line.startswith("#"):
                 continue
@@ -138,15 +189,10 @@ class GFF:
             if self.feature_type and feature != self.feature_type:
                 continue
 
-            entry_passes_gene_blacklist = True
             if self.gene_blacklist:
                 for bad_gene in self.gene_blacklist:
                     if bad_gene in attribute:
-                        entry_passes_gene_blacklist = False
-                        break
-
-            if not entry_passes_gene_blacklist:
-                continue
+                        continue
 
             result = {
                 "seqname": seqname,
@@ -159,36 +205,26 @@ class GFF:
                 "frame": frame,
             }
 
+            attribute = attribute.replace(';"', '"').replace(
+                ";-", "-"
+            )  # correct error in ensemble 78 release
             for attr_raw in [s.strip() for s in attribute.split(";")]:
                 if not attr_raw or attr_raw == "":
                     continue
 
-                for regex in self.attr_regexes:
+                for regex in self._attr_regexes:
                     match = re.match(regex, attr_raw)
                     if match:
                         key, value = match.group(1), match.group(2)
-                        result["attr_" + key] = value.strip()
+                        result[key.strip()] = value.strip()
 
+            # TODO not sure what this is supposed to be used for
             entry_passes_filters = True
-            if entry_passes_filters and self.filters:
+            if self.filters:
                 for (k, v) in self.filters.items():
                     if k not in result or result[k] != v:
                         entry_passes_filters = False
                         break
 
             if entry_passes_filters:
-                self.entries.append(result)
-
-    def filter(self, func):
-        self.entries = filter(func, self.entries)
-
-    def __iter__(self):
-        self.i = 0
-        return self
-
-    def __next__(self):
-        if self.i < len(self.entries):
-            self.i += 1
-            return self.entries[self.i - 1]
-        else:
-            raise StopIteration
+                return result

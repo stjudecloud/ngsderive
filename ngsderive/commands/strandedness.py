@@ -3,7 +3,6 @@ import itertools
 import logging
 import pysam
 import random
-import tabix
 import sys
 
 from collections import defaultdict
@@ -26,32 +25,22 @@ def get_filtered_reads_from_region(samfile, gene, min_quality=30, apply_filters=
         yield read
 
 
-def disqualify_gene(gene, gff_tabix, only_consider_protein_genes=True):
-    # potentially only consider protein coding genes.
-    if only_consider_protein_genes:
-        if "attr_gene_type" not in gene:
-            return True
-        if "protein" not in gene["attr_gene_type"]:
-            return True
-
+def disqualify_gene(gene, gff):
     # if there are overlapping features on the positive and negative strand
     # ignore this gene.
-    try:
-        hits = gff_tabix.query(gene["seqname"], gene["start"], gene["end"])
-    except tabix.TabixError:
-        raise RuntimeError("Tabix querying failed. Does the index exist?")
+    hits = gff.query(gene["seqname"], gene["start"], gene["end"])
 
     has_positive_gene = None
     has_negative_gene = None
 
     for hit in hits:
         # must be a gene
-        if not hit[2] == "gene":
+        if not hit["feature"] == "gene":
             continue
 
-        if hit[6] == "+":
+        if hit["strand"] == "+":
             has_positive_gene = hit
-        elif hit[6] == "-":
+        elif hit["strand"] == "-":
             has_negative_gene = hit
 
         if has_positive_gene and has_negative_gene:
@@ -63,7 +52,7 @@ def disqualify_gene(gene, gff_tabix, only_consider_protein_genes=True):
     return False
 
 
-def get_reads_rg(read, default="unknown"):
+def get_reads_rg(read, default="unknown_read_group"):
     for (k, v) in read.tags:
         if k == "RG":
             return v
@@ -86,7 +75,6 @@ def get_predicted_strandedness(forward_evidence_pct, reverse_evidence_pct):
 def determine_strandedness(
     ngsfilepath,
     gff,
-    gff_tabix,
     n_genes=100,
     min_mapq=30,
     minimum_reads_per_gene=10,
@@ -122,7 +110,7 @@ def determine_strandedness(
     n_reads_observed = 0
     gene_blacklist = set()
 
-    read_groups = ["unknown"]
+    read_groups = ["unknown_read_group"]
     if "RG" in samfile.header:
         read_groups += [rg["ID"] for rg in samfile.header["RG"]]
 
@@ -142,18 +130,16 @@ def determine_strandedness(
         if n_tested_genes >= n_genes:
             break
 
-        gene = random.choice(gff.entries)
+        gene = gff.sample()
 
-        if gene["attr_gene_id"] in gene_blacklist:
+        if gene["gene_id"] in gene_blacklist:
             continue
 
-        if disqualify_gene(
-            gene, gff_tabix, only_consider_protein_genes=only_protein_coding_genes
-        ):
+        if disqualify_gene(gene, gff):
             continue
 
         logging.debug("== Candidate Gene ==")
-        logging.debug("  [*] Name: {}".format(gene["attr_gene_name"]))
+        logging.debug("  [*] Name: {}".format(gene["gene_name"]))
         logging.debug(
             "  [*] Location: {}:{}-{} ({})".format(
                 gene["seqname"], gene["start"], gene["end"], gene["strand"]
@@ -161,7 +147,7 @@ def determine_strandedness(
         )
         logging.debug("  [*] Actions:")
 
-        gene_blacklist.add(gene["attr_gene_id"])
+        gene_blacklist.add(gene["gene_id"])
         relevant_reads = get_filtered_reads_from_region(
             samfile, gene, min_quality=min_mapq
         )
@@ -200,13 +186,14 @@ def determine_strandedness(
                     reads_in_gene, minimum_reads_per_gene
                 )
             )
-            logging.debug(
-                "    - {}".format(
-                    " ".join(
-                        ["{}:{}".format(k, v) for k, v in this_genes_evidence.items()]
-                    )
-                )
-            )
+            rg_log = ""
+            if not this_genes_evidence["unknown_read_group"]:
+                this_genes_evidence.pop("unknown_read_group")
+            for rg, states in this_genes_evidence.items():
+                state_logs = ";".join([f"{state}={n}" for state, n in states.items()])
+                rg_log += f"{rg}:{state_logs} "
+
+            logging.debug("    - {}".format(rg_log))
 
             for rg in this_genes_evidence.keys():
                 for state in this_genes_evidence[rg].keys():
@@ -237,7 +224,7 @@ def determine_strandedness(
                 + overall_evidence[rg]["2--"]
             )
             total_reads = evidence_stranded_forward + evidence_stranded_reverse
-            if total_reads == 0 and rg == "unknown":
+            if total_reads == 0 and rg == "unknown_read_group":
                 continue
 
             forward_pct = (
@@ -331,10 +318,13 @@ def main(
         sys.exit(1)
 
     logger.info("Reading gene model...")
-    gff = GFF(gene_model_file, feature_type="gene")
-    logger.info("  - {} features processed.".format(len(gff.entries)))
-    gff_tabix = tabix.open(gene_model_file)
-    logger.info("  - Tabix loaded for feature lookup.")
+    gff = GFF(
+        gene_model_file,
+        feature_type="gene",
+        dataframe_mode=True,
+        only_protein_coding_genes=only_protein_coding_genes,
+    )
+    logger.info("  - {} features processed.".format(len(gff.df)))
 
     fieldnames = ["TotalReads", "ForwardPct", "ReversePct", "Predicted"]
     if split_by_rg:
@@ -355,7 +345,6 @@ def main(
             entries = determine_strandedness(
                 ngsfilepath,
                 gff,
-                gff_tabix,
                 n_genes=n_genes,
                 min_mapq=min_mapq,
                 minimum_reads_per_gene=minimum_reads_per_gene,
