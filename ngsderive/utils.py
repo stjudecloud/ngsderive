@@ -139,7 +139,11 @@ class GFF:
                     )
 
         else:
-            self._handle = gzip.open(filename, "r")
+            if self.ext.endswith(".gz") or self.ext.endswith(".bgz"):
+                self._handle = gzip.open(filename, "r")
+            else:
+                self._handle = open(filename, "r")
+
             self._attr_regexes = [r"(\S+)=(\S+)", r"(\S+) \"(\S+)\""]
 
     def sample(self):
