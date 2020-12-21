@@ -6,7 +6,13 @@ import logging
 import sys
 
 from ngsderive import utils
-from ngsderive.commands import readlen, instrument, strandedness, encoding
+from ngsderive.commands import (
+    readlen,
+    instrument,
+    strandedness,
+    encoding,
+    junction_annotation,
+)
 
 logger = logging.getLogger("ngsderive")
 
@@ -151,6 +157,41 @@ def get_args():
         default=1000000,
     )
 
+    junction_annotation = subparsers.add_parser(
+        "junction-annotation", parents=[common], formatter_class=SaneFormatter
+    )
+    junction_annotation.add_argument(
+        "-g", "--gene-model", help="Gene model as a GFF/GTF file.", required=True
+    )
+    junction_annotation.add_argument(
+        "-q",
+        "--min-mapq",
+        type=int,
+        help="Minimum MAPQ to consider for reads.",
+        default=30,
+    )
+    junction_annotation.add_argument(
+        "-i",
+        "--min-intron",
+        type=int,
+        help="Minimum size of intron to be considered a splice.",
+        default=50,
+    )
+    junction_annotation.add_argument(
+        "-m",
+        "--minimum-reads-per-junction",
+        type=int,
+        help="Filter any junctions that don't have at least `m` reads.",
+        default=1,
+    )
+    junction_annotation.add_argument(
+        "-c",
+        "--cache-size",
+        type=int,
+        help="Maximum number of splice events from the reference to keep in cache.",
+        default=10000000,
+    )
+
     args = parser.parse_args()
     if not args.subcommand:
         parser.print_help()
@@ -254,4 +295,14 @@ def run():
             outfile=args.outfile,
             delimiter=args.delimiter,
             n_samples=args.n_samples,
+        )
+    if args.subcommand == "junction-annotation":
+        junction_annotation.main(
+            args.ngsfiles,
+            args.gene_model,
+            outfile=args.outfile,
+            delimiter=args.delimiter,
+            min_intron=args.min_intron,
+            min_mapq=args.min_mapq,
+            min_reads=args.minimum_reads_per_junction,
         )

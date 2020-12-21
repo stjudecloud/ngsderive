@@ -1,7 +1,6 @@
 import csv
 import itertools
 import logging
-import pysam
 import random
 import sys
 
