@@ -64,9 +64,9 @@ def annotate_junctions(
         )
 
         events = [
-            (start - 1, end, num_reads)
-            for (start, end), num_reads in found_introns.items()
-            if num_reads >= min_reads and end - start > min_intron
+            (intron_start - 1, intron_end, num_reads)
+            for (intron_start, intron_end), num_reads in found_introns.items()
+            if num_reads >= min_reads and intron_end - intron_start > min_intron
         ]
         if not events:
             logger.debug(f"No valid splice junctions on {contig}")
@@ -75,25 +75,16 @@ def annotate_junctions(
             f"Found {len(events)} valid splice junctions. {len(found_introns) - len(events)} potential junctions filtered."
         )
 
-        if events[0][0] < cache.junctions[0]:
-            logger.warning(
-                f"intron start {events[0][0]} occurs before first reference junction {cache.junctions[0]}"
-            )
-        if events[-1][1] > cache.junctions[-1]:
-            logger.warning(
-                f"intron end {events[-1][1]} occurs after last reference junction {cache.junctions[-1]}"
-            )
-
-        for n, (start, end, num_reads) in enumerate(events):
+        for n, (intron_start, intron_end, num_reads) in enumerate(events):
             start_novel = None
-            if start in cache.junctions:
+            if intron_start in cache.exon_ends:
                 start_novel = False
             else:
                 start_novel = True
                 num_start_novel += 1
 
             end_novel = None
-            if end in cache.junctions:
+            if intron_end in cache.exon_starts:
                 end_novel = False
             else:
                 end_novel = True

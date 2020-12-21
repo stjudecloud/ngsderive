@@ -254,7 +254,10 @@ class Junction_cache:
         self.cur_contig = exon["seqname"]
         logger.debug(f"Caching {self.cur_contig}...")
 
-        self.junctions = SortedList([exon["start"] - 1, exon["end"] - 1])
+        self.exon_starts = set([exon["start"] - 1])
+        self.exon_ends = set([exon["end"] - 1])
+
+        # self.junctions = SortedList([exon["start"] - 1, exon["end"] - 1])
         while True:
             try:
                 next(self)
@@ -274,14 +277,18 @@ class Junction_cache:
             raise ContigEnd
 
         start, end = exon["start"] - 1, exon["end"] - 1
-        self.junctions.update((start, end))
+        self.exon_starts.add(start)
+        self.exon_ends.add(end)
+        # self.junctions.update((start, end))
         return (start, end)
 
     def next(self):
         return self.__next__()
 
     def advance_contigs(self, contig=None):
-        self.junctions.clear()
+        # self.junctions.clear()
+        self.exon_starts = set()
+        self.exon_ends = set()
         exon = self.last_exon
         if contig:
             while exon["seqname"] != contig:
@@ -292,13 +299,14 @@ class Junction_cache:
         self.cur_contig = exon["seqname"]
         logger.debug(f"Caching {self.cur_contig}...")
 
-        tmp_junctions = [exon["start"] - 1, exon["end"] - 1]
+        # tmp_junctions = [exon["start"] - 1, exon["end"] - 1]
         while True:
             try:
-                tmp_junctions += next(self)
+                next(self)
+                # tmp_junctions += next(self)
             except ContigEnd:
                 break
             except StopIteration:
                 self.EOF = True
                 break
-        self.junctions.update(tmp_junctions)
+        # self.junctions.update(tmp_junctions)
