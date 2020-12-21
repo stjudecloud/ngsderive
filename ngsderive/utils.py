@@ -246,31 +246,28 @@ class ContigEnd(Exception):
 
 
 class Junction_cache:
-    # def __init__(self, gff, cache_size=10000000):
     def __init__(self, gff):
         self.gff = gff
-        # self.max_junctions = cache_size
+        self.EOF = False
 
         exon = next(self.gff)
         self.cur_contig = exon["seqname"]
         logger.debug(f"Caching {self.cur_contig}...")
 
-        tmp_junctions = []
+        self.junctions = SortedList([exon["start"] - 1, exon["end"] - 1])
         while True:
-            tmp_junctions += (exon["start"] - 1, exon["end"] - 1)
-            exon = gff.next()
-            if self.cur_contig != exon["seqname"]:
+            try:
+                next(self)
+            except ContigEnd:
                 break
-        self.junctions = SortedList(tmp_junctions)
-        logger.debug("Done")
-        self.last_exon = exon
+            except StopIteration:
+                self.EOF = True
+                break
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        self.junctions.pop(0)
-        self.junctions.pop(1)
         exon = next(self.gff)
         if self.cur_contig != exon["seqname"]:
             self.last_exon = exon
@@ -286,31 +283,22 @@ class Junction_cache:
     def advance_contigs(self, contig=None):
         self.junctions.clear()
         exon = self.last_exon
-        # if exon["seqname"] == self.cur_contig:
-        #     logger.debug(f"Skipping rest of {self.cur_contig} in GTF")
-        # while exon["seqname"] == self.cur_contig:  # pass through rest of cur_contig
-        #     try:
-        #         exon = next(self.gff)
-        #     except ContigEnd:
-        #         break
         if contig:
             while exon["seqname"] != contig:
                 try:
-                    exon = next(self.gff)
+                    next(self)
                 except ContigEnd:
                     logger.warning(f"Skipped {self.cur_contig} searching for {contig}")
         self.cur_contig = exon["seqname"]
         logger.debug(f"Caching {self.cur_contig}...")
 
-        # for _ in range(self.max_junctions):
-        tmp_junctions = []
+        tmp_junctions = [exon["start"] - 1, exon["end"] - 1]
         while True:
-            tmp_junctions += (exon["start"] - 1, exon["end"] - 1)
             try:
-                exon = next(self.gff)
-            except StopIteration or ContigEnd:
-                if self.cur_contig != exon["seqname"]:
-                    self.last_exon = exon
+                tmp_junctions += next(self)
+            except ContigEnd:
                 break
-        logger.debug("Done")
+            except StopIteration:
+                self.EOF = True
+                break
         self.junctions.update(tmp_junctions)

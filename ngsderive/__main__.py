@@ -164,13 +164,6 @@ def get_args():
         "-g", "--gene-model", help="Gene model as a GFF/GTF file.", required=True
     )
     junction_annotation.add_argument(
-        "-q",
-        "--min-mapq",
-        type=int,
-        help="Minimum MAPQ to consider for reads.",
-        default=30,
-    )
-    junction_annotation.add_argument(
         "-i",
         "--min-intron",
         type=int,
@@ -178,18 +171,18 @@ def get_args():
         default=50,
     )
     junction_annotation.add_argument(
+        "-q",
+        "--min-mapq",
+        type=int,
+        help="Minimum MAPQ to consider for reads.",
+        default=30,
+    )
+    junction_annotation.add_argument(
         "-m",
         "--minimum-reads-per-junction",
         type=int,
         help="Filter any junctions that don't have at least `m` reads.",
         default=1,
-    )
-    junction_annotation.add_argument(
-        "-c",
-        "--cache-size",
-        type=int,
-        help="Maximum number of splice events from the reference to keep in cache.",
-        default=10000000,
     )
 
     args = parser.parse_args()
