@@ -107,7 +107,7 @@ def determine_strandedness(
 
     n_tested_genes = 0
     n_reads_observed = 0
-    gene_blacklist = set()
+    checked_genes = set()
 
     read_groups = ["unknown_read_group"]
     if "RG" in samfile.header:
@@ -131,7 +131,7 @@ def determine_strandedness(
 
         gene = gff.sample()
 
-        if gene["gene_id"] in gene_blacklist:
+        if gene["gene_id"] in checked_genes:
             continue
 
         if disqualify_gene(gene, gff):
@@ -146,7 +146,7 @@ def determine_strandedness(
         )
         logging.debug("  [*] Actions:")
 
-        gene_blacklist.add(gene["gene_id"])
+        checked_genes.add(gene["gene_id"])
         relevant_reads = get_filtered_reads_from_region(
             samfile, gene, min_quality=min_mapq
         )
