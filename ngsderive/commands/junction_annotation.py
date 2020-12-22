@@ -38,6 +38,12 @@ def annotate_junctions(
         )
     samfile = ngsfile.handle
 
+    junction_file = open(f"{ngsfile.basename}.junctions.tsv", "w")
+    print(
+        "\t".join(["chrom", "intron_start", "intron_end", "read_count", "annotation"]),
+        file=junction_file,
+    )
+
     cache = JunctionCache(gff)
 
     num_known = 0
@@ -50,13 +56,6 @@ def annotate_junctions(
     num_end_novel = 0
 
     for contig in samfile.references:
-        if cache.EOF:
-            logger.warning(
-                f"Reached end of GTF! Did not find {contig} in GTF. Last contig was {cache.cur_contig}"
-            )
-            break
-        if contig != cache.cur_contig:
-            cache.advance_contigs(contig)
 
         logger.debug(f"Searching {contig} for splice junctions...")
         found_introns = samfile.find_introns(
@@ -64,9 +63,9 @@ def annotate_junctions(
         )
 
         events = [
-            (intron_start - 1, intron_end, num_reads)
+            (intron_start, intron_end, num_reads)
             for (intron_start, intron_end), num_reads in found_introns.items()
-            if num_reads >= min_reads and intron_end - intron_start > min_intron
+            if num_reads >= min_reads and intron_end - intron_start >= min_intron
         ]
         if not events:
             logger.debug(f"No valid splice junctions on {contig}")
@@ -75,7 +74,32 @@ def annotate_junctions(
             f"Found {len(events)} valid splice junctions. {len(found_introns) - len(events)} potential junctions filtered."
         )
 
+        if cache.EOF:
+            logger.warning(
+                f"Reached end of GTF! Did not find {contig} in GTF. Last contig was {cache.cur_contig}"
+            )
+            annotation = "complete_novel"
+            for intron_start, intron_end, num_reads in events:
+                num_novel += 1
+                num_novel_spliced_reads += num_reads
+                print(
+                    "\t".join(
+                        [
+                            contig,
+                            str(intron_start),
+                            str(intron_end),
+                            str(num_reads),
+                            annotation,
+                        ]
+                    ),
+                    file=junction_file,
+                )
+
+        elif contig != cache.cur_contig:
+            cache.advance_contigs(contig)
+
         for n, (intron_start, intron_end, num_reads) in enumerate(events):
+            annotation = ""
             start_novel = None
             if intron_start in cache.exon_ends:
                 start_novel = False
@@ -91,14 +115,31 @@ def annotate_junctions(
                 num_end_novel += 1
 
             if start_novel and end_novel:
+                annotation = "complete_novel"
                 num_novel += 1
                 num_novel_spliced_reads += num_reads
             elif start_novel or end_novel:
+                annotation = "partial_novel"
                 num_partial += 1
                 num_partial_spliced_reads += num_reads
             else:
+                annotation = "annotated"
                 num_known += 1
                 num_known_spliced_reads += num_reads
+
+            print(
+                "\t".join(
+                    [
+                        contig,
+                        str(intron_start),
+                        str(intron_end),
+                        str(num_reads),
+                        annotation,
+                    ]
+                ),
+                file=junction_file,
+            )
+    junction_file.close()
 
     logger.info(f"starts novel={num_start_novel}")
     logger.info(f"ends novel={num_end_novel}")
@@ -133,12 +174,12 @@ def main(
     logger.info("  - Minimum MAPQ: {}".format(min_mapq))
     logger.info("  - Minimum reads per junction: {}".format(min_reads))
 
-    logger.info("Opening gene model...")
     gff = GFF(
         gene_model_file,
         feature_type="exon",
         dataframe_mode=False,
     )
+    logger.info("Opened gene model")
 
     fieldnames = [
         "file",
