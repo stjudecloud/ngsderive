@@ -52,8 +52,6 @@ def annotate_junctions(
     num_known_spliced_reads = 0
     num_novel_spliced_reads = 0
     num_partial_spliced_reads = 0
-    num_start_novel = 0
-    num_end_novel = 0
 
     for contig in samfile.references:
 
@@ -68,7 +66,9 @@ def annotate_junctions(
             if num_reads >= min_reads and intron_end - intron_start >= min_intron
         ]
         if not events:
-            logger.debug(f"No valid splice junctions on {contig}")
+            logger.debug(
+                f"No valid splice junctions on {contig}. {len(found_introns)} potential junctions discarded."
+            )
             continue
         logger.debug(
             f"Found {len(events)} valid splice junctions. {len(found_introns) - len(events)} potential junctions filtered."
@@ -105,14 +105,12 @@ def annotate_junctions(
                 start_novel = False
             else:
                 start_novel = True
-                num_start_novel += 1
 
             end_novel = None
             if intron_end in cache.exon_starts:
                 end_novel = False
             else:
                 end_novel = True
-                num_end_novel += 1
 
             if start_novel and end_novel:
                 annotation = "complete_novel"
@@ -141,8 +139,6 @@ def annotate_junctions(
             )
     junction_file.close()
 
-    logger.info(f"starts novel={num_start_novel}")
-    logger.info(f"ends novel={num_end_novel}")
     result = {
         "file": ngsfilepath,
         "total_junctions": num_known + num_novel + num_partial,
