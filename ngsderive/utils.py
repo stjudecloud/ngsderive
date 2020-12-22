@@ -142,7 +142,9 @@ class GFF:
             self.filename = filename
             self.basename = os.path.basename(self.filename)
             self.ext = ".".join(self.basename.split(".")[1:])
+            self.gzipped = False
             if self.ext.endswith(".gz") or self.ext.endswith(".bgz"):
+                self.gzipped = True
                 self._handle = gzip.open(filename, "r")
             else:
                 self._handle = open(filename, "r")
@@ -174,7 +176,11 @@ class GFF:
         if self.df:
             raise NotImplementedError("iteration in Dataframe mode not implemented")
         while True:
-            line = self._handle.readline().decode("utf-8")
+            if self.gzipped:
+                line = self._handle.readline().decode("utf-8")
+            else:
+                line = self._handle.readline()
+
             if not line:
                 raise StopIteration
 
@@ -248,23 +254,8 @@ class JunctionCache:
     def __init__(self, gff):
         self.gff = gff
         self.EOF = False
-
-        exon = next(self.gff)
-        self.cur_contig = exon["seqname"]
-        logger.debug(f"Caching {self.cur_contig}...")
-
-        self.exon_starts = set([exon["start"] - 1])
-        self.exon_ends = set([exon["end"] - 1])
-
-        # self.junctions = SortedList([exon["start"] - 1, exon["end"] - 1])
-        while True:
-            try:
-                next(self)
-            except ContigEnd:
-                break
-            except StopIteration:
-                self.EOF = True
-                break
+        self.last_exon = None
+        self.advance_contigs()
 
     def __iter__(self):
         return self
@@ -286,13 +277,19 @@ class JunctionCache:
     def advance_contigs(self, contig=None):
         self.exon_starts = set()
         self.exon_ends = set()
-        exon = self.last_exon
+
+        if self.last_exon:
+            exon = self.last_exon
+        else:
+            exon = next(self.gff)
+
         if contig:
             while exon["seqname"] != contig:
                 try:
                     next(self)
                 except ContigEnd:
                     logger.warning(f"Skipped {self.cur_contig} searching for {contig}")
+
         self.cur_contig = exon["seqname"]
         logger.debug(f"Caching {self.cur_contig}...")
 

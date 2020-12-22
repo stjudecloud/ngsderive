@@ -179,7 +179,7 @@ def main(
         feature_type="exon",
         dataframe_mode=False,
     )
-    logger.info("Opened gene model")
+    logger.debug("Opened gene model")
 
     fieldnames = [
         "file",
