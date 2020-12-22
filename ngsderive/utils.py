@@ -266,6 +266,9 @@ class JunctionCache:
             self.last_exon = exon
             raise ContigEnd
 
+        # GTF is 1-based, however 0-basing `end` causes missed matches
+        # Possibly GTF end is inclusive, making it equivelant to PySam 0-based exclusive `end`
+        # Could not confirm this through GTF or PySam documentation
         start, end = exon["start"] - 1, exon["end"]
         self.exon_starts.add(start)
         self.exon_ends.add(end)
