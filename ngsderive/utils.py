@@ -245,7 +245,7 @@ class ContigEnd(Exception):
     pass
 
 
-class Junction_cache:
+class JunctionCache:
     def __init__(self, gff):
         self.gff = gff
         self.EOF = False

@@ -2,7 +2,7 @@ import logging
 import sys
 import csv
 
-from ..utils import NGSFile, NGSFileType, GFF, Junction_cache, ContigEnd
+from ..utils import NGSFile, NGSFileType, GFF, JunctionCache, ContigEnd
 
 logger = logging.getLogger("junction-annotation")
 
@@ -38,7 +38,7 @@ def annotate_junctions(
         )
     samfile = ngsfile.handle
 
-    cache = Junction_cache(gff)
+    cache = JunctionCache(gff)
 
     num_known = 0
     num_novel = 0
