@@ -289,6 +289,8 @@ class JunctionCache:
                     next(self)
                 except ContigEnd:
                     logger.warning(f"Skipped {self.cur_contig} searching for {contig}")
+                    exon = self.last_exon
+                    self.cur_contig = exon["seqname"]
 
         self.cur_contig = exon["seqname"]
         logger.debug(f"Caching {self.cur_contig}...")
