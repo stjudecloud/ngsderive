@@ -184,6 +184,13 @@ def get_args():
         help="Filter any junctions that don't have at least `m` reads.",
         default=1,
     )
+    junction_annotation.add_argument(
+        "-k",
+        "--fuzzy-junction-match-range",
+        type=int,
+        help="Consider found splices within `+-k` bases of a known splice event annotated.",
+        default=0,
+    )
 
     args = parser.parse_args()
     if not args.subcommand:
@@ -298,4 +305,5 @@ def run():
             min_intron=args.min_intron,
             min_mapq=args.min_mapq,
             min_reads=args.minimum_reads_per_junction,
+            fuzzy_range=args.fuzzy_junction_match_range,
         )

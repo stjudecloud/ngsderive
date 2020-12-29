@@ -2,17 +2,37 @@ import logging
 import sys
 import csv
 
+from collections import defaultdict
+
 from ..utils import NGSFile, NGSFileType, GFF, JunctionCache, ContigEnd
 
 logger = logging.getLogger("junction-annotation")
 
 
+def annotate_event(
+    found_pos,
+    reference_positions,
+    fuzzy_range,
+):
+    if fuzzy_range == 0:
+        if found_pos in reference_positions:
+            return False, found_pos
+        else:
+            return True, None
+    for pos in reference_positions.irange(
+        found_pos - fuzzy_range, found_pos + fuzzy_range
+    ):  # return first match even if multiple found
+        return False, pos
+    return True, None
+
+
 def annotate_junctions(
     ngsfilepath,
     gff,
-    min_intron=50,
-    min_mapq=30,
-    min_reads=1,
+    min_intron,
+    min_mapq,
+    min_reads,
+    fuzzy_range,
 ):
     try:
         ngsfile = NGSFile(ngsfilepath)
@@ -98,19 +118,61 @@ def annotate_junctions(
         elif contig != cache.cur_contig:
             cache.advance_contigs(contig)
 
-        for n, (intron_start, intron_end, num_reads) in enumerate(events):
-            annotation = ""
-            start_novel = None
-            if intron_start in cache.exon_ends:
-                start_novel = False
-            else:
-                start_novel = True
+        collapsed_junctions = defaultdict(int)
 
-            end_novel = None
-            if intron_end in cache.exon_starts:
-                end_novel = False
+        for intron_start, intron_end, num_reads in events:
+            start_novel, ref_start = annotate_event(
+                intron_start, cache.exon_ends, fuzzy_range
+            )
+
+            end_novel, ref_end = annotate_event(
+                intron_end, cache.exon_starts, fuzzy_range
+            )
+
+            if ref_start:
+                start = ref_start
             else:
-                end_novel = True
+                start = intron_start
+            if ref_end:
+                end = ref_end
+            else:
+                end = intron_end
+
+            if fuzzy_range:
+                collapsed_junctions[(start, end)] += num_reads
+            else:
+                if start_novel and end_novel:
+                    annotation = "complete_novel"
+                    num_novel += 1
+                    num_novel_spliced_reads += num_reads
+                elif start_novel or end_novel:
+                    annotation = "partial_novel"
+                    num_partial += 1
+                    num_partial_spliced_reads += num_reads
+                else:
+                    annotation = "annotated"
+                    num_known += 1
+                    num_known_spliced_reads += num_reads
+
+                print(
+                    "\t".join(
+                        [
+                            contig,
+                            str(start),
+                            str(end),
+                            str(num_reads),
+                            annotation,
+                        ]
+                    ),
+                    file=junction_file,
+                )
+
+        for (intron_start, intron_end), num_reads in sorted(
+            collapsed_junctions.items()
+        ):
+            start_novel, _ = annotate_event(intron_start, cache.exon_ends, 0)
+
+            end_novel, _ = annotate_event(intron_end, cache.exon_starts, 0)
 
             if start_novel and end_novel:
                 annotation = "complete_novel"
@@ -137,6 +199,7 @@ def annotate_junctions(
                 ),
                 file=junction_file,
             )
+
     junction_file.close()
 
     result = {
@@ -152,7 +215,7 @@ def annotate_junctions(
         "complete_novel_spliced_reads": num_novel_spliced_reads,
         "partial_novel_spliced_reads": num_partial_spliced_reads,
     }
-    return [result]
+    return result
 
 
 def main(
@@ -163,12 +226,14 @@ def main(
     min_intron=50,
     min_mapq=30,
     min_reads=1,
+    fuzzy_range=0,
 ):
     logger.info("Arguments:")
     logger.info("  - Gene model file: {}".format(gene_model_file))
     logger.info("  - Minimum intron length: {}".format(min_intron))
     logger.info("  - Minimum MAPQ: {}".format(min_mapq))
     logger.info("  - Minimum reads per junction: {}".format(min_reads))
+    logger.info("  - Fuzzy junction range: +-{}".format(fuzzy_range))
 
     gff = GFF(
         gene_model_file,
@@ -194,14 +259,13 @@ def main(
     outfile.flush()
 
     for ngsfilepath in ngsfiles:
-        entries = annotate_junctions(
+        entry = annotate_junctions(
             ngsfilepath,
             gff,
             min_intron=min_intron,
             min_mapq=min_mapq,
             min_reads=min_reads,
+            fuzzy_range=fuzzy_range,
         )
-
-        for entry in entries:
-            writer.writerow(entry)
-            outfile.flush()
+        writer.writerow(entry)
+        outfile.flush()

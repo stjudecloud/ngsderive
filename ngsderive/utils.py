@@ -5,6 +5,7 @@ import os
 import re
 import pysam
 from gtfparse import read_gtf
+from sortedcontainers import SortedList
 
 logger = logging.getLogger("utils")
 
@@ -255,6 +256,8 @@ class JunctionCache:
         self.gff = gff
         self.EOF = False
         self.last_exon = None
+        self.exon_starts = SortedList()
+        self.exon_ends = SortedList()
         self.advance_contigs()
 
     def __iter__(self):
@@ -278,8 +281,8 @@ class JunctionCache:
         return self.__next__()
 
     def advance_contigs(self, contig=None):
-        self.exon_starts = set()
-        self.exon_ends = set()
+        self.exon_starts.clear()
+        self.exon_ends.clear()
 
         if self.last_exon:
             exon = self.last_exon
