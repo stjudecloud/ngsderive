@@ -204,9 +204,13 @@ class GFF:
                 continue
 
             if self.gene_blacklist:
+                selected_bad_gene = False
                 for bad_gene in self.gene_blacklist:
                     if bad_gene in attribute:
-                        continue
+                        selected_bad_gene = True
+                        break
+                if selected_bad_gene:
+                    continue
 
             result = {
                 "seqname": seqname,
