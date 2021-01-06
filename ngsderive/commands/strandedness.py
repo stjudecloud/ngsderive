@@ -33,10 +33,6 @@ def disqualify_gene(gene, gff):
     has_negative_gene = None
 
     for hit in hits:
-        # must be a gene
-        if not hit["feature"] == "gene":
-            continue
-
         if hit["strand"] == "+":
             has_positive_gene = hit
         elif hit["strand"] == "-":
