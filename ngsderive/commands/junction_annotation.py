@@ -95,9 +95,7 @@ def annotate_junctions(
         )
 
         if cache.EOF:
-            logger.warning(
-                f"Reached end of GTF! Did not find {contig} in GTF. Last contig was {cache.cur_contig}"
-            )
+            logger.info(f"{contig} not found in GFF. All events novel.")
             annotation = "complete_novel"
             for intron_start, intron_end, num_reads in events:
                 num_novel += 1
@@ -114,9 +112,29 @@ def annotate_junctions(
                     ),
                     file=junction_file,
                 )
-
-        elif contig != cache.cur_contig:
-            cache.advance_contigs(contig)
+            continue  # annotate rest of contigs as novel
+        if contig != cache.cur_contig:
+            try:
+                cache.advance_contigs(contig)
+            except StopIteration:
+                logger.info(f"{contig} not found in GFF. All events novel.")
+                annotation = "complete_novel"
+                for intron_start, intron_end, num_reads in events:
+                    num_novel += 1
+                    num_novel_spliced_reads += num_reads
+                    print(
+                        "\t".join(
+                            [
+                                contig,
+                                str(intron_start),
+                                str(intron_end),
+                                str(num_reads),
+                                annotation,
+                            ]
+                        ),
+                        file=junction_file,
+                    )
+                continue  # annotate rest of contigs as novel
 
         collapsed_junctions = defaultdict(int)
 
@@ -140,7 +158,7 @@ def annotate_junctions(
 
             if fuzzy_range:
                 collapsed_junctions[(start, end)] += num_reads
-            else:
+            else:  # only execute if not fuzzy searching
                 if start_novel and end_novel:
                     annotation = "complete_novel"
                     num_novel += 1
@@ -167,6 +185,7 @@ def annotate_junctions(
                     file=junction_file,
                 )
 
+        # if not fuzzy searching, collapsed_junctions is empty and loop is skipped
         for (intron_start, intron_end), num_reads in sorted(
             collapsed_junctions.items()
         ):

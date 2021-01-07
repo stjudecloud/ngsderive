@@ -301,6 +301,10 @@ class JunctionCache:
                     logger.warning(f"Skipped {self.cur_contig} searching for {contig}")
                     exon = self.last_exon
                     self.cur_contig = exon["seqname"]
+                except StopIteration:
+                    self.EOF = True
+                    logger.warning(f"Reached end of GFF searching for {contig}.")
+                    raise StopIteration
 
         self.cur_contig = exon["seqname"]
         logger.debug(f"Caching {self.cur_contig}...")
@@ -311,5 +315,6 @@ class JunctionCache:
             except ContigEnd:
                 break
             except StopIteration:
+                logger.debug("Reached end of GFF.")
                 self.EOF = True
                 break
