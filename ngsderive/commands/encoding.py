@@ -9,7 +9,7 @@ from collections import defaultdict
 from ..utils import NGSFile
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 SANGER_SET = set([i for i in range(33, 127)])
 ILLUMINA_1_0_SET = set([i for i in range(59, 127)])
