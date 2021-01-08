@@ -69,6 +69,7 @@ class NGSFile:
             if self.gzipped:
                 query_name = query_name.decode("utf-8")
                 query = query.decode("utf-8")
+                quality = quality.decode("utf-8")
 
             if query_name.startswith("@"):
                 query_name = query_name[1:]
