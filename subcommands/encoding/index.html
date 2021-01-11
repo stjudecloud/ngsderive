@@ -8,7 +8,7 @@
         <meta name="author" content="St. Jude Cloud">
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>readlen - ngsderive</title>
+        <title>encoding - ngsderive</title>
         <link href="../../css/bootstrap.min.css" rel="stylesheet">
         <link href="../../css/font-awesome.min.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
@@ -45,7 +45,7 @@
                             <li class="navitem">
                                 <a href="../.." class="nav-link">Home</a>
                             </li>
-                            <li class="dropdown active">
+                            <li class="dropdown">
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Subcommands <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
                                     
@@ -58,7 +58,7 @@
 </li>
                                     
 <li>
-    <a href="./" class="dropdown-item active">readlen</a>
+    <a href="../readlen/" class="dropdown-item">readlen</a>
 </li>
                                 </ul>
                             </li>
@@ -71,17 +71,7 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../instrument/" class="nav-link">
-                                    <i class="fa fa-arrow-left"></i> Previous
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a rel="next" class="nav-link disabled">
-                                    Next <i class="fa fa-arrow-right"></i>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="https://github.com/stjudecloud/ngsderive/edit/master/docs/subcommands/readlen.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                                <a href="https://github.com/stjudecloud/ngsderive/edit/master/docs/subcommands/encoding.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
                             </li>
                     </ul>
                 </div>
@@ -101,9 +91,9 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#readlen" class="nav-link">readlen</a>
+            <li class="nav-item" data-level="1"><a href="#encoding" class="nav-link">encoding</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-level="2"><a href="#algorithm" class="nav-link">Algorithm</a>
+            <li class="nav-item" data-level="2"><a href="#limitations" class="nav-link">Limitations</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -114,26 +104,18 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="readlen">readlen</h1>
-<p>The <code>readlen</code> subcommand can be used to compute the read length used during
-sequencing can be estimated (or reported as inconclusive).</p>
-<h2 id="algorithm">Algorithm</h2>
-<p>At the time of writing, the algorithm used is roughly:</p>
-<ol>
-<li>Compute distribution of read lengths for the first <code>--n-samples</code> reads in a
-   file.</li>
-<li>Assuming read length in the file can only decrease from the actual read
-   length (from adapter trimming or similar), the putative maximum read length
-   is considered to be the highest detected read length.</li>
-<li>If the percentage of reads that are evidence for the putative maximum read
-   length makes up at least <code>--majority-vote-cutoff</code>% of the reads, the putative
-   read length is considered to be confirmed. If not, the consensus read length
-   will be return as -1 (could not determine).</li>
-<li>For example, if 100bp is the maximum read length detected and 85% percent
-      of the reads support that claim, then we considered 100bp as the consensus
-      read length. If only 30% of the reads indicated 100bp, the tool cannot
-      report a consensus).</li>
-</ol></div>
+<h1 id="encoding">encoding</h1>
+<p>The <code>encoding</code> subcommand detects the likely PHRED score encoding scheme used for FASTQ files. PHRED scores are encoded as ASCII characters, but which ASCII characters encode for which relative quality scores depends on the build and generation of the sequencing machine used. <code>ngsderive</code> obtained details of the different encoding schemes [here][https://en.wikipedia.org/wiki/FASTQ_format#Encoding].</p>
+<h2 id="limitations">Limitations</h2>
+<ul>
+<li>
+<p>BAM files are not currently supported for encoding detection.</p>
+</li>
+<li>
+<p>All 3 possible encodings have the same upper range, and only differ in terms of lower quality scores. Thus if the provided read data is all of high quality, it may be classified as a stricter encoding than was originally used to generate the data.</p>
+<p>If the downstream use of this value is needed to ensure all PHRED scores are within the derived encoding, use <code>--n-samples -1</code> to parse the entire file.</p>
+</li>
+</ul></div>
             </div>
         </div>
 

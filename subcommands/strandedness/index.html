@@ -101,23 +101,20 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#overview" class="nav-link">Overview</a>
+            <li class="nav-item" data-level="1"><a href="#strandedness" class="nav-link">strandedness</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#algorithm" class="nav-link">Algorithm</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            
-            <li class="nav-item" data-level="1"><a href="#algorithm" class="nav-link">Algorithm</a>
+            <li class="nav-item" data-level="2"><a href="#differences" class="nav-link">Differences</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            
-            <li class="nav-item" data-level="1"><a href="#differences" class="nav-link">Differences</a>
+            <li class="nav-item" data-level="2"><a href="#limitations" class="nav-link">Limitations</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            
-            <li class="nav-item" data-level="1"><a href="#limitations" class="nav-link">Limitations</a>
-              <ul class="nav flex-column">
               </ul>
             </li>
         </ul>
@@ -125,7 +122,7 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="overview">Overview</h1>
+<h1 id="strandedness">strandedness</h1>
 <p>The <code>strandedness</code> subcommand can be used to determine strandedness of RNA-Seq
 samples. Note that due to the need to (1) to examine the alignment status of a
 read [not included in FASTQ] and (2) fetch regions using random access [not
@@ -204,7 +201,7 @@ END
 tabix -p gff gencode.v32lift37.annotation.gtf.gz
 </code></pre>
 
-<h1 id="algorithm">Algorithm</h1>
+<h2 id="algorithm">Algorithm</h2>
 <p>At the time of writing, the algorithm works roughly like this:</p>
 <ol>
 <li>The gene model is read in and only <code>gene</code> features are retained.</li>
@@ -254,7 +251,7 @@ tabix -p gff gencode.v32lift37.annotation.gtf.gz
 </table>
 <p>The tool will repeat the strandedness test at most <code>--max-tries</code> times to try to find a
 non-<code>Inconclusive</code>prediction.</p>
-<h1 id="differences">Differences</h1>
+<h2 id="differences">Differences</h2>
 <p>The most popular strandedness inference tool that the author is aware of is
 RSeQC's <a href="http://rseqc.sourceforge.net/#infer-experiment-py">infer_experiment.py</a>. The
 main difference is that RSeQC starts at the beginning of the BAM file and takes
@@ -263,7 +260,7 @@ this would mean its not uncommon to have all of the evidence at the beginning of
 <code>chr1</code>. Anecdotally, this method differs in that it is slightly slower than
 <code>infer_experiment.py</code> but is expected to be more robust to biases caused by
 which reads are sampled.</p>
-<h1 id="limitations">Limitations</h1>
+<h2 id="limitations">Limitations</h2>
 <ul>
 <li>Does not yet work with single-end data (simply because the author doesn't have
   any on hand). The tool will throw an error if any unpaired reads are

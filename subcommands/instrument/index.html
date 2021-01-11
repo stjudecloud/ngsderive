@@ -101,13 +101,12 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#overview" class="nav-link">Overview</a>
+            <li class="nav-item" data-level="1"><a href="#instrument" class="nav-link">instrument</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#limitations" class="nav-link">Limitations</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            
-            <li class="nav-item" data-level="1"><a href="#limitations" class="nav-link">Limitations</a>
-              <ul class="nav flex-column">
               </ul>
             </li>
         </ul>
@@ -115,10 +114,10 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="overview">Overview</h1>
+<h1 id="instrument">instrument</h1>
 <p>The <code>instrument</code> subcommand will attempt to backward compute the machine that
-generated a NGS file using (1) the instrument id(s) and (2) the flowcell id(s). </p>
-<h1 id="limitations">Limitations</h1>
+generated a NGS file using (1) the instrument id(s) and (2) the flowcell id(s).</p>
+<h2 id="limitations">Limitations</h2>
 <ul>
 <li>This command may not comprehensively detect the correct machines as there is
   no published catalog of Illumina serial numbers. As we encounter more serial
