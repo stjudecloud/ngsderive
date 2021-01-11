@@ -27,10 +27,10 @@ def get_args():
 
   readlen = subparsers.add_parser("readlen", parents=[common], formatter_class=SaneFormatter)
   readlen.add_argument("-c", "--majority-vote-cutoff", type=float, help="To call a majority readlen, the maximum read length must have at least `majority-vote-cutoff`%% reads in support.", default=0.7)
-  readlen.add_argument("-n", "--n-samples", type=int, help="How many reads to sample.", default=1000000)
+  readlen.add_argument("-n", "--n-samples", type=int, help="How many reads to sample. Any n < 1 to parse whole file.", default=1000000)
 
   instrument = subparsers.add_parser("instrument", parents=[common], formatter_class=SaneFormatter)
-  instrument.add_argument("-n", "--n-samples", type=int, help="How many reads to sample.", default=10000)
+  instrument.add_argument("-n", "--n-samples", type=int, help="How many reads to sample. Any n < 1 to parse whole file.", default=10000)
 
   strandedness = subparsers.add_parser("strandedness", parents=[common], formatter_class=SaneFormatter)
   strandedness.add_argument("-g", "--gene-model", help="Gene model as a GFF/GTF file.", required=True)
@@ -48,7 +48,7 @@ def get_args():
   strandedness.set_defaults(only_protein_coding_genes=True, split_by_rg=False)
   
   encoding = subparsers.add_parser("encoding", parents=[common], formatter_class=SaneFormatter)
-  encoding.add_argument("-n", "--n-samples", type=int, help="How many reads to sample.", default=1000000)
+  encoding.add_argument("-n", "--n-samples", type=int, help="How many reads to sample. Any n < 1 to parse whole file.", default=1000000)
 
   args = parser.parse_args()
   if not args.subcommand:
