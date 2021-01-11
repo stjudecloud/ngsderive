@@ -163,6 +163,9 @@ def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=10000):
     writer.writeheader()
     outfile.flush()
 
+    if n_samples < 1:
+      n_samples = None
+
     for ngsfilepath in ngsfiles:
         try:
             ngsfile = NGSFile(ngsfilepath)
