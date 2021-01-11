@@ -1,4 +1,4 @@
-# Overview
+# strandedness
 
 The `strandedness` subcommand can be used to determine strandedness of RNA-Seq
 samples. Note that due to the need to (1) to examine the alignment status of a
@@ -72,7 +72,7 @@ END
 tabix -p gff gencode.v32lift37.annotation.gtf.gz
 ```
 
-# Algorithm
+## Algorithm
 
 At the time of writing, the algorithm works roughly like this:
 
@@ -106,7 +106,7 @@ This lookup table is used for the classification of strandedness based on the ev
 The tool will repeat the strandedness test at most `--max-tries` times to try to find a
 non-`Inconclusive`prediction.
 
-# Differences
+## Differences
 
 The most popular strandedness inference tool that the author is aware of is
 RSeQC's [infer_experiment.py](http://rseqc.sourceforge.net/#infer-experiment-py). The
@@ -117,7 +117,7 @@ this would mean its not uncommon to have all of the evidence at the beginning of
 `infer_experiment.py` but is expected to be more robust to biases caused by
 which reads are sampled.
 
-# Limitations
+## Limitations
 
 * Does not yet work with single-end data (simply because the author doesn't have
   any on hand). The tool will throw an error if any unpaired reads are

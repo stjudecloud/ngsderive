@@ -15,8 +15,9 @@ class NGSFileType(enum.Enum):
 
 
 class NGSFile:
-    def __init__(self, filename):
+    def __init__(self, filename, store_qualities=False):
         self.filename = filename
+        self.store_qualities = store_qualities
         self.basename = os.path.basename(self.filename)
         self.ext = ".".join(self.basename.split(".")[1:])
         self.readmode = "r"
@@ -68,6 +69,8 @@ class NGSFile:
             if self.gzipped:
                 query_name = query_name.decode("utf-8")
                 query = query.decode("utf-8")
+                if self.store_qualities:
+                  quality = quality.decode("utf-8")
 
             if query_name.startswith("@"):
                 query_name = query_name[1:]
@@ -75,11 +78,16 @@ class NGSFile:
         elif self.filetype == NGSFileType.SAM or self.filetype == NGSFileType.BAM:
             read = next(self.handle)
             query_name = read.query_name
-            query = read.query
+            query = read.query_alignment_sequence
+            if self.store_qualities:
+              quality = read.query_alignment_qualities
 
         self.read_num += 1
 
-        return {"query_name": query_name, "query": query}
+        if self.store_qualities:
+          return {"query_name": query_name, "query": query, "quality": quality}
+        else:
+          return {"query_name": query_name, "query": query}
 
 
 class GFF:

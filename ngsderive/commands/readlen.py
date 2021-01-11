@@ -25,6 +25,9 @@ def main(ngsfiles,
     writer.writeheader()
     outfile.flush()
 
+    if n_samples < 1:
+      n_samples = None
+
     for ngsfilepath in ngsfiles:
         read_lengths = defaultdict(int)
         try:

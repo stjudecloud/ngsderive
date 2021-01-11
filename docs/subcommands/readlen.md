@@ -1,9 +1,9 @@
-# Overview
+# readlen
 
 The `readlen` subcommand can be used to compute the read length used during
 sequencing can be estimated (or reported as inconclusive).
 
-# Algorithm 
+## Algorithm
 
 At the time of writing, the algorithm used is roughly:
 
