@@ -124,9 +124,10 @@ class GFF:
         self.filters = filters  # TODO not sure what these are meant to be
 
         if dataframe_mode:
-            self.df = read_gtf(filename)
             if self.feature_type:
-                self.df = self.df[self.df["feature"] == self.feature_type]
+                self.df = read_gtf(filename, features=[self.feature_type])
+            else:
+                self.df = read_gtf(filename)
             if self.gene_blacklist:
                 self.df = self.df[self.df["gene_name"] not in self.gene_blacklist]
             if only_protein_coding_genes:
