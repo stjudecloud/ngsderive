@@ -6,7 +6,7 @@ import sys
 import logging
 from collections import defaultdict
 
-from ..utils import NGSFile
+from ..utils import NGSFile, NGSFileType
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -44,6 +44,11 @@ def main(ngsfiles,
             writer.writerow(result)
             outfile.flush()
             continue
+
+        if ngsfile.filetype != NGSFileType.FASTQ:
+            raise RuntimeError(
+                "Invalid file: {}. `encoding` currently only supports FASTQ files!"
+                .format(ngsfilepath))
 
         score_set = set()
         for read in itertools.islice(ngsfile, n_samples):
