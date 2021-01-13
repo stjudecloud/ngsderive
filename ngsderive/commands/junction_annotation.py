@@ -274,6 +274,7 @@ def main(
     min_mapq=30,
     min_reads=1,
     fuzzy_range=0,
+    disable_junction_files=False,
 ):
     logger.info("Arguments:")
     logger.info("  - Gene model file: {}".format(gene_model_file))
@@ -313,6 +314,7 @@ def main(
             min_mapq=min_mapq,
             min_reads=min_reads,
             fuzzy_range=fuzzy_range,
+            disable_junction_files=disable_junction_files,
         )
         writer.writerow(entry)
         outfile.flush()

@@ -166,7 +166,6 @@ def get_args():
     junction_annotation.add_argument(
         "-d",
         "--disable-junction-files",
-        type=str,
         help="Disable generating junction files in current working directory.",
         action="store_true",
     )

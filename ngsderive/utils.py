@@ -179,9 +179,9 @@ class GFF:
             raise NotImplementedError("iteration in Dataframe mode not implemented")
         while True:
             if self.gzipped:
-                line = self._handle.readline().decode("utf-8")
+                line = self._handle.readline().decode("utf-8").strip()
             else:
-                line = self._handle.readline()
+                line = self._handle.readline().strip()
 
             if not line:
                 raise StopIteration
