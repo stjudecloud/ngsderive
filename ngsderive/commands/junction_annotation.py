@@ -33,6 +33,7 @@ def annotate_junctions(
     min_mapq,
     min_reads,
     fuzzy_range,
+    disable_junction_files,
 ):
     try:
         ngsfile = NGSFile(ngsfilepath)
@@ -58,11 +59,14 @@ def annotate_junctions(
         )
     samfile = ngsfile.handle
 
-    junction_file = open(f"{ngsfile.basename}.junctions.tsv", "w")
-    print(
-        "\t".join(["chrom", "intron_start", "intron_end", "read_count", "annotation"]),
-        file=junction_file,
-    )
+    if not disable_junction_files:
+        junction_file = open(f"{ngsfile.basename}.junctions.tsv", "w")
+        print(
+            "\t".join(
+                ["chrom", "intron_start", "intron_end", "read_count", "annotation"]
+            ),
+            file=junction_file,
+        )
 
     cache = JunctionCache(gff)
 
@@ -100,18 +104,6 @@ def annotate_junctions(
             for intron_start, intron_end, num_reads in events:
                 num_novel += 1
                 num_novel_spliced_reads += num_reads
-                print(
-                    "\t".join(
-                        [
-                            contig,
-                            str(intron_start),
-                            str(intron_end),
-                            str(num_reads),
-                            annotation,
-                        ]
-                    ),
-                    file=junction_file,
-                )
             continue  # annotate rest of contigs as novel
         if contig != cache.cur_contig:
             try:
@@ -122,6 +114,7 @@ def annotate_junctions(
                 for intron_start, intron_end, num_reads in events:
                     num_novel += 1
                     num_novel_spliced_reads += num_reads
+                if not disable_junction_files:
                     print(
                         "\t".join(
                             [
@@ -134,6 +127,19 @@ def annotate_junctions(
                         ),
                         file=junction_file,
                     )
+                    if not disable_junction_files:
+                        print(
+                            "\t".join(
+                                [
+                                    contig,
+                                    str(intron_start),
+                                    str(intron_end),
+                                    str(num_reads),
+                                    annotation,
+                                ]
+                            ),
+                            file=junction_file,
+                        )
                 continue  # annotate rest of contigs as novel
 
         collapsed_junctions = defaultdict(int)
@@ -172,18 +178,19 @@ def annotate_junctions(
                     num_known += 1
                     num_known_spliced_reads += num_reads
 
-                print(
-                    "\t".join(
-                        [
-                            contig,
-                            str(start),
-                            str(end),
-                            str(num_reads),
-                            annotation,
-                        ]
-                    ),
-                    file=junction_file,
-                )
+                if not disable_junction_files:
+                    print(
+                        "\t".join(
+                            [
+                                contig,
+                                str(start),
+                                str(end),
+                                str(num_reads),
+                                annotation,
+                            ]
+                        ),
+                        file=junction_file,
+                    )
 
         # if not fuzzy searching, collapsed_junctions is empty and loop is skipped
         for (intron_start, intron_end), num_reads in sorted(
@@ -206,18 +213,19 @@ def annotate_junctions(
                 num_known += 1
                 num_known_spliced_reads += num_reads
 
-            print(
-                "\t".join(
-                    [
-                        contig,
-                        str(intron_start),
-                        str(intron_end),
-                        str(num_reads),
-                        annotation,
-                    ]
-                ),
-                file=junction_file,
-            )
+            if not disable_junction_files:
+                print(
+                    "\t".join(
+                        [
+                            contig,
+                            str(intron_start),
+                            str(intron_end),
+                            str(num_reads),
+                            annotation,
+                        ]
+                    ),
+                    file=junction_file,
+                )
 
     junction_file.close()
 
