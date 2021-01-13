@@ -122,7 +122,7 @@ def annotate_junctions(
             logger.debug(
                 f"{num_too_few_reads} potential junctions didn't have enough read support."
             )
-            logger.debug(f"{len(events)} junctions annotated.")
+            logger.debug(f"{len(events) - num_too_few_reads} junctions annotated.")
             continue
 
         collapsed_junctions = defaultdict(int)
@@ -220,9 +220,11 @@ def annotate_junctions(
             f"{num_too_few_reads} potential junctions didn't have enough read support."
         )
         if not fuzzy_range:
-            logger.debug(f"{len(events)} junctions annotated.")
+            logger.debug(f"{len(events) - num_too_few_reads} junctions annotated.")
         else:
-            logger.debug(f"{len(collapsed_junctions)} junctions annotated.")
+            logger.debug(
+                f"{len(collapsed_junctions) - num_too_few_reads} junctions annotated."
+            )
 
     junction_file.close()
 
