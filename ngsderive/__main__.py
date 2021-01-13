@@ -182,7 +182,7 @@ def get_args():
         "--minimum-reads-per-junction",
         type=int,
         help="Filter any junctions that don't have at least `m` reads.",
-        default=1,
+        default=2,
     )
     junction_annotation.add_argument(
         "-k",
