@@ -2,7 +2,9 @@ import enum
 import gzip
 import logging
 import os
+import random
 import re
+import tabix
 import pysam
 from gtfparse import read_gtf
 from sortedcontainers import SortedList
@@ -104,17 +106,30 @@ class NGSFile:
             return {"query_name": query_name, "query": query}
 
 
+class NotTabixed(Exception):
+    pass
+
+
 class GFF:
     def __init__(
         self,
         filename,
         dataframe_mode=False,
+        store_results=False,
+        need_tabix=False,
         feature_type=None,
         filters=None,
         gene_blacklist=None,
         only_protein_coding_genes=False,
     ):
+        if need_tabix:
+            self.tabix = tabix.open(filename)
+            try:
+                self.tabix.queryi(0, 100, 200)
+            except tabix.TabixError:
+                raise NotTabixed
         self.df = None
+        self.entries = None
         self.gene_blacklist = None
         if gene_blacklist:
             self.gene_blacklist = set(
@@ -153,17 +168,83 @@ class GFF:
 
             self._attr_regexes = [r"(\S+)=(\S+)", r"(\S+) \"(\S+)\""]
 
+            if store_results:
+                self.entries = [entry for entry in self]
+
     def sample(self):
-        if self.df is None:
+        if self.df is None and not self.entries:
             raise NotImplementedError("sample() not implemented in iterator mode")
-        return self.df.sample().to_dict("records")[0]
+        if self.df is not None:
+            return self.df.sample().to_dict("records")[0]
+        return random.choice(self.entries)
 
     def query(self, chr, start, end):
-        if self.df is None:
+        if self.df is None and not self.entries:
             raise NotImplementedError("query() not implemented in iterator mode")
-        return self.df.query(
-            f"seqname=='{chr}' and start=={start} and end=={end}"
-        ).to_dict("records")
+        if self.df is not None:
+            return self.df.query(
+                f"seqname=='{chr}' and start=={start} and end=={end}"
+            ).to_dict("records")
+
+        raw_hits = self.tabix.query(chr, start, end)
+        hits = []
+        for hit in raw_hits:
+            [
+                seqname,
+                source,
+                feature,
+                start,
+                end,
+                score,
+                strand,
+                frame,
+                attribute,
+            ] = hit
+
+            if self.gene_blacklist:
+                selected_bad_gene = False
+                for bad_gene in self.gene_blacklist:
+                    if bad_gene in hit[-1]:
+                        selected_bad_gene = True
+                        break
+                if selected_bad_gene:
+                    continue
+
+            result = {
+                "seqname": hit[0],
+                "source": hit[1],
+                "feature": hit[2],
+                "start": int(hit[3]),
+                "end": int(hit[4]),
+                "score": hit[5],
+                "strand": hit[6],
+                "frame": hit[7],
+            }
+
+            attribute = (
+                hit[-1].replace(';"', '"').replace(";-", "-")
+            )  # correct error in ensemble 78 release
+            for attr_raw in [s.strip() for s in attribute.split(";")]:
+                if not attr_raw or attr_raw == "":
+                    continue
+
+                for regex in self._attr_regexes:
+                    match = re.match(regex, attr_raw)
+                    if match:
+                        key, value = match.group(1), match.group(2)
+                        result[key.strip()] = value.strip()
+
+            # TODO not sure what this is supposed to be used for
+            entry_passes_filters = True
+            if self.filters:
+                for (k, v) in self.filters.items():
+                    if k not in result or result[k] != v:
+                        entry_passes_filters = False
+                        break
+
+            if entry_passes_filters:
+                hits.append(result)
+        return hits
 
     def filter(self, func):
         # TODO unclear what this is for

@@ -1,12 +1,11 @@
 import csv
 import itertools
 import logging
-import random
 import sys
 
 from collections import defaultdict
 
-from ..utils import NGSFile, NGSFileType, GFF
+from ..utils import NGSFile, NGSFileType, GFF, NotTabixed
 
 logger = logging.getLogger("strandedness")
 
@@ -33,10 +32,12 @@ def disqualify_gene(gene, gff):
     has_negative_gene = None
 
     for hit in hits:
+        if hit["feature"] == "gene":
+            continue
         if hit["strand"] == "+":
-            has_positive_gene = hit
+            has_positive_gene = True
         elif hit["strand"] == "-":
-            has_negative_gene = hit
+            has_negative_gene = True
 
         if has_positive_gene and has_negative_gene:
             break
@@ -313,13 +314,19 @@ def main(
         sys.exit(1)
 
     logger.info("Reading gene model...")
-    gff = GFF(
-        gene_model_file,
-        feature_type="gene",
-        dataframe_mode=True,
-        only_protein_coding_genes=only_protein_coding_genes,
-    )
-    logger.info("  - {} features processed.".format(len(gff.df)))
+    try:
+        gff = GFF(
+            gene_model_file,
+            feature_type="gene",
+            store_results=True,
+            need_tabix=True,
+            only_protein_coding_genes=only_protein_coding_genes,
+        )
+    except NotTabixed:
+        logger.warning(f"{gene_model_file} not tabixed! Sorting and tabixing new GFF.")
+        raise SystemExit
+
+    logger.info("  - {} features processed.".format(len(gff.entries)))
 
     fieldnames = ["TotalReads", "ForwardPct", "ReversePct", "Predicted"]
     if split_by_rg:

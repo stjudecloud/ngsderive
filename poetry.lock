@@ -534,6 +534,14 @@ python-versions = "*"
 version = "0.15.4"
 
 [[package]]
+category = "main"
+description = "Python interface for tabix"
+name = "pytabix"
+optional = false
+python-versions = "*"
+version = "0.1"
+
+[[package]]
 category = "dev"
 description = "pytest: simple powerful testing with Python"
 name = "pytest"
@@ -858,7 +866,7 @@ version = "0.36.2"
 test = ["pytest (>=3.0.0)", "pytest-cov"]
 
 [metadata]
-content-hash = "bc072dfabc9a7acee94e145abe24c7bdaab2e85bad2af1327ef4edb649bf5dee"
+content-hash = "3192e5c3be5c9acdc24ebc546fae822f006211207c18faa227dabed797a7d67f"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -1194,6 +1202,9 @@ pysam = [
     {file = "pysam-0.15.4-cp38-cp38-manylinux2010_i686.whl", hash = "sha256:28fd770354ecf621ee47425bfdcf012097fa7a8ff590b49ec953d059221886c2"},
     {file = "pysam-0.15.4-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:5a9730d9775dc30a8cc197ca3e5340b7c3cb63b66c387ecfd8e665426f083f65"},
     {file = "pysam-0.15.4.tar.gz", hash = "sha256:a535e15cbd6e27f4ab74cabca30ca1df7eea283cb91d3b536d47fe113fee066f"},
+]
+pytabix = [
+    {file = "pytabix-0.1.tar.gz", hash = "sha256:0774f1687ebd41811fb07a0e50951b6be72d7cc7e22ed2b18972eaf7482eb7d1"},
 ]
 pytest = [
     {file = "pytest-5.4.3-py3-none-any.whl", hash = "sha256:5c0db86b698e8f170ba4582a492248919255fcd4c79b1ee64ace34301fb589a1"},
