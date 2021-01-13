@@ -78,7 +78,7 @@ def annotate_junctions(
     num_partial_spliced_reads = 0
 
     for contig in samfile.references:
-
+        num_too_few_reads = 0
         logger.debug(f"Searching {contig} for splice junctions...")
         found_introns = samfile.find_introns(
             [seg for seg in samfile.fetch(contig) if seg.mapping_quality >= min_mapq]
@@ -87,33 +87,26 @@ def annotate_junctions(
         events = [
             (intron_start, intron_end, num_reads)
             for (intron_start, intron_end), num_reads in found_introns.items()
-            if num_reads >= min_reads and intron_end - intron_start >= min_intron
+            if intron_end - intron_start >= min_intron
         ]
         if not events:
             logger.debug(
-                f"No valid splice junctions on {contig}. {len(found_introns)} potential junctions discarded."
+                f"No valid splice junctions on {contig}. {len(found_introns)} potential junctions too short."
             )
             continue
         logger.debug(
-            f"Found {len(events)} valid splice junctions. {len(found_introns) - len(events)} potential junctions filtered."
+            f"Found {len(events)} potential splice junctions. {len(found_introns) - len(events)} potential junctions too short."
         )
 
         if cache.EOF:
             logger.info(f"{contig} not found in GFF. All events novel.")
             annotation = "complete_novel"
             for intron_start, intron_end, num_reads in events:
+                if num_reads < min_reads:
+                    num_too_few_reads += 1
+                    continue
                 num_novel += 1
                 num_novel_spliced_reads += num_reads
-            continue  # annotate rest of contigs as novel
-        if contig != cache.cur_contig:
-            try:
-                cache.advance_contigs(contig)
-            except StopIteration:
-                logger.info(f"{contig} not found in GFF. All events novel.")
-                annotation = "complete_novel"
-                for intron_start, intron_end, num_reads in events:
-                    num_novel += 1
-                    num_novel_spliced_reads += num_reads
                 if not disable_junction_files:
                     print(
                         "\t".join(
@@ -127,6 +120,19 @@ def annotate_junctions(
                         ),
                         file=junction_file,
                     )
+            continue  # annotate rest of contigs as novel
+        if contig != cache.cur_contig:
+            try:
+                cache.advance_contigs(contig)
+            except StopIteration:
+                logger.info(f"{contig} not found in GFF. All events novel.")
+                annotation = "complete_novel"
+                for intron_start, intron_end, num_reads in events:
+                    if num_reads < min_reads:
+                        num_too_few_reads += 1
+                        continue
+                    num_novel += 1
+                    num_novel_spliced_reads += num_reads
                     if not disable_junction_files:
                         print(
                             "\t".join(
@@ -165,6 +171,9 @@ def annotate_junctions(
             if fuzzy_range:
                 collapsed_junctions[(start, end)] += num_reads
             else:  # only execute if not fuzzy searching
+                if num_reads < min_reads:
+                    num_too_few_reads += 1
+                    continue
                 if start_novel and end_novel:
                     annotation = "complete_novel"
                     num_novel += 1
@@ -196,6 +205,9 @@ def annotate_junctions(
         for (intron_start, intron_end), num_reads in sorted(
             collapsed_junctions.items()
         ):
+            if num_reads < min_reads:
+                num_too_few_reads += 1
+                continue
             start_novel, _ = annotate_event(intron_start, cache.exon_ends, 0)
 
             end_novel, _ = annotate_event(intron_end, cache.exon_starts, 0)
@@ -226,6 +238,14 @@ def annotate_junctions(
                     ),
                     file=junction_file,
                 )
+
+        logger.debug(
+            f"{num_too_few_reads} potential junctions didn't have enough read support."
+        )
+        if not fuzzy_range:
+            logger.debug(f"{len(events)} junctions annotated.")
+        else:
+            logger.debug(f"{len(collapsed_junctions)} junctions annotated.")
 
     junction_file.close()
 
