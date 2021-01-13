@@ -28,7 +28,7 @@ def annotate_event(
 
 def annotate_junctions(
     ngsfilepath,
-    gff,
+    cache,
     min_intron,
     min_mapq,
     min_reads,
@@ -68,8 +68,6 @@ def annotate_junctions(
             file=junction_file,
         )
 
-    cache = JunctionCache(gff)
-
     num_known = 0
     num_novel = 0
     num_partial = 0
@@ -98,7 +96,7 @@ def annotate_junctions(
             f"Found {len(events)} potential splice junctions. {len(found_introns) - len(events)} potential junctions too short."
         )
 
-        if cache.EOF:
+        if contig not in cache.exon_starts:
             logger.info(f"{contig} not found in GFF. All events novel.")
             annotation = "complete_novel"
             for intron_start, intron_end, num_reads in events:
@@ -120,43 +118,22 @@ def annotate_junctions(
                         ),
                         file=junction_file,
                     )
-            continue  # annotate rest of contigs as novel
-        if contig != cache.cur_contig:
-            try:
-                cache.advance_contigs(contig)
-            except StopIteration:
-                logger.info(f"{contig} not found in GFF. All events novel.")
-                annotation = "complete_novel"
-                for intron_start, intron_end, num_reads in events:
-                    if num_reads < min_reads:
-                        num_too_few_reads += 1
-                        continue
-                    num_novel += 1
-                    num_novel_spliced_reads += num_reads
-                    if not disable_junction_files:
-                        print(
-                            "\t".join(
-                                [
-                                    contig,
-                                    str(intron_start),
-                                    str(intron_end),
-                                    str(num_reads),
-                                    annotation,
-                                ]
-                            ),
-                            file=junction_file,
-                        )
-                continue  # annotate rest of contigs as novel
+
+            logger.debug(
+                f"{num_too_few_reads} potential junctions didn't have enough read support."
+            )
+            logger.debug(f"{len(events)} junctions annotated.")
+            continue
 
         collapsed_junctions = defaultdict(int)
 
         for intron_start, intron_end, num_reads in events:
             start_novel, ref_start = annotate_event(
-                intron_start, cache.exon_ends, fuzzy_range
+                intron_start, cache.exon_ends[contig], fuzzy_range
             )
 
             end_novel, ref_end = annotate_event(
-                intron_end, cache.exon_starts, fuzzy_range
+                intron_end, cache.exon_starts[contig], fuzzy_range
             )
 
             if ref_start:
@@ -208,9 +185,9 @@ def annotate_junctions(
             if num_reads < min_reads:
                 num_too_few_reads += 1
                 continue
-            start_novel, _ = annotate_event(intron_start, cache.exon_ends, 0)
+            start_novel, _ = annotate_event(intron_start, cache.exon_ends[contig], 0)
 
-            end_novel, _ = annotate_event(intron_end, cache.exon_starts, 0)
+            end_novel, _ = annotate_event(intron_end, cache.exon_starts[contig], 0)
 
             if start_novel and end_novel:
                 annotation = "complete_novel"
@@ -283,12 +260,14 @@ def main(
     logger.info("  - Minimum reads per junction: {}".format(min_reads))
     logger.info("  - Fuzzy junction range: +-{}".format(fuzzy_range))
 
+    logger.debug("Processing gene model...")
     gff = GFF(
         gene_model_file,
         feature_type="exon",
         dataframe_mode=False,
     )
-    logger.debug("Opened gene model")
+    cache = JunctionCache(gff)
+    logger.debug("Done")
 
     fieldnames = [
         "file",
@@ -309,7 +288,7 @@ def main(
     for ngsfilepath in ngsfiles:
         entry = annotate_junctions(
             ngsfilepath,
-            gff,
+            cache,
             min_intron=min_intron,
             min_mapq=min_mapq,
             min_reads=min_reads,

@@ -6,6 +6,7 @@ import random
 import re
 import tabix
 import pysam
+from collections import defaultdict
 from gtfparse import read_gtf
 from sortedcontainers import SortedList
 
@@ -342,9 +343,22 @@ class JunctionCache:
         self.gff = gff
         self.EOF = False
         self.last_exon = None
-        self.exon_starts = SortedList()
-        self.exon_ends = SortedList()
-        self.advance_contigs()
+        self.exon_starts = defaultdict(SortedList)
+        self.exon_ends = defaultdict(SortedList)
+
+        exon = next(self.gff)
+        self.cur_contig = exon["seqname"]
+        while True:
+            try:
+                next(self)
+            except ContigEnd:
+                logger.debug(f"Cached {self.cur_contig}")
+                self.cur_contig = self.last_exon["seqname"]
+                continue
+            except StopIteration:
+                logger.debug(f"Cached {self.cur_contig}")
+                self.EOF = True
+                break
 
     def __iter__(self):
         return self
@@ -359,44 +373,9 @@ class JunctionCache:
         # Possibly GTF end is inclusive, making it equivelant to PySam 0-based exclusive `end`
         # Could not confirm this through GTF or PySam documentation
         start, end = exon["start"] - 1, exon["end"]
-        self.exon_starts.add(start)
-        self.exon_ends.add(end)
+        self.exon_starts[self.cur_contig].add(start)
+        self.exon_ends[self.cur_contig].add(end)
         return (start, end)
 
     def next(self):
         return self.__next__()
-
-    def advance_contigs(self, contig=None):
-        self.exon_starts.clear()
-        self.exon_ends.clear()
-
-        if self.last_exon:
-            exon = self.last_exon
-        else:
-            exon = next(self.gff)
-
-        if contig:
-            while exon["seqname"] != contig:
-                try:
-                    next(self)
-                except ContigEnd:
-                    logger.warning(f"Skipped {self.cur_contig} searching for {contig}")
-                    exon = self.last_exon
-                    self.cur_contig = exon["seqname"]
-                except StopIteration:
-                    self.EOF = True
-                    logger.warning(f"Reached end of GFF searching for {contig}.")
-                    raise StopIteration
-
-        self.cur_contig = exon["seqname"]
-        logger.debug(f"Caching {self.cur_contig}...")
-
-        while True:
-            try:
-                next(self)
-            except ContigEnd:
-                break
-            except StopIteration:
-                logger.debug("Reached end of GFF.")
-                self.EOF = True
-                break
