@@ -4,7 +4,7 @@ import csv
 
 from collections import defaultdict
 
-from ..utils import NGSFile, NGSFileType, GFF, JunctionCache, ContigEnd
+from ..utils import NGSFile, NGSFileType, GFF, JunctionCache
 
 logger = logging.getLogger("junction-annotation")
 

@@ -205,7 +205,7 @@ class GFF:
             if self.gene_blacklist:
                 selected_bad_gene = False
                 for bad_gene in self.gene_blacklist:
-                    if bad_gene in hit[-1]:
+                    if bad_gene in hit[8]:
                         selected_bad_gene = True
                         break
                 if selected_bad_gene:
@@ -223,7 +223,7 @@ class GFF:
             }
 
             attribute = (
-                hit[-1].replace(';"', '"').replace(";-", "-")
+                hit[8].replace(';"', '"').replace(";-", "-")
             )  # correct error in ensemble 78 release
             for attr_raw in [s.strip() for s in attribute.split(";")]:
                 if not attr_raw or attr_raw == "":
@@ -252,12 +252,12 @@ class GFF:
         self.df = filter(func, self.df)
 
     def __iter__(self):
-        if self.df:
+        if self.df is not None:
             raise NotImplementedError("iteration in Dataframe mode not implemented")
         return self
 
     def __next__(self):
-        if self.df:
+        if self.df is not None:
             raise NotImplementedError("iteration in Dataframe mode not implemented")
         while True:
             if self.gzipped:
@@ -334,30 +334,17 @@ class GFF:
         return self.__next__()
 
 
-class ContigEnd(Exception):
-    pass
-
-
 class JunctionCache:
     def __init__(self, gff):
         self.gff = gff
-        self.EOF = False
-        self.last_exon = None
         self.exon_starts = defaultdict(SortedList)
         self.exon_ends = defaultdict(SortedList)
-
-        exon = next(self.gff)
-        self.cur_contig = exon["seqname"]
         while True:
             try:
                 next(self)
-            except ContigEnd:
-                logger.debug(f"Cached {self.cur_contig}")
-                self.cur_contig = self.last_exon["seqname"]
-                continue
             except StopIteration:
-                logger.debug(f"Cached {self.cur_contig}")
-                self.EOF = True
+                contigs = ", ".join(self.exon_starts.keys())
+                logger.debug("Cached " + contigs)
                 break
 
     def __iter__(self):
@@ -365,17 +352,13 @@ class JunctionCache:
 
     def __next__(self):
         exon = next(self.gff)
-        if self.cur_contig != exon["seqname"]:
-            self.last_exon = exon
-            raise ContigEnd
 
         # GTF is 1-based, however 0-basing `end` causes missed matches
         # Possibly GTF end is inclusive, making it equivelant to PySam 0-based exclusive `end`
         # Could not confirm this through GTF or PySam documentation
         start, end = exon["start"] - 1, exon["end"]
-        self.exon_starts[self.cur_contig].add(start)
-        self.exon_ends[self.cur_contig].add(end)
-        return (start, end)
+        self.exon_starts[exon["seqname"]].add(start)
+        self.exon_ends[exon["seqname"]].add(end)
 
     def next(self):
-        return self.__next__()
+        self.__next__()
