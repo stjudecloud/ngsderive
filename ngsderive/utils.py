@@ -6,9 +6,11 @@ import random
 import re
 import tabix
 import pysam
+import subprocess
 from collections import defaultdict
 from gtfparse import read_gtf
 from sortedcontainers import SortedList
+from operator import itemgetter
 
 logger = logging.getLogger("utils")
 
@@ -107,8 +109,89 @@ class NGSFile:
             return {"query_name": query_name, "query": query}
 
 
-class NotTabixed(Exception):
-    pass
+def sort_gff(filename):
+    sorted_gff_name = filename  # temp value
+    ext = sorted_gff_name.split(".")[-1]
+    gzipped = False
+    if ext.endswith("gz"):
+        gzipped = True
+        sorted_gff_name = ".".join(sorted_gff_name.split(".")[:-1])
+        ext = sorted_gff_name.split(".")[-1]
+        handle = gzip.open(filename, "r")
+    else:
+        handle = open(filename, "r")
+    sorted_gff_name = ".".join(
+        sorted_gff_name.split(".")[:-1]
+    )  # remove gtf/gff/gff3 ext
+    sorted_gff_name = ".".join([sorted_gff_name, "sorted", ext])
+    compressed_gff_name = ".".join([sorted_gff_name, "gz"])
+
+    # Test if this was done in a previous run
+    already_created = True
+    try:
+        # tabix outputs unwanted text when file doesn't exist
+        if os.path.isfile(compressed_gff_name):
+            tabixed = tabix.open(compressed_gff_name)
+            tabixed.queryi(0, 100, 200)
+        else:
+            already_created = False
+    except (FileNotFoundError, tabix.TabixError):
+        already_created = False
+
+    if already_created:
+        logger.warning(f"Found and reusing {compressed_gff_name}.")
+        return compressed_gff_name
+
+    entries = []
+    header_lines = []
+    for line in handle:
+        if gzipped:
+            line = line.decode("utf-8")
+        line = line.strip()
+
+        if line[0] == "#":
+            if all([c == "#" for c in line.strip()]):
+                continue
+            header_lines.append(line)
+            continue
+        [
+            seqname,
+            source,
+            feature,
+            start,
+            end,
+            score,
+            strand,
+            frame,
+            attribute,
+        ] = line.split("\t")
+
+        result = [
+            seqname,
+            source,
+            feature,
+            int(start),
+            int(end),
+            score,
+            strand,
+            frame,
+        ]
+        attribute = attribute.replace(';"', '"').replace(
+            ";-", "-"
+        )  # correct error in ensemble 78 release
+        result.append(attribute)
+        entries.append(result)
+    entries.sort(key=itemgetter(0, 3, 4))
+    new_gff = open(sorted_gff_name, "w")
+    for line in header_lines:
+        print(line, file=new_gff)
+    for entry in entries:
+        print("\t".join([str(_) for _ in entry]), file=new_gff)
+    new_gff.close()
+    subprocess.run(["bgzip", "-f", sorted_gff_name], check=True)
+    subprocess.run(["tabix", "-p", "gff", compressed_gff_name], check=True)
+    logger.warning(f"Created a sorted and tabixed GFF, `{compressed_gff_name}`.")
+    return compressed_gff_name
 
 
 class GFF:
@@ -123,12 +206,19 @@ class GFF:
         gene_blacklist=None,
         only_protein_coding_genes=False,
     ):
+        if not os.path.isfile(filename):
+            logger.error(f"Gene model {filename} does not exist!")
+            raise SystemExit(1)
         if need_tabix:
-            self.tabix = tabix.open(filename)
             try:
+                self.tabix = tabix.open(filename)
                 self.tabix.queryi(0, 100, 200)
             except tabix.TabixError:
-                raise NotTabixed
+                logger.warning(f"{filename} not tabixed! Sorting and tabixing new GFF.")
+                filename = sort_gff(filename)
+                self.tabix = tabix.open(filename)
+        self.filename = filename
+        self.basename = os.path.basename(self.filename)
         self.df = None
         self.entries = None
         self.gene_blacklist = None
@@ -157,8 +247,6 @@ class GFF:
                     )
 
         else:
-            self.filename = filename
-            self.basename = os.path.basename(self.filename)
             self.ext = ".".join(self.basename.split(".")[1:])
             self.gzipped = False
             if self.ext.endswith(".gz") or self.ext.endswith(".bgz"):

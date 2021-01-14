@@ -5,7 +5,7 @@ import sys
 
 from collections import defaultdict
 
-from ..utils import NGSFile, NGSFileType, GFF, NotTabixed
+from ..utils import NGSFile, NGSFileType, GFF
 
 logger = logging.getLogger("strandedness")
 
@@ -135,7 +135,7 @@ def determine_strandedness(
             continue
 
         logging.debug("== Candidate Gene ==")
-        logging.debug("  [*] Name: {}".format(gene["gene_name"]))
+        # logging.debug("  [*] Name: {}".format(gene["gene_name"]))  # TODO `gene_name` key not quarenteed
         logging.debug(
             "  [*] Location: {}:{}-{} ({})".format(
                 gene["seqname"], gene["start"], gene["end"], gene["strand"]
@@ -314,17 +314,13 @@ def main(
         sys.exit(1)
 
     logger.info("Reading gene model...")
-    try:
-        gff = GFF(
-            gene_model_file,
-            feature_type="gene",
-            store_results=True,
-            need_tabix=True,
-            only_protein_coding_genes=only_protein_coding_genes,
-        )
-    except NotTabixed:
-        logger.warning(f"{gene_model_file} not tabixed! Sorting and tabixing new GFF.")
-        raise SystemExit
+    gff = GFF(
+        gene_model_file,
+        feature_type="gene",
+        store_results=True,
+        need_tabix=True,
+        only_protein_coding_genes=only_protein_coding_genes,
+    )
 
     logger.info("  - {} features processed.".format(len(gff.entries)))
 
