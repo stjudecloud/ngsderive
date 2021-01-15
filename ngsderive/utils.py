@@ -235,7 +235,12 @@ class GFF:
             else:
                 self.df = read_gtf(filename)
             if self.gene_blacklist:
-                self.df = self.df[self.df["gene_name"] not in self.gene_blacklist]
+                if "gene_name" in self.df.columns:
+                    self.df = self.df[self.df["gene_name"] not in self.gene_blacklist]
+                else:
+                    logger.warning(
+                        "`gene_name` field missing from GFF; could not filter using provided gene blacklist."
+                    )
             if only_protein_coding_genes:
                 if "gene_type" in self.df:  # Gencode
                     self.df = self.df[self.df["gene_type"].str.contains("protein")]
