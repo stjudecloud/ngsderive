@@ -110,26 +110,26 @@ class NGSFile:
 
 
 def sort_gff(filename):
-    sorted_gff_name = filename  # temp value
-    ext = sorted_gff_name.split(".")[-1]
+    sorted_gff_name_tmp = filename
+    ext = sorted_gff_name_tmp.split(".")[-1]
     gzipped = False
     if ext.endswith("gz"):
         gzipped = True
-        sorted_gff_name = ".".join(sorted_gff_name.split(".")[:-1])
-        ext = sorted_gff_name.split(".")[-1]
+        sorted_gff_name_tmp = ".".join(sorted_gff_name_tmp.split(".")[:-1])
+        ext = sorted_gff_name_tmp.split(".")[-1]
         handle = gzip.open(filename, "r")
     else:
         handle = open(filename, "r")
-    sorted_gff_name = ".".join(
-        sorted_gff_name.split(".")[:-1]
+    sorted_gff_name_tmp = ".".join(
+        sorted_gff_name_tmp.split(".")[:-1]
     )  # remove gtf/gff/gff3 ext
-    sorted_gff_name = ".".join([sorted_gff_name, "sorted", ext])
+    sorted_gff_name = ".".join([sorted_gff_name_tmp, "sorted", ext])
     compressed_gff_name = ".".join([sorted_gff_name, "gz"])
 
     # Test if this was done in a previous run
     already_created = True
     try:
-        # tabix outputs unwanted text when file doesn't exist
+        # pytabix outputs unwanted text when file doesn't exist
         if os.path.isfile(compressed_gff_name):
             tabixed = tabix.open(compressed_gff_name)
             tabixed.queryi(0, 100, 200)
@@ -144,16 +144,17 @@ def sort_gff(filename):
 
     entries = []
     header_lines = []
+    header_parsed = False  # only keep comments at start of file
     for line in handle:
         if gzipped:
             line = line.decode("utf-8")
         line = line.strip()
 
-        if line[0] == "#":
-            if all([c == "#" for c in line.strip()]):
-                continue
+        if not header_parsed and line[0] == "#":
             header_lines.append(line)
             continue
+        header_parsed = True
+
         [
             seqname,
             source,
@@ -175,13 +176,13 @@ def sort_gff(filename):
             score,
             strand,
             frame,
+            attribute.replace(';"', '"').replace(
+                ";-", "-"
+            ),  # correct error in ensemble 78 release
         ]
-        attribute = attribute.replace(';"', '"').replace(
-            ";-", "-"
-        )  # correct error in ensemble 78 release
-        result.append(attribute)
         entries.append(result)
-    entries.sort(key=itemgetter(0, 3, 4))
+
+    entries.sort(key=itemgetter(0, 3, 4))  # seqname, start, end
     new_gff = open(sorted_gff_name, "w")
     for line in header_lines:
         print(line, file=new_gff)
@@ -202,7 +203,6 @@ class GFF:
         store_results=False,
         need_tabix=False,
         feature_type=None,
-        filters=None,
         gene_blacklist=None,
         only_protein_coding_genes=False,
     ):
@@ -215,7 +215,7 @@ class GFF:
                 self.tabix.queryi(0, 100, 200)
             except tabix.TabixError:
                 logger.warning(f"{filename} not tabixed! Sorting and tabixing new GFF.")
-                filename = sort_gff(filename)
+                filename = sort_gff(filename)  # replace provided filename with new file
                 self.tabix = tabix.open(filename)
         self.filename = filename
         self.basename = os.path.basename(self.filename)
@@ -227,7 +227,6 @@ class GFF:
                 [item.strip() for item in open(gene_blacklist, "r").readlines()]
             )
         self.feature_type = feature_type
-        self.filters = filters  # TODO not sure what these are meant to be
 
         if dataframe_mode:
             if self.feature_type:
@@ -328,21 +327,8 @@ class GFF:
                         key, value = match.group(1), match.group(2)
                         result[key.strip()] = value.strip()
 
-            # TODO not sure what this is supposed to be used for
-            entry_passes_filters = True
-            if self.filters:
-                for (k, v) in self.filters.items():
-                    if k not in result or result[k] != v:
-                        entry_passes_filters = False
-                        break
-
-            if entry_passes_filters:
-                hits.append(result)
+            hits.append(result)
         return hits
-
-    def filter(self, func):
-        # TODO unclear what this is for
-        self.df = filter(func, self.df)
 
     def __iter__(self):
         if self.df is not None:
@@ -411,17 +397,7 @@ class GFF:
                     if match:
                         key, value = match.group(1), match.group(2)
                         result[key.strip()] = value.strip()
-
-            # TODO not sure what this is supposed to be used for
-            entry_passes_filters = True
-            if self.filters:
-                for (k, v) in self.filters.items():
-                    if k not in result or result[k] != v:
-                        entry_passes_filters = False
-                        break
-
-            if entry_passes_filters:
-                return result
+            return result
 
     def next(self):
         return self.__next__()

@@ -135,7 +135,7 @@ def determine_strandedness(
             continue
 
         logging.debug("== Candidate Gene ==")
-        # logging.debug("  [*] Name: {}".format(gene["gene_name"]))  # TODO `gene_name` key not quarenteed
+        logging.debug("  [*] ID: {}".format(gene["gene_id"]))
         logging.debug(
             "  [*] Location: {}:{}-{} ({})".format(
                 gene["seqname"], gene["start"], gene["end"], gene["strand"]
