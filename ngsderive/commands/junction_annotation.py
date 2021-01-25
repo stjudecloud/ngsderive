@@ -225,8 +225,8 @@ def annotate_junctions(
             logger.debug(
                 f"{len(collapsed_junctions) - num_too_few_reads} junctions annotated."
             )
-
-    junction_file.close()
+    if not disable_junction_files:
+        junction_file.close()
 
     result = {
         "file": ngsfilepath,
