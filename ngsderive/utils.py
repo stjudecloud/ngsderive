@@ -134,7 +134,7 @@ def sort_gff(filename):
             tabixed = tabix.open(compressed_gff_name)
             tabixed.queryi(0, 100, 200)
         else:
-            already_created = False
+            raise FileNotFoundError
     except (FileNotFoundError, tabix.TabixError):
         already_created = False
 
@@ -150,8 +150,12 @@ def sort_gff(filename):
             line = line.decode("utf-8")
         line = line.strip()
 
-        if not header_parsed and line[0] == "#":
+        if not line:
+            continue
+        elif not header_parsed and line[0] == "#":
             header_lines.append(line)
+            continue
+        elif line[0] == "#":
             continue
         header_parsed = True
 
@@ -264,72 +268,6 @@ class GFF:
             if store_results:
                 self.entries = [entry for entry in self]
 
-    def sample(self):
-        if self.df is None and not self.entries:
-            raise NotImplementedError("sample() not implemented in iterator mode")
-        if self.df is not None:
-            return self.df.sample().to_dict("records")[0]
-        return random.choice(self.entries)
-
-    def query(self, chr, start, end):
-        if self.df is None and not self.entries:
-            raise NotImplementedError("query() not implemented in iterator mode")
-        if self.df is not None:
-            return self.df.query(
-                f"seqname=='{chr}' and start=={start} and end=={end}"
-            ).to_dict("records")
-
-        raw_hits = self.tabix.query(chr, start, end)
-        hits = []
-        for hit in raw_hits:
-            [
-                seqname,
-                source,
-                feature,
-                start,
-                end,
-                score,
-                strand,
-                frame,
-                attribute,
-            ] = hit
-
-            if self.gene_blacklist:
-                selected_bad_gene = False
-                for bad_gene in self.gene_blacklist:
-                    if bad_gene in hit[8]:
-                        selected_bad_gene = True
-                        break
-                if selected_bad_gene:
-                    continue
-
-            result = {
-                "seqname": hit[0],
-                "source": hit[1],
-                "feature": hit[2],
-                "start": int(hit[3]),
-                "end": int(hit[4]),
-                "score": hit[5],
-                "strand": hit[6],
-                "frame": hit[7],
-            }
-
-            attribute = (
-                hit[8].replace(';"', '"').replace(";-", "-")
-            )  # correct error in ensemble 78 release
-            for attr_raw in [s.strip() for s in attribute.split(";")]:
-                if not attr_raw or attr_raw == "":
-                    continue
-
-                for regex in self._attr_regexes:
-                    match = re.match(regex, attr_raw)
-                    if match:
-                        key, value = match.group(1), match.group(2)
-                        result[key.strip()] = value.strip()
-
-            hits.append(result)
-        return hits
-
     def __iter__(self):
         if self.df is not None:
             raise NotImplementedError("iteration in Dataframe mode not implemented")
@@ -349,6 +287,7 @@ class GFF:
 
             if line.startswith("#"):
                 continue
+            line = line.strip()
 
             [
                 seqname,
@@ -389,7 +328,7 @@ class GFF:
                 ";-", "-"
             )  # correct error in ensemble 78 release
             for attr_raw in [s.strip() for s in attribute.split(";")]:
-                if not attr_raw or attr_raw == "":
+                if not attr_raw:
                     continue
 
                 for regex in self._attr_regexes:
@@ -398,6 +337,60 @@ class GFF:
                         key, value = match.group(1), match.group(2)
                         result[key.strip()] = value.strip()
             return result
+
+    def sample(self):
+        if self.df is None and not self.entries:
+            raise NotImplementedError("sample() not implemented in iterator mode")
+        if self.df is not None:
+            return self.df.sample().to_dict("records")[0]
+        return random.choice(self.entries)
+
+    def query(self, chr, start, end):
+        if self.df is None and not self.entries:
+            raise NotImplementedError("query() not implemented in iterator mode")
+        if self.df is not None:
+            return self.df.query(
+                f"seqname=='{chr}' and start=={start} and end=={end}"
+            ).to_dict("records")
+
+        raw_hits = self.tabix.query(chr, start, end)
+        hits = []
+        for hit in raw_hits:
+            if self.gene_blacklist:
+                selected_bad_gene = False
+                for bad_gene in self.gene_blacklist:
+                    if bad_gene in hit[8]:
+                        selected_bad_gene = True
+                        break
+                if selected_bad_gene:
+                    continue
+
+            result = {
+                "seqname": hit[0],
+                "source": hit[1],
+                "feature": hit[2],
+                "start": int(hit[3]),
+                "end": int(hit[4]),
+                "score": hit[5],
+                "strand": hit[6],
+                "frame": hit[7],
+            }
+
+            attribute = (
+                hit[8].replace(';"', '"').replace(";-", "-")
+            )  # correct error in ensemble 78 release
+            for attr_raw in [s.strip() for s in attribute.split(";")]:
+                if not attr_raw or attr_raw == "":
+                    continue
+
+                for regex in self._attr_regexes:
+                    match = re.match(regex, attr_raw)
+                    if match:
+                        key, value = match.group(1), match.group(2)
+                        result[key.strip()] = value.strip()
+
+            hits.append(result)
+        return hits
 
     def next(self):
         return self.__next__()
