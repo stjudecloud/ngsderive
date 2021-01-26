@@ -13,5 +13,6 @@ nav:
     - "strandedness": "subcommands/strandedness.md"
     - "instrument": "subcommands/instrument.md"
     - "readlen": "subcommands/readlen.md"
+    - "encoding": "subcommands/encoding.md"
 
 theme: cosmo
