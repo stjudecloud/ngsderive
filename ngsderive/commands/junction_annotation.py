@@ -59,6 +59,7 @@ def annotate_junctions(
         )
     samfile = ngsfile.handle
 
+    junction_file = None
     if not disable_junction_files:
         junction_file = open(f"{ngsfile.basename}.junctions.tsv", "w")
         print(
@@ -105,7 +106,7 @@ def annotate_junctions(
                     continue
                 num_novel += 1
                 num_novel_spliced_reads += num_reads
-                if not disable_junction_files:
+                if junction_file:
                     print(
                         "\t".join(
                             [
@@ -164,7 +165,7 @@ def annotate_junctions(
                     num_known += 1
                     num_known_spliced_reads += num_reads
 
-                if not disable_junction_files:
+                if junction_file:
                     print(
                         "\t".join(
                             [
