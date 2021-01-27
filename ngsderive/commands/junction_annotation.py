@@ -141,9 +141,11 @@ def annotate_junctions(
             else:
                 end = intron_end
 
+            # if fuzzy searching, collapse these reads into nearby events
             if fuzzy_range:
                 collapsed_junctions[(start, end)] += num_reads
-            else:  # only execute if not fuzzy searching
+            # if not fuzzy searching, tally reads and write to outfile
+            else:
                 if num_reads < min_reads:
                     num_too_few_reads += 1
                     continue
@@ -174,7 +176,8 @@ def annotate_junctions(
                         file=junction_file,
                     )
 
-        # if not fuzzy searching, collapsed_junctions is empty and loop is skipped
+        # if not fuzzy searching, collapsed_junctions is empty and loop is skipped,
+        # reads will have been tallied and written to outfile already
         for (intron_start, intron_end), num_reads in sorted(
             collapsed_junctions.items()
         ):
@@ -234,8 +237,8 @@ def annotate_junctions(
         "partial_novel_junctions": num_partial,
         "complete_novel_junctions": num_novel,
         "known_spliced_reads": num_known_spliced_reads,
-        "complete_novel_spliced_reads": num_novel_spliced_reads,
         "partial_novel_spliced_reads": num_partial_spliced_reads,
+        "complete_novel_spliced_reads": num_novel_spliced_reads,
     }
     return result
 
@@ -275,8 +278,8 @@ def main(
         "partial_novel_junctions",
         "complete_novel_junctions",
         "known_spliced_reads",
-        "complete_novel_spliced_reads",
         "partial_novel_spliced_reads",
+        "complete_novel_spliced_reads",
     ]
 
     writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter=delimiter)
