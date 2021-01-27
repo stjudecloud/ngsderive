@@ -14,11 +14,6 @@ def annotate_event(
     reference_positions,
     fuzzy_range,
 ):
-    if fuzzy_range == 0:
-        if found_pos in reference_positions:
-            return False, found_pos
-        else:
-            return True, None
     for pos in reference_positions.irange(
         found_pos - fuzzy_range, found_pos + fuzzy_range
     ):  # return first match even if multiple found

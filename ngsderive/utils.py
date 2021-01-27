@@ -69,13 +69,16 @@ class NGSFile:
         return self
 
     def __next__(self):
+        query_name = None
+        query = None
+        quality = None
         if self.filetype == NGSFileType.FASTQ:
             query_name = self.handle.readline().strip()
             if not query_name or query_name == "":
                 raise StopIteration()
 
             query = self.handle.readline().strip()
-            plusline = self.handle.readline().strip()
+            _plusline = self.handle.readline().strip()
             quality_string = self.handle.readline().strip()
 
             if self.gzipped:
@@ -415,9 +418,10 @@ class JunctionCache:
     def __next__(self):
         exon = next(self.gff)
 
-        # GTF is 1-based, however 0-basing `end` causes missed matches
-        # Possibly GTF end is inclusive, making it equivelant to PySam 0-based exclusive `end`
-        # Could not confirm this through GTF or PySam documentation
+        # GFF is 1-based, end inclusive
+        # PySam is 0-based, end exclusive
+        # starts need to have 1 subtracted
+        # ends are already equivelant
         start, end = exon["start"] - 1, exon["end"]
         self.exon_starts[exon["seqname"]].add(start)
         self.exon_ends[exon["seqname"]].add(end)
