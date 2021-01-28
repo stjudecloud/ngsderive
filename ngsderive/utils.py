@@ -75,6 +75,7 @@ class NGSFile:
             quality = []
             if self.store_qualities:
                 for char in quality_string:
+                    # PHRED+33 decoding
                     ascii_code = ord(char)
                     quality.append(ascii_code - 33)
 
