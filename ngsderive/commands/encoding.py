@@ -11,9 +11,10 @@ from ..utils import NGSFile, NGSFileType
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-SANGER_SET = set([i for i in range(33, 127)])
-ILLUMINA_1_0_SET = set([i for i in range(59, 127)])
-ILLUMINA_1_3_SET = set([i for i in range(64, 127)])
+SANGER_SET = set([i for i in range(0, 93)])
+ILLUMINA_1_0_SET = set([i for i in range(26, 93)])
+ILLUMINA_1_3_SET = set([i for i in range(31, 93)])
+
 
 def main(ngsfiles,
          outfile=sys.stdout,
@@ -45,40 +46,34 @@ def main(ngsfiles,
             outfile.flush()
             continue
 
-        if ngsfile.filetype != NGSFileType.FASTQ:
-            raise RuntimeError(
-                "Invalid file: {}. `encoding` currently only supports FASTQ files!"
-                .format(ngsfilepath))
-
         score_set = set()
         for read in itertools.islice(ngsfile, n_samples):
-            for char in read['quality']:
-                score_set.add(ord(char))
+            score_set.update(read["quality"])
         
-        max_phred_score = chr(max(score_set))
-        min_phred_score = chr(min(score_set))
+        max_phred_score = chr(max(score_set) + 33)
+        min_phred_score = chr(min(score_set) + 33)
         if score_set <= ILLUMINA_1_3_SET:
             result = {
                 "File": ngsfilepath,
-                "Evidence": "Phred range: {}-{}".format(min_phred_score, max_phred_score),
+                "Evidence": "ASCII range: {}-{}".format(min_phred_score, max_phred_score),
                 "ProbableEncoding": "Illumina 1.3"
             }
         elif score_set <= ILLUMINA_1_0_SET:
             result = {
                 "File": ngsfilepath,
-                "Evidence": "Phred range: {}-{}".format(min_phred_score, max_phred_score),
+                "Evidence": "ASCII range: {}-{}".format(min_phred_score, max_phred_score),
                 "ProbableEncoding": "Solexa/Illumina 1.0"
             }
         elif score_set <= SANGER_SET:
             result = {
                 "File": ngsfilepath,
-                "Evidence": "Phred range: {}-{}".format(min_phred_score, max_phred_score),
+                "Evidence": "ASCII range: {}-{}".format(min_phred_score, max_phred_score),
                 "ProbableEncoding": "Sanger/Illumina 1.8"
             }
         else:
             result = {
                 "File": ngsfilepath,
-                "Evidence": "Phred values outside known encoding ranges: {}-{}".format(min_phred_score, max_phred_score),
+                "Evidence": "ASCII values outside known PHRED encoding ranges: {}-{}".format(min_phred_score, max_phred_score),
                 "ProbableEncoding": "Unknown"
             }
         
