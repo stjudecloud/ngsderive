@@ -1,8 +1,10 @@
 import logging
 import sys
+import os
 import csv
 
 from collections import defaultdict
+from pathlib import Path
 
 from ..utils import NGSFile, NGSFileType, GFF, JunctionCache
 
@@ -28,6 +30,7 @@ def annotate_junctions(
     min_mapq,
     min_reads,
     fuzzy_range,
+    junction_dir,
     disable_junction_files,
 ):
     try:
@@ -56,7 +59,8 @@ def annotate_junctions(
 
     junction_file = None
     if not disable_junction_files:
-        junction_file = open(f"{ngsfile.basename}.junctions.tsv", "w")
+        junction_filename = os.path.join(junction_dir, ngsfile.basename)
+        junction_file = open(f"{junction_filename}.junctions.tsv", "w")
         print(
             "\t".join(
                 ["chrom", "intron_start", "intron_end", "read_count", "annotation"]
@@ -252,6 +256,7 @@ def main(
     min_mapq=30,
     min_reads=1,
     fuzzy_range=0,
+    junction_dir="./",
     disable_junction_files=False,
 ):
     logger.info("Arguments:")
@@ -286,6 +291,9 @@ def main(
     writer.writeheader()
     outfile.flush()
 
+    junction_dir = Path(junction_dir)
+    junction_dir.mkdir(parents=True, exist_ok=True)
+
     for ngsfilepath in ngsfiles:
         entry = annotate_junctions(
             ngsfilepath,
@@ -294,6 +302,7 @@ def main(
             min_mapq=min_mapq,
             min_reads=min_reads,
             fuzzy_range=fuzzy_range,
+            junction_dir=junction_dir,
             disable_junction_files=disable_junction_files,
         )
         writer.writerow(entry)

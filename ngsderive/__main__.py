@@ -164,6 +164,12 @@ def get_args():
         "-g", "--gene-model", help="Gene model as a GFF/GTF file.", required=True
     )
     junction_annotation.add_argument(
+        "-j",
+        "--junction-files-dir",
+        help="Directory to write annotated junction files to.",
+        default="./",
+    )
+    junction_annotation.add_argument(
         "-d",
         "--disable-junction-files",
         help="Disable generating junction files in current working directory.",
@@ -312,5 +318,6 @@ def run():
             min_mapq=args.min_mapq,
             min_reads=args.minimum_reads_per_junction,
             fuzzy_range=args.fuzzy_junction_match_range,
+            junction_dir=args.junction_files_dir,
             disable_junction_files=args.disable_junction_files,
         )
