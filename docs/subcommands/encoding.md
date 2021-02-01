@@ -2,7 +2,7 @@
 
 The `encoding` subcommand detects the likely PHRED score encoding scheme used for FASTQ and BAM files. PHRED scores are encoded as ASCII characters, but which ASCII characters encode for which relative quality scores depends on the build and generation of the sequencing machine used. The BAM specification calls for `PHRED+33` (AKA Illumina1.8+ or Sanger encoding), however that is also the most permissive encoding. It is possible for a stricter encoding to be mis-translated as `PHRED+33` and appear to be of higher quality than it is in truth. This subcommand can be used to check if base scores are suspiciously high throughout a BAM, and a mis-translation may have occured.
 
-`ngsderive` obtained details of the different encoding schemes [here][https://en.wikipedia.org/wiki/FASTQ_format#Encoding].
+`ngsderive`'s encoding check implementation is based on details of the encoding schemes described [here][https://en.wikipedia.org/wiki/FASTQ_format#Encoding].
 
 ## Limitations
 
