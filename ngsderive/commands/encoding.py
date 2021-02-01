@@ -11,7 +11,7 @@ from ..utils import NGSFile, NGSFileType
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# sets are created by doing PHRED+33 decoding of each encodings ASCII ranges
+# sets are created by doing PHRED+33 decoding of each encoding's ASCII ranges
 SANGER_SET = set([i for i in range(0, 93)])
 ILLUMINA_1_0_SET = set([i for i in range(26, 93)])
 ILLUMINA_1_3_SET = set([i for i in range(31, 93)])
