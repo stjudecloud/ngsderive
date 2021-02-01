@@ -191,7 +191,7 @@ def get_args():
     )
     junction_annotation.add_argument(
         "-m",
-        "--minimum-reads-per-junction",
+        "--min-reads",
         type=int,
         help="Filter any junctions that don't have at least `m` reads.",
         default=2,
@@ -316,7 +316,7 @@ def run():
             delimiter=args.delimiter,
             min_intron=args.min_intron,
             min_mapq=args.min_mapq,
-            min_reads=args.minimum_reads_per_junction,
+            min_reads=args.min_reads,
             fuzzy_range=args.fuzzy_junction_match_range,
             junction_dir=args.junction_files_dir,
             disable_junction_files=args.disable_junction_files,
