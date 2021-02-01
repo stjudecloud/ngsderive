@@ -51,8 +51,8 @@ def main(ngsfiles,
         for read in itertools.islice(ngsfile, n_samples):
             score_set.update(read["quality"])
         
-        max_phred_score = chr(max(score_set) + 33)
-        min_phred_score = chr(min(score_set) + 33)
+        max_phred_score = str(max(score_set) + 33)
+        min_phred_score = str(min(score_set) + 33)
         if score_set <= ILLUMINA_1_3_SET:
             result = {
                 "File": ngsfilepath,
