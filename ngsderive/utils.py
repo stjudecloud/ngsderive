@@ -64,13 +64,20 @@ class NGSFile:
 
             query = self.handle.readline().strip()
             plusline = self.handle.readline().strip()
-            quality = self.handle.readline().strip()
+            quality_string = self.handle.readline().strip()
 
             if self.gzipped:
                 query_name = query_name.decode("utf-8")
                 query = query.decode("utf-8")
                 if self.store_qualities:
-                  quality = quality.decode("utf-8")
+                  quality_string = quality_string.decode("utf-8")
+            
+            quality = []
+            if self.store_qualities:
+                for char in quality_string:
+                    # PHRED+33 decoding
+                    ascii_code = ord(char)
+                    quality.append(ascii_code - 33)
 
             if query_name.startswith("@"):
                 query_name = query_name[1:]
