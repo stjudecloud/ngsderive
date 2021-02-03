@@ -31,7 +31,6 @@ def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=1000000):
         n_samples = None
 
     for ngsfilepath in ngsfiles:
-        read_lengths = defaultdict(int)
         try:
             ngsfile = NGSFile(ngsfilepath, store_qualities=True)
         except FileNotFoundError:

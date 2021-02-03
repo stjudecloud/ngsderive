@@ -14,5 +14,6 @@ nav:
     - "instrument": "subcommands/instrument.md"
     - "readlen": "subcommands/readlen.md"
     - "encoding": "subcommands/encoding.md"
+    - "junction-annotation": "subcommands/junction_annotation.md"
 
 theme: cosmo

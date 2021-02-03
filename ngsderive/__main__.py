@@ -6,7 +6,13 @@ import logging
 import sys
 
 from ngsderive import utils
-from ngsderive.commands import readlen, instrument, strandedness, encoding
+from ngsderive.commands import (
+    readlen,
+    instrument,
+    strandedness,
+    encoding,
+    junction_annotation,
+)
 
 logger = logging.getLogger("ngsderive")
 
@@ -151,6 +157,53 @@ def get_args():
         default=1000000,
     )
 
+    junction_annotation = subparsers.add_parser(
+        "junction-annotation", parents=[common], formatter_class=SaneFormatter
+    )
+    junction_annotation.add_argument(
+        "-g", "--gene-model", help="Gene model as a GFF/GTF file.", required=True
+    )
+    junction_annotation.add_argument(
+        "-j",
+        "--junction-files-dir",
+        help="Directory to write annotated junction files to.",
+        default="./",
+    )
+    junction_annotation.add_argument(
+        "-d",
+        "--disable-junction-files",
+        help="Disable generating junction files in current working directory.",
+        action="store_true",
+    )
+    junction_annotation.add_argument(
+        "-i",
+        "--min-intron",
+        type=int,
+        help="Minimum size of intron to be considered a splice.",
+        default=50,
+    )
+    junction_annotation.add_argument(
+        "-q",
+        "--min-mapq",
+        type=int,
+        help="Minimum MAPQ to consider for reads.",
+        default=30,
+    )
+    junction_annotation.add_argument(
+        "-m",
+        "--min-reads",
+        type=int,
+        help="Filter any junctions that don't have at least `m` reads.",
+        default=2,
+    )
+    junction_annotation.add_argument(
+        "-k",
+        "--fuzzy-junction-match-range",
+        type=int,
+        help="Consider found splices within `+-k` bases of a known splice event annotated.",
+        default=0,
+    )
+
     args = parser.parse_args()
     if not args.subcommand:
         parser.print_help()
@@ -254,4 +307,17 @@ def run():
             outfile=args.outfile,
             delimiter=args.delimiter,
             n_samples=args.n_samples,
+        )
+    if args.subcommand == "junction-annotation":
+        junction_annotation.main(
+            args.ngsfiles,
+            args.gene_model,
+            outfile=args.outfile,
+            delimiter=args.delimiter,
+            min_intron=args.min_intron,
+            min_mapq=args.min_mapq,
+            min_reads=args.min_reads,
+            fuzzy_range=args.fuzzy_junction_match_range,
+            junction_dir=args.junction_files_dir,
+            disable_junction_files=args.disable_junction_files,
         )
