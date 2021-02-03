@@ -32,20 +32,36 @@ instrument_ids = {
 }
 
 flowcell_ids = {
-    "^C[A-Z0-9]{4}ANXX$": ["HiSeq 1500", "HiSeq 2000",
-                           "HiSeq 2500"],  # High Output (8-lane) v4 flow cell
-    "^C[A-Z0-9]{4}ACXX$":
-    ["HiSeq 1000", "HiSeq 1500", "HiSeq 2000",
-     "HiSeq 2500"],  # High Output (8-lane) v3 flow cell
-    "^D[A-Z0-9]{4}ACXX$":
-    ["HiSeq 1000", "HiSeq 1500", "HiSeq 2000",
-     "HiSeq 2500"],  # High Output (8-lane) v3 flow cell
-    "^H[A-Z0-9]{4}ADXX$": ["HiSeq 1500", "HiSeq 2000",
-                           "HiSeq 2500"],  # Rapid Run (2-lane) v1 flow cell
-    "^H[A-Z0-9]{4}BCXX$": ["HiSeq 1500",
-                           "HiSeq 2500"],  # Rapid Run (2-lane) v2 flow cell
-    "^H[A-Z0-9]{4}BCXY$": ["HiSeq 1500",
-                           "HiSeq 2500"],  # Rapid Run (2-lane) v2 flow cell
+    "^C[A-Z0-9]{4}ANXX$": [
+        "HiSeq 1500",
+        "HiSeq 2000",
+        "HiSeq 2500",
+    ],  # High Output (8-lane) v4 flow cell
+    "^C[A-Z0-9]{4}ACXX$": [
+        "HiSeq 1000",
+        "HiSeq 1500",
+        "HiSeq 2000",
+        "HiSeq 2500",
+    ],  # High Output (8-lane) v3 flow cell
+    "^D[A-Z0-9]{4}ACXX$": [
+        "HiSeq 1000",
+        "HiSeq 1500",
+        "HiSeq 2000",
+        "HiSeq 2500",
+    ],  # High Output (8-lane) v3 flow cell
+    "^H[A-Z0-9]{4}ADXX$": [
+        "HiSeq 1500",
+        "HiSeq 2000",
+        "HiSeq 2500",
+    ],  # Rapid Run (2-lane) v1 flow cell
+    "^H[A-Z0-9]{4}BCXX$": [
+        "HiSeq 1500",
+        "HiSeq 2500",
+    ],  # Rapid Run (2-lane) v2 flow cell
+    "^H[A-Z0-9]{4}BCXY$": [
+        "HiSeq 1500",
+        "HiSeq 2500",
+    ],  # Rapid Run (2-lane) v2 flow cell
     "^H[A-Z0-9]{4}BBXX$": ["HiSeq 4000"],  # (8-lane) v1 flow cell
     "^H[A-Z0-9]{4}BBXY$": ["HiSeq 4000"],  # (8-lane) v1 flow cell
     "^H[A-Z0-9]{4}CCXX$": ["HiSeq X"],  # (8-lane) flow cell
@@ -64,8 +80,7 @@ flowcell_ids = {
     "^G[A-Z0-9]{4}$": ["MiSeq"],  # MiSeq micro flow cell
 }
 
-upgrade_sets = [(set(["HiSeq 2000",
-                      "HiSeq 2500"]), ["HiSeq 2000", "HiSeq 2500"])]
+upgrade_sets = [(set(["HiSeq 2000", "HiSeq 2500"]), ["HiSeq 2000", "HiSeq 2500"])]
 
 
 def derive_instrument_from_iid(iid):
@@ -117,18 +132,25 @@ def predict_instrument_from_fcids(fcids):
     return possible_instruments_by_fcid, detected_at_least_one_instrument
 
 
-def resolve_instrument(possible_instruments_by_iid,
-                       possible_instruments_by_fcid,
-                       at_least_one_instrument_detected,
-                       malformed_read_names_detected):
-    if len(possible_instruments_by_iid) == 0 and len(
-            possible_instruments_by_fcid) == 0:
+def resolve_instrument(
+    possible_instruments_by_iid,
+    possible_instruments_by_fcid,
+    at_least_one_instrument_detected,
+    malformed_read_names_detected,
+):
+    if len(possible_instruments_by_iid) == 0 and len(possible_instruments_by_fcid) == 0:
         if at_least_one_instrument_detected:
-            return set(
-                ["multiple instruments"]
-            ), "unknown confidence", "multiple instruments were detected in this sample"
+            return (
+                set(["multiple instruments"]),
+                "unknown confidence",
+                "multiple instruments were detected in this sample",
+            )
         elif malformed_read_names_detected:
-            return set(["unknown"]), "no confidence", "read names not in Illumina format"
+            return (
+                set(["unknown"]),
+                "no confidence",
+                "read names not in Illumina format",
+            )
         else:
             return set(["unknown"]), "no confidence", "no match"
 
@@ -146,35 +168,43 @@ def resolve_instrument(possible_instruments_by_iid,
 
     overlapping_instruments = possible_instruments_by_iid & possible_instruments_by_fcid
     if len(overlapping_instruments) == 0:
-        return set(
-            ["conflicting evidence"]
-        ), "high confidence", "Case needs triaging: {} by iid, {} by fcid".format(
-            " or ".join(possible_instruments_by_iid),
-            " or ".join(possible_instruments_by_fcid))
+        return (
+            set(["conflicting evidence"]),
+            "high confidence",
+            "Case needs triaging: {} by iid, {} by fcid".format(
+                " or ".join(possible_instruments_by_iid),
+                " or ".join(possible_instruments_by_fcid),
+            ),
+        )
     else:
-        return overlapping_instruments, "high confidence", "instrument id and flowcell id"
+        return (
+            overlapping_instruments,
+            "high confidence",
+            "instrument id and flowcell id",
+        )
 
 
 def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=10000):
     writer = csv.DictWriter(
         outfile,
         fieldnames=["File", "Instrument", "Confidence", "Basis"],
-        delimiter=delimiter)
+        delimiter=delimiter,
+    )
     writer.writeheader()
     outfile.flush()
 
     if n_samples < 1:
-      n_samples = None
+        n_samples = None
 
     for ngsfilepath in ngsfiles:
         try:
             ngsfile = NGSFile(ngsfilepath)
-        except:
+        except FileNotFoundError:
             result = {
                 "File": ngsfilepath,
                 "Instrument": "File not found.",
                 "Confidence": "N/A",
-                "Basis": "N/A"
+                "Basis": "N/A",
             }
 
             writer.writerow(result)
@@ -187,23 +217,29 @@ def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=10000):
 
         # accumulate instrument and flowcell IDs
         for read in itertools.islice(ngsfile, n_samples):
-            parts = read['query_name'].split(":")
-            if len(parts) != 7: # not Illumina format
+            parts = read["query_name"].split(":")
+            if len(parts) != 7:  # not Illumina format
                 malformed_read_names = True
                 continue
             iid, fcid = parts[0], parts[2]
             instruments.add(iid)
             flowcells.add(fcid)
 
-        possible_instruments_by_iid, detected_instrument_by_iid = predict_instrument_from_iids(
-            instruments)
-        possible_instruments_by_fcid, detected_instrument_by_fcid = predict_instrument_from_fcids(
-            flowcells)
+        (
+            possible_instruments_by_iid,
+            detected_instrument_by_iid,
+        ) = predict_instrument_from_iids(instruments)
+        (
+            possible_instruments_by_fcid,
+            detected_instrument_by_fcid,
+        ) = predict_instrument_from_fcids(flowcells)
 
         instruments, confidence, based_on = resolve_instrument(
-            possible_instruments_by_iid, possible_instruments_by_fcid,
+            possible_instruments_by_iid,
+            possible_instruments_by_fcid,
             detected_instrument_by_iid | detected_instrument_by_fcid,
-            malformed_read_names)
+            malformed_read_names,
+        )
         for upgrade_set in upgrade_sets:
             if instruments.issubset(upgrade_set[0]):
                 instruments = upgrade_set[1]
@@ -213,7 +249,7 @@ def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=10000):
             "File": ngsfilepath,
             "Instrument": " or ".join(instruments),
             "Confidence": confidence,
-            "Basis": based_on
+            "Basis": based_on,
         }
 
         writer.writerow(result)
