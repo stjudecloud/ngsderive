@@ -8,7 +8,7 @@
         <meta name="author" content="St. Jude Cloud">
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>strandedness - ngsderive</title>
+        <title>junction-annotation - ngsderive</title>
         <link href="../../css/bootstrap.min.css" rel="stylesheet">
         <link href="../../css/font-awesome.min.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
@@ -50,7 +50,7 @@
                                 <ul class="dropdown-menu">
                                     
 <li>
-    <a href="./" class="dropdown-item active">strandedness</a>
+    <a href="../strandedness/" class="dropdown-item">strandedness</a>
 </li>
                                     
 <li>
@@ -66,7 +66,7 @@
 </li>
                                     
 <li>
-    <a href="../junction_annotation/" class="dropdown-item">junction-annotation</a>
+    <a href="./" class="dropdown-item active">junction-annotation</a>
 </li>
                                 </ul>
                             </li>
@@ -79,17 +79,17 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../.." class="nav-link">
+                                <a rel="prev" href="../encoding/" class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="../instrument/" class="nav-link">
+                                <a rel="next" class="nav-link disabled">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="https://github.com/stjudecloud/ngsderive/edit/master/docs/subcommands/strandedness.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                                <a href="https://github.com/stjudecloud/ngsderive/edit/master/docs/subcommands/junction_annotation.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
                             </li>
                     </ul>
                 </div>
@@ -109,20 +109,8 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#strandedness" class="nav-link">strandedness</a>
+            <li class="nav-item" data-level="1"><a href="#junction-annotation" class="nav-link">junction-annotation</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-level="2"><a href="#algorithm" class="nav-link">Algorithm</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#differences" class="nav-link">Differences</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#limitations" class="nav-link">Limitations</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
               </ul>
             </li>
         </ul>
@@ -130,152 +118,35 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="strandedness">strandedness</h1>
-<p>The <code>strandedness</code> subcommand can be used to determine strandedness of RNA-Seq
-samples. Note that due to the need to (1) to examine the alignment status of a
-read [not included in FASTQ] and (2) fetch regions using random access [not
-available with SAM files], only BAM files are currently supported for this
-subcommand.</p>
-<p>Strandedness can estimated by observing the following characteristics of a
-particular read:</p>
-<ul>
-<li>Whether the read is read 1 or read 2 ("read ordinal").</li>
-<li>Whether the read was aligned to the + or - strand ("read strand")</li>
-<li>Given a gene model, whether a feature of interest (usually a gene) falls on
-  the + or - strand ("gene strand").</li>
-</ul>
-<p>A shorthand notation for the state of a read can be achieved by simply
-concatenating the three characteristics above (e.g., <code>1+-</code> means that a read 1
-was aligned to the positive strand and a gene was observed at the same location
-on the negative strand).</p>
-<p>Given the notation above, the following lookup table can be used to see whether
-a read is evidence for forward-strandedness or reverse-strandedness:</p>
+<h1 id="junction-annotation">junction-annotation</h1>
+<p>The <code>junction-annotation</code> command will search a bam file for splice junctions, compare them to a gene model, and output whether the found junctions are novel, partially novel, or already annotated in a gene model. In addition to a summary of the junctions and spliced reads, per-junction annotations are output with their location and number of supporting reads.</p>
+<p>The following criteria are adjustable for junction detection and read filtering:</p>
 <table>
 <thead>
 <tr>
-<th>Patterns</th>
-<th>Evidence for strandedness type</th>
+<th>Option</th>
+<th>Help</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>1++</code>, <code>1--</code>, <code>2+-</code>, <code>2-+</code></td>
-<td>Forward</td>
+<td><code>-i</code>, <code>--min-intron</code></td>
+<td>Minimum intron length to be considered a junction (default: <code>50</code>)</td>
 </tr>
 <tr>
-<td><code>2++</code>, <code>2--</code>, <code>1+-</code>, <code>1-+</code></td>
-<td>Reverse</td>
+<td><code>-q</code>, <code>--min-mapq</code></td>
+<td>Minimum read quality to be considered a supporting read (default: <code>30</code>)</td>
+</tr>
+<tr>
+<td><code>-m</code>, <code>--min-reads</code></td>
+<td>Minimum number of reads supporting a junction for it to be reported (default: <code>2</code>)</td>
+</tr>
+<tr>
+<td><code>-k</code>, <code>--fuzzy-junction-match-range</code></td>
+<td>Consider exonic starts/ends within <code>+-k</code> bases of a known intron start/end to be known (default: <code>0</code>)</td>
 </tr>
 </tbody>
-</table>
-<p>By default, the strandedness check is designed to work with the
-<a href="https://www.gencodegenes.org">GENCODE</a> geneset. Either a GTF or GFF file can be used as the
-gene model — you can use the following one liner to prepare the latest geneset
-for hg38.</p>
-<pre><code class="language-bash">
-# hg38
-curl ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.annotation.gff3.gz | gunzip -c | sort -k1,1 -k4,4n -k5,5n | bgzip &gt; gencode.v32.annotation.gff3.gz
-tabix -p gff gencode.v32.annotation.gff3.gz
-</code></pre>
-<p>If you would like to use the script on hg19, it takes a little more finesse (given the different formats of the attribute column between versions):</p>
-<pre><code class="language-bash"># hg19
-curl ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/GRCh37_mapping/gencode.v32lift37.annotation.gtf.gz | gunzip -c | sort -k1,1 -k4,4n -k5,5n | python &lt;(cat 
-&lt;&lt;END    
-import re 
-import sys
-
-for line in [l.strip() for l in sys.stdin]:
-  if line.startswith(&quot;#&quot;):
-    print(line)                     
-  else:                       
-    columns = line.split('\t')
-    if len(columns) != 9:                                                    
-      raise RuntimeError(&quot;Unexpected column number: {}&quot;.format(len(columns)))
-
-    print('\t'.join(columns[0:8]), end=&quot;\t&quot;)
-
-    attrs_post = []
-    for attr in columns[8].split(&quot;;&quot;):                        
-      groups = re.match(r&quot;\s?(\S+) (\S+)\s?&quot;, attr)
-      if groups:             
-        key = groups.group(1)                    
-        value = groups.group(2).replace(&quot;\&quot;&quot;, &quot;&quot;).replace(&quot; &quot;, &quot;,&quot;)
-        attrs_post.append(key + &quot;=&quot; + value)
-
-    print(&quot;;&quot;.join(attrs_post))
-END
-) | sed 's/^chrM/chrMT/g' | sed 's/^chr//g' | bgzip &gt; gencode.v32lift37.annotation.gtf.gz
-tabix -p gff gencode.v32lift37.annotation.gtf.gz
-</code></pre>
-<h2 id="algorithm">Algorithm</h2>
-<p>At the time of writing, the algorithm works roughly like this:</p>
-<ol>
-<li>The gene model is read in and only <code>gene</code> features are retained.</li>
-<li>For <code>--n-genes</code> times, a randomly sampled gene is selected from the gene
-   model. The gene must pass a quality check. Of particular interest,</li>
-<li>The gene must not be an overlapping feature on the opposite strand which
-      would present ambiguous results.</li>
-<li><em>Optionally</em>, the gene must be a protein coding gene.</li>
-<li><em>Optionally</em>, the gene must have at least <code>--minimum-reads-per-gene</code>
-      minimum reads per gene.</li>
-<li>All of the reads from that region of the genome are extracted and put through
-   several quality filters including but not limited to:</li>
-<li>The read must not be marked as QC-failed.</li>
-<li>The read must not be marked as a duplicate.</li>
-<li>The read must not be marked as secondary.</li>
-<li>The read must not be unmapped.</li>
-<li><em>Optionally</em>, the read have a minimum MAPQ score.</li>
-<li>For all reads that pass the above filters, compute the evidence and tally
-   results.</li>
-</ol>
-<p>This lookup table is used for the classification of strandedness based on the evidence:</p>
-<table>
-<thead>
-<tr>
-<th>Lookup</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>40% &lt;= <code>forward_reads_pct</code> &lt;= 60%</td>
-<td><code>Unstranded</code></td>
-</tr>
-<tr>
-<td>80% &lt;= <code>forward_reads_pct</code></td>
-<td><code>Stranded-Forward</code></td>
-</tr>
-<tr>
-<td>80% &lt;= <code>reverse_reads_pct</code></td>
-<td><code>Stranded-Reverse</code></td>
-</tr>
-<tr>
-<td>Else</td>
-<td><code>Inconclusive</code></td>
-</tr>
-</tbody>
-</table>
-<p>The tool will repeat the strandedness test at most <code>--max-tries</code> times to try to find a
-non-<code>Inconclusive</code>prediction.</p>
-<h2 id="differences">Differences</h2>
-<p>The most popular strandedness inference tool that the author is aware of is
-RSeQC's <a href="http://rseqc.sourceforge.net/#infer-experiment-py">infer_experiment.py</a>. The
-main difference is that RSeQC starts at the beginning of the BAM file and takes
-the first <code>n</code> reads that match its criteria. If the BAM is coordinate sorted,
-this would mean its not uncommon to have all of the evidence at the beginning of
-<code>chr1</code>. Anecdotally, this method differs in that it is slightly slower than
-<code>infer_experiment.py</code> but is expected to be more robust to biases caused by
-which reads are sampled.</p>
-<h2 id="limitations">Limitations</h2>
-<ul>
-<li>Does not yet work with single-end data (simply because the author doesn't have
-  any on hand). The tool will throw an error if any unpaired reads are
-  discovered (let us know in the issues if you need this supported).</li>
-<li>Though hundreds of Unstranded and Stranded-Reverse data has been tested and
-  verified, Stranded-Forward data has not been tested to work with this tool
-  (simply because the author doesn't have on hand). We do not anticipate any
-  issues since Stranded-Reverse is working well.</li>
-</ul></div>
+</table></div>
             </div>
         </div>
 

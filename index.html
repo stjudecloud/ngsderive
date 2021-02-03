@@ -64,6 +64,10 @@
 <li>
     <a href="subcommands/encoding/" class="dropdown-item">encoding</a>
 </li>
+                                    
+<li>
+    <a href="subcommands/junction_annotation/" class="dropdown-item">junction-annotation</a>
+</li>
                                 </ul>
                             </li>
                         </ul>
@@ -198,26 +202,23 @@ the tool does not claim 100% accuracy and results should be considered with that
 <h2 id="getting-started">📚 Getting Started</h2>
 <h3 id="installation">Installation</h3>
 <p>You can install ngsderive using the Python Package Index (<a href="https://pypi.org/">PyPI</a>).</p>
-<pre><code class="bash">pip install ngsderive
+<pre><code class="language-bash">pip install ngsderive
 </code></pre>
-
 <h2 id="development">🖥️ Development</h2>
 <p>If you are interested in contributing to the code, please first review
 our <a href="https://github.com/stjudecloud/ngsderive/blob/master/CONTRIBUTING.md">CONTRIBUTING.md</a> document. </p>
 <p>To bootstrap a development environment, please use the following commands.</p>
-<pre><code class="bash"># Clone the repository
+<pre><code class="language-bash"># Clone the repository
 git clone git@github.com:stjudecloud/ngsderive.git
 cd ngsderive
 
 # Install the project using poetry
 poetry install
 </code></pre>
-
 <h2 id="tests">🚧️ Tests</h2>
 <p>ngsderive provides a (currently patchy) set of tests — both unit and end-to-end.</p>
-<pre><code class="bash">py.test
+<pre><code class="language-bash">py.test
 </code></pre>
-
 <h2 id="contributing">🤝 Contributing</h2>
 <p>Contributions, issues and feature requests are welcome!<br />Feel free to check <a href="https://github.com/stjudecloud/ngsderive/issues">issues page</a>. You can also take a look at the <a href="https://github.com/stjudecloud/ngsderive/blob/master/CONTRIBUTING.md">contributing guide</a>.</p>
 <h2 id="license">📝 License</h2>
@@ -260,7 +261,7 @@ poetry install
                 </p>
                 <form>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
                 <div id="mkdocs-search-results"></div>
@@ -314,6 +315,6 @@ poetry install
 </html>
 
 <!--
-MkDocs version : 1.1
-Build Date UTC : 2021-02-03 18:50:28
+MkDocs version : 1.1.2
+Build Date UTC : 2021-02-03 21:03:56.113521+00:00
 -->
