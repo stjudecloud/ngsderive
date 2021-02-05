@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.4.1 (2021-02-05)
+### Fix
+* **junction-annotation:** Capitalize `file` in result outfile ([`fa01f8b`](https://github.com/stjudecloud/ngsderive/commit/fa01f8ba8312ad396bd6161e4d6ae81bbf1388b5))
+
 ## v1.4.0 (2021-02-03)
 ### Feature
 * Junction annotation ([#7](https://github.com/stjudecloud/ngsderive/issues/7)) ([`f723731`](https://github.com/stjudecloud/ngsderive/commit/f723731343a3ab328643fa2d57391c91ef6efd43))
