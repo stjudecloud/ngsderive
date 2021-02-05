@@ -37,7 +37,7 @@ def annotate_junctions(
         ngsfile = NGSFile(ngsfilepath)
     except FileNotFoundError:
         result = {
-            "file": ngsfilepath,
+            "File": ngsfilepath,
             "total_junctions": "N/A",
             "total_splice_events": "N/A",
             "known_junctions": "N/A",
@@ -232,7 +232,7 @@ def annotate_junctions(
         junction_file.close()
 
     result = {
-        "file": ngsfilepath,
+        "File": ngsfilepath,
         "total_junctions": num_known + num_novel + num_partial,
         "total_splice_events": num_known_spliced_reads
         + num_novel_spliced_reads
@@ -276,7 +276,7 @@ def main(
     logger.debug("Done")
 
     fieldnames = [
-        "file",
+        "File",
         "total_junctions",
         "total_splice_events",
         "known_junctions",
