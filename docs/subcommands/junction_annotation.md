@@ -10,3 +10,5 @@ The following criteria are adjustable for junction detection and read filtering:
 | `-q`, `--min-mapq`                   | Minimum read quality to be considered a supporting read (default: `30`)                               |
 | `-m`, `--min-reads`                  | Minimum number of reads supporting a junction for it to be reported (default: `2`)                    |
 | `-k`, `--fuzzy-junction-match-range` | Consider exonic starts/ends within `+-k` bases of a known intron start/end to be known (default: `0`) |
+
+In the resulting `<basename>.junctions.tsv` files, note that the coordinates are 0-based, end-exclusive.
