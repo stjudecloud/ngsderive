@@ -78,7 +78,6 @@ def determine_strandedness(
     min_mapq=30,
     minimum_reads_per_gene=10,
     split_by_rg=False,
-    only_protein_coding_genes=True,
     max_iterations_per_try=1000,
 ):
     try:
@@ -350,7 +349,6 @@ def main(
                 min_mapq=min_mapq,
                 minimum_reads_per_gene=minimum_reads_per_gene,
                 split_by_rg=split_by_rg,
-                only_protein_coding_genes=only_protein_coding_genes,
                 max_iterations_per_try=max_iterations_per_try,
             )
 
