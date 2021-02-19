@@ -23,7 +23,10 @@ def get_filtered_reads_from_region(samfile, gene, min_quality=30, apply_filters=
         yield read
 
 
-def disqualify_gene(gene, gff):
+def disqualify_gene(gene, gff, samfile):
+    if gene["seqname"] not in samfile.references:
+        return True
+
     # if there are overlapping features on the positive and negative strand
     # ignore this gene.
     hits = gff.query(gene["seqname"], gene["start"], gene["end"])
@@ -131,7 +134,7 @@ def determine_strandedness(
         if gene["gene_id"] in checked_genes:
             continue
 
-        if disqualify_gene(gene, gff):
+        if disqualify_gene(gene, gff, samfile):
             continue
 
         logging.debug("== Candidate Gene ==")
