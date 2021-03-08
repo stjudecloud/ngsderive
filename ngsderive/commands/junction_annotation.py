@@ -251,7 +251,6 @@ def main(
     ngsfiles,
     gene_model_file,
     outfile=sys.stdout,
-    delimiter="\t",
     min_intron=50,
     min_mapq=30,
     min_reads=1,
@@ -287,7 +286,7 @@ def main(
         "complete_novel_spliced_reads",
     ]
 
-    writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter=delimiter)
+    writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter="\t")
     writer.writeheader()
     outfile.flush()
 

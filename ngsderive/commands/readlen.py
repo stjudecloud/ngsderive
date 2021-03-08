@@ -13,7 +13,6 @@ logger = logging.getLogger("readlen")
 def main(
     ngsfiles,
     outfile=sys.stdout,
-    delimiter="\t",
     n_samples=100000,
     majority_vote_cutoff=0.7,
 ):
@@ -21,7 +20,7 @@ def main(
     writer = csv.DictWriter(
         outfile,
         fieldnames=["File", "Evidence", "MajorityPctDetected", "ConsensusReadLength"],
-        delimiter=delimiter,
+        delimiter="\t",
     )
     writer.writeheader()
     outfile.flush()

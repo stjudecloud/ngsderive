@@ -44,9 +44,6 @@ def get_args():
         default="stdout",
     )
     common.add_argument(
-        "--delimiter", default="<tab>", help="Delimiter for the outfile."
-    )
-    common.add_argument(
         "--debug", default=False, action="store_true", help="Enable DEBUG log level."
     )
     common.add_argument(
@@ -264,10 +261,6 @@ def process_args(args):
     else:
         args.outfile = open(args.outfile, "w")
 
-    # set delimiter
-    if args.delimiter == "<tab>":
-        args.delimiter = "\t"
-
 
 def run():
     args = get_args()
@@ -277,7 +270,6 @@ def run():
         readlen.main(
             args.ngsfiles,
             outfile=args.outfile,
-            delimiter=args.delimiter,
             n_samples=args.n_samples,
             majority_vote_cutoff=args.majority_vote_cutoff,
         )
@@ -285,7 +277,6 @@ def run():
         instrument.main(
             args.ngsfiles,
             outfile=args.outfile,
-            delimiter=args.delimiter,
             n_samples=args.n_samples,
         )
     if args.subcommand == "strandedness":
@@ -293,7 +284,6 @@ def run():
             args.ngsfiles,
             args.gene_model,
             outfile=args.outfile,
-            delimiter=args.delimiter,
             n_genes=args.n_genes,
             minimum_reads_per_gene=args.minimum_reads_per_gene,
             only_protein_coding_genes=args.only_protein_coding_genes,
@@ -305,7 +295,6 @@ def run():
         encoding.main(
             args.ngsfiles,
             outfile=args.outfile,
-            delimiter=args.delimiter,
             n_samples=args.n_samples,
         )
     if args.subcommand == "junction-annotation":
@@ -313,7 +302,6 @@ def run():
             args.ngsfiles,
             args.gene_model,
             outfile=args.outfile,
-            delimiter=args.delimiter,
             min_intron=args.min_intron,
             min_mapq=args.min_mapq,
             min_reads=args.min_reads,

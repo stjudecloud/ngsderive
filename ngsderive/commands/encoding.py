@@ -17,12 +17,12 @@ ILLUMINA_1_0_SET = set([i for i in range(26, 93)])
 ILLUMINA_1_3_SET = set([i for i in range(31, 93)])
 
 
-def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=1000000):
+def main(ngsfiles, outfile=sys.stdout, n_samples=1000000):
 
     writer = csv.DictWriter(
         outfile,
         fieldnames=["File", "Evidence", "ProbableEncoding"],
-        delimiter=delimiter,
+        delimiter="\t",
     )
     writer.writeheader()
     outfile.flush()

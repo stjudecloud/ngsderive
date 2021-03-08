@@ -184,11 +184,11 @@ def resolve_instrument(
         )
 
 
-def main(ngsfiles, outfile=sys.stdout, delimiter="\t", n_samples=10000):
+def main(ngsfiles, outfile=sys.stdout, n_samples=10000):
     writer = csv.DictWriter(
         outfile,
         fieldnames=["File", "Instrument", "Confidence", "Basis"],
-        delimiter=delimiter,
+        delimiter="\t",
     )
     writer.writeheader()
     outfile.flush()

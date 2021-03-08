@@ -288,7 +288,6 @@ def main(
     ngsfiles,
     gene_model_file,
     outfile=sys.stdout,
-    delimiter="\t",
     n_genes=100,
     minimum_reads_per_gene=10,
     only_protein_coding_genes=True,
@@ -329,7 +328,7 @@ def main(
         fieldnames = ["ReadGroup"] + fieldnames
     fieldnames = ["File"] + fieldnames
 
-    writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter=delimiter)
+    writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter="\t")
     writer.writeheader()
     outfile.flush()
 
