@@ -195,9 +195,11 @@ the tool does not claim 100% accuracy and results should be considered with that
 <h2 id="features">🎨 Features</h2>
 <p>The following attributes can be guessed using ngsderive:</p>
 <ul>
-<li><b>Illumina Instrument.</b> Infer which Illumina instrument was used to generate the data by matching against known instrument and flowcell naming patterns. Each guess comes with a confidence score. </li>
+<li><b>Illumina Instrument.</b> Infer which Illumina instrument was used to generate the data by matching against known instrument and flowcell naming patterns. Each guess comes with a confidence score.</li>
 <li><b>RNA-Seq Strandedness.</b> Infer from the data whether RNA-Seq data was generated using a Stranded-Forward, Stranded-Reverse, or Unstranded protocol.</li>
 <li><b>Pre-trimmed Read Length.</b> Compute the distribution of read lengths in the file and attempt to guess what the original read length of the experiment was.</li>
+<li><b>PHRED Score Encoding.</b> Infers which encoding scheme was used to store PHRED scores as ASCII characters.</li>
+<li><b>Junction Annotation.</b> Annotates splice junctions as novel, partial novel, or known in comparison to a reference gene model.</li>
 </ul>
 <h2 id="getting-started">📚 Getting Started</h2>
 <h3 id="installation">Installation</h3>
@@ -316,5 +318,5 @@ poetry install
 
 <!--
 MkDocs version : 1.1.2
-Build Date UTC : 2021-03-11 16:31:38.967018+00:00
+Build Date UTC : 2021-03-11 17:01:49.962259+00:00
 -->
