@@ -50,9 +50,11 @@
 
 The following attributes can be guessed using ngsderive:
 
-* <b>Illumina Instrument.</b> Infer which Illumina instrument was used to generate the data by matching against known instrument and flowcell naming patterns. Each guess comes with a confidence score. 
+* <b>Illumina Instrument.</b> Infer which Illumina instrument was used to generate the data by matching against known instrument and flowcell naming patterns. Each guess comes with a confidence score.
 * <b>RNA-Seq Strandedness.</b> Infer from the data whether RNA-Seq data was generated using a Stranded-Forward, Stranded-Reverse, or Unstranded protocol.
 * <b>Pre-trimmed Read Length.</b> Compute the distribution of read lengths in the file and attempt to guess what the original read length of the experiment was.
+* <b>PHRED Score Encoding.</b> Infers which encoding scheme was used to store PHRED scores as ASCII characters.
+* <b>Junction Annotation.</b> Annotates splice junctions as novel, partial novel, or known in comparison to a reference gene model.
 
 ## 📚 Getting Started
 
