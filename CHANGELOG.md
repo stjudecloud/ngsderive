@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.0 (2021-03-11)
+### Fix
+* Remove the option to override the default tab output delimiter ([#12](https://github.com/stjudecloud/ngsderive/issues/12)) ([`fbe382d`](https://github.com/stjudecloud/ngsderive/commit/fbe382d67e22f3cc585a86da21b788d7e79f76a3))
+
+### Breaking
+* This removes the `--delimiter` commandline arg ([`fbe382d`](https://github.com/stjudecloud/ngsderive/commit/fbe382d67e22f3cc585a86da21b788d7e79f76a3))
+
 ## v1.4.1 (2021-02-05)
 ### Fix
 * **junction-annotation:** Capitalize `file` in result outfile ([`fa01f8b`](https://github.com/stjudecloud/ngsderive/commit/fa01f8ba8312ad396bd6161e4d6ae81bbf1388b5))
