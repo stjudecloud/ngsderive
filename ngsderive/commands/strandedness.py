@@ -23,7 +23,10 @@ def get_filtered_reads_from_region(samfile, gene, min_quality=30, apply_filters=
         yield read
 
 
-def disqualify_gene(gene, gff):
+def disqualify_gene(gene, gff, samfile):
+    if gene["seqname"] not in samfile.references:
+        return True
+
     # if there are overlapping features on the positive and negative strand
     # ignore this gene.
     hits = gff.query(gene["seqname"], gene["start"], gene["end"])
@@ -75,7 +78,6 @@ def determine_strandedness(
     min_mapq=30,
     minimum_reads_per_gene=10,
     split_by_rg=False,
-    only_protein_coding_genes=True,
     max_iterations_per_try=1000,
 ):
     try:
@@ -131,7 +133,7 @@ def determine_strandedness(
         if gene["gene_id"] in checked_genes:
             continue
 
-        if disqualify_gene(gene, gff):
+        if disqualify_gene(gene, gff, samfile):
             continue
 
         logging.debug("== Candidate Gene ==")
@@ -346,7 +348,6 @@ def main(
                 min_mapq=min_mapq,
                 minimum_reads_per_gene=minimum_reads_per_gene,
                 split_by_rg=split_by_rg,
-                only_protein_coding_genes=only_protein_coding_genes,
                 max_iterations_per_try=max_iterations_per_try,
             )
 
