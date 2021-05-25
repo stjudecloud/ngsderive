@@ -171,7 +171,7 @@ def sort_gff(filename):
             score,
             strand,
             frame,
-            attribute,
+            attributes,
         ] = line.split("\t")
 
         result = [
@@ -183,7 +183,7 @@ def sort_gff(filename):
             score,
             strand,
             frame,
-            attribute.replace(';"', '"').replace(
+            attributes.replace(';"', '"').replace(
                 ";-", "-"
             ),  # correct error in ensemble 78 release
         ]
@@ -194,7 +194,7 @@ def sort_gff(filename):
     for line in header_lines:
         print(line, file=new_gff)
     for entry in entries:
-        print("\t".join([str(_) for _ in entry]), file=new_gff)
+        print("\t".join([str(field) for field in entry]), file=new_gff)
     new_gff.close()
     subprocess.run(["bgzip", "-f", sorted_gff_name], check=True)
     subprocess.run(["tabix", "-p", "gff", compressed_gff_name], check=True)
@@ -301,7 +301,7 @@ class GFF:
                 score,
                 strand,
                 frame,
-                attribute,
+                attributes,
             ] = line.split("\t")
 
             if self.feature_type and feature != self.feature_type:
@@ -310,7 +310,7 @@ class GFF:
             if self.gene_blacklist:
                 selected_bad_gene = False
                 for bad_gene in self.gene_blacklist:
-                    if bad_gene in attribute:
+                    if bad_gene in attributes:
                         selected_bad_gene = True
                         break
                 if selected_bad_gene:
@@ -327,10 +327,10 @@ class GFF:
                 "frame": frame,
             }
 
-            attribute = attribute.replace(';"', '"').replace(
+            attributes = attributes.replace(';"', '"').replace(
                 ";-", "-"
             )  # correct error in ensemble 78 release
-            for attr_raw in [s.strip() for s in attribute.split(";")]:
+            for attr_raw in [s.strip() for s in attributes.split(";")]:
                 if not attr_raw:
                     continue
 
@@ -379,10 +379,10 @@ class GFF:
                 "frame": hit[7],
             }
 
-            attribute = (
+            attributes = (
                 hit[8].replace(';"', '"').replace(";-", "-")
             )  # correct error in ensemble 78 release
-            for attr_raw in [s.strip() for s in attribute.split(";")]:
+            for attr_raw in [s.strip() for s in attributes.split(";")]:
                 if not attr_raw or attr_raw == "":
                     continue
 

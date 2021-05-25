@@ -89,7 +89,7 @@ def annotate_junctions(
         ]
         if not events:
             logger.debug(
-                f"No valid splice junctions on {contig}. {len(found_introns)} potential junctions too short."
+                f"No valid splice junctions in {contig}. {len(found_introns)} potential junctions too short."
             )
             continue
         logger.debug(
@@ -291,7 +291,8 @@ def main(
     outfile.flush()
 
     junction_dir = Path(junction_dir)
-    junction_dir.mkdir(parents=True, exist_ok=True)
+    if not disable_junction_files:
+        junction_dir.mkdir(parents=True, exist_ok=True)
 
     for ngsfilepath in ngsfiles:
         entry = annotate_junctions(
