@@ -210,7 +210,7 @@ class GFF:
         store_results=False,
         need_tabix=False,
         feature_type=None,
-        gene_blacklist=None,
+        gene_exclude_list=None,
         only_protein_coding_genes=False,
     ):
         if not os.path.isfile(filename):
@@ -228,10 +228,10 @@ class GFF:
         self.basename = os.path.basename(self.filename)
         self.df = None
         self.entries = None
-        self.gene_blacklist = None
-        if gene_blacklist:
-            self.gene_blacklist = set(
-                [item.strip() for item in open(gene_blacklist, "r").readlines()]
+        self.gene_exclude_list = None
+        if gene_exclude_list:
+            self.gene_exclude_list = set(
+                [item.strip() for item in open(gene_exclude_list, "r").readlines()]
             )
         self.feature_type = feature_type
 
@@ -240,12 +240,14 @@ class GFF:
                 self.df = read_gtf(filename, features=[self.feature_type])
             else:
                 self.df = read_gtf(filename)
-            if self.gene_blacklist:
+            if self.gene_exclude_list:
                 if "gene_name" in self.df.columns:
-                    self.df = self.df[self.df["gene_name"] not in self.gene_blacklist]
+                    self.df = self.df[
+                        self.df["gene_name"] not in self.gene_exclude_list
+                    ]
                 else:
                     logger.warning(
-                        "`gene_name` field missing from GFF; could not filter using provided gene blacklist."
+                        "`gene_name` field missing from GFF; could not filter using provided gene exclude_list."
                     )
             if only_protein_coding_genes:
                 if "gene_type" in self.df:  # Gencode
@@ -307,9 +309,9 @@ class GFF:
             if self.feature_type and feature != self.feature_type:
                 continue
 
-            if self.gene_blacklist:
+            if self.gene_exclude_list:
                 selected_bad_gene = False
-                for bad_gene in self.gene_blacklist:
+                for bad_gene in self.gene_exclude_list:
                     if bad_gene in attributes:
                         selected_bad_gene = True
                         break
@@ -359,9 +361,9 @@ class GFF:
         raw_hits = self.tabix.query(chr, start, end)
         hits = []
         for hit in raw_hits:
-            if self.gene_blacklist:
+            if self.gene_exclude_list:
                 selected_bad_gene = False
-                for bad_gene in self.gene_blacklist:
+                for bad_gene in self.gene_exclude_list:
                     if bad_gene in hit[8]:
                         selected_bad_gene = True
                         break
