@@ -76,7 +76,7 @@ flowcell_ids = {
     "^A[A-Z0-9]{4}$": ["MiSeq"],  # MiSeq flow cell
     "^B[A-Z0-9]{4}$": ["MiSeq"],  # MiSeq flow cell
     "^D[A-Z0-9]{4}$": ["MiSeq"],  # MiSeq nano flow cell
-    # "^D[A-Z0-9]{4}$" : ["HiSeq 2000", "HiSeq 2500"],                                 # Unknown HiSeq flow cell examined in SJ data
+    # "^D[A-Z0-9]{4}$" : ["HiSeq 2000", "HiSeq 2500"],  # Unknown HiSeq flow cell examined in SJ data
     "^G[A-Z0-9]{4}$": ["MiSeq"],  # MiSeq micro flow cell
 }
 
@@ -161,10 +161,18 @@ def resolve_instrument(
         return possible_instruments_by_fcid, confidence, "flowcell id"
 
     if len(possible_instruments_by_fcid) == 0:
-        confidence = "medium confidence"
-        if len(possible_instruments_by_fcid) > 1:
+        if not malformed_read_names_detected:
+            confidence = "medium confidence"
+            if len(possible_instruments_by_fcid) > 1:
+                confidence = "low confidence"
+            return possible_instruments_by_iid, confidence, "instrument id"
+        else:
             confidence = "low confidence"
-        return possible_instruments_by_iid, confidence, "instrument id"
+            return (
+                possible_instruments_by_iid,
+                confidence,
+                "instrument id recovered, but read names malformed",
+            )
 
     overlapping_instruments = possible_instruments_by_iid & possible_instruments_by_fcid
     if len(overlapping_instruments) == 0:
@@ -220,6 +228,8 @@ def main(ngsfiles, outfile=sys.stdout, n_samples=10000):
             parts = read["query_name"].split(":")
             if len(parts) != 7:  # not Illumina format
                 malformed_read_names = True
+                iid = parts[0]  # attempt to recover machine name
+                instruments.add(iid)
                 continue
             iid, fcid = parts[0], parts[2]
             instruments.add(iid)
