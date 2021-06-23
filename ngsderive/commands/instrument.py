@@ -171,7 +171,7 @@ def resolve_instrument(
             return (
                 possible_instruments_by_iid,
                 confidence,
-                "instrument id recovered, but read names malformed",
+                "instrument id",
             )
 
     overlapping_instruments = possible_instruments_by_iid & possible_instruments_by_fcid
@@ -230,11 +230,20 @@ def main(ngsfiles, outfile=sys.stdout, n_samples=10000):
                 malformed_read_names = True
                 iid = parts[0]  # attempt to recover machine name
                 instruments.add(iid)
+                for rg in ngsfile.handle.header.to_dict()["RG"]:
+                    if rg["ID"] == read["read_group"]:
+                        if "PU" in rg:
+                            flowcells.add(rg["PU"])
+                        if "PM" in rg:
+                            instruments.add(rg["PM"])
                 continue
             iid, fcid = parts[0], parts[2]
             instruments.add(iid)
             flowcells.add(fcid)
-
+        if malformed_read_names:
+            logger.warning(
+                "Encountered read names not in Illumina format. Recovery attempted."
+            )
         (
             possible_instruments_by_iid,
             detected_instrument_by_iid,
