@@ -163,7 +163,7 @@ def resolve_instrument(
     if len(possible_instruments_by_fcid) == 0:
         if not malformed_read_names_detected:
             confidence = "medium confidence"
-            if len(possible_instruments_by_fcid) > 1:
+            if len(possible_instruments_by_iid) > 1:
                 confidence = "low confidence"
             return possible_instruments_by_iid, confidence, "instrument id"
         else:
