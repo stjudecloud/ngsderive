@@ -154,10 +154,14 @@ def resolve_instrument(
             return set(["unknown"]), "no confidence", "no match"
 
     if len(possible_instruments_by_iid) == 0:
-        confidence = "medium confidence"
-        if len(possible_instruments_by_fcid) > 1:
+        if not malformed_read_names_detected:
+            confidence = "medium confidence"
+            if len(possible_instruments_by_fcid) > 1:
+                confidence = "low confidence"
+            return possible_instruments_by_fcid, confidence, "flowcell id"
+        else:
             confidence = "low confidence"
-        return possible_instruments_by_fcid, confidence, "flowcell id"
+            return possible_instruments_by_fcid, confidence, "flowcell id"
 
     if len(possible_instruments_by_fcid) == 0:
         if not malformed_read_names_detected:
