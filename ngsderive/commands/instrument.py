@@ -109,7 +109,6 @@ def predict_instrument_from_iids(iids):
 
 def derive_instrument_from_fcid(fcid):
     matching_instruments = set()
-    detected_at_least_one_instrument = False
 
     for pattern in flowcell_ids.keys():
         if re.search(pattern, fcid):
