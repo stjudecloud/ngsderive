@@ -47,37 +47,31 @@ def main(ngsfiles, outfile=sys.stdout, n_samples=1000000):
         for read in itertools.islice(ngsfile, n_samples):
             score_set.update(read["quality"])
 
-        max_phred_score = str(max(score_set) + 33)
-        min_phred_score = str(min(score_set) + 33)
+        highest_ascii = str(max(score_set) + 33)
+        lowest_ascii = str(min(score_set) + 33)
         if score_set <= ILLUMINA_1_3_SET:
             result = {
                 "File": ngsfilepath,
-                "Evidence": "ASCII range: {}-{}".format(
-                    min_phred_score, max_phred_score
-                ),
+                "Evidence": "ASCII range: {}-{}".format(lowest_ascii, highest_ascii),
                 "ProbableEncoding": "Illumina 1.3",
             }
         elif score_set <= ILLUMINA_1_0_SET:
             result = {
                 "File": ngsfilepath,
-                "Evidence": "ASCII range: {}-{}".format(
-                    min_phred_score, max_phred_score
-                ),
+                "Evidence": "ASCII range: {}-{}".format(lowest_ascii, highest_ascii),
                 "ProbableEncoding": "Solexa/Illumina 1.0",
             }
         elif score_set <= SANGER_SET:
             result = {
                 "File": ngsfilepath,
-                "Evidence": "ASCII range: {}-{}".format(
-                    min_phred_score, max_phred_score
-                ),
+                "Evidence": "ASCII range: {}-{}".format(lowest_ascii, highest_ascii),
                 "ProbableEncoding": "Sanger/Illumina 1.8",
             }
         else:
             result = {
                 "File": ngsfilepath,
                 "Evidence": "ASCII values outside known PHRED encoding ranges: {}-{}".format(
-                    min_phred_score, max_phred_score
+                    lowest_ascii, highest_ascii
                 ),
                 "ProbableEncoding": "Unknown",
             }

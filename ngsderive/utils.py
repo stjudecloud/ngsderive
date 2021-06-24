@@ -71,6 +71,7 @@ class NGSFile:
     def __next__(self):
         query_name = None
         query = None
+        read_group = None
         quality = None
         if self.filetype == NGSFileType.FASTQ:
             query_name = self.handle.readline().strip()
@@ -101,15 +102,31 @@ class NGSFile:
             read = next(self.handle)
             query_name = read.query_name
             query = read.query_alignment_sequence
+            read_group = read.get_tag("RG")
             if self.store_qualities:
                 quality = read.query_alignment_qualities
 
         self.read_num += 1
 
         if self.store_qualities:
-            return {"query_name": query_name, "query": query, "quality": quality}
+            if read_group:
+                return {
+                    "query_name": query_name,
+                    "query": query,
+                    "read_group": read_group,
+                    "quality": quality,
+                }
+            else:
+                return {"query_name": query_name, "query": query, "quality": quality}
         else:
-            return {"query_name": query_name, "query": query}
+            if read_group:
+                return {
+                    "query_name": query_name,
+                    "query": query,
+                    "read_group": read_group,
+                }
+            else:
+                return {"query_name": query_name, "query": query}
 
 
 def sort_gff(filename):

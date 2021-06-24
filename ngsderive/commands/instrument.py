@@ -76,7 +76,7 @@ flowcell_ids = {
     "^A[A-Z0-9]{4}$": ["MiSeq"],  # MiSeq flow cell
     "^B[A-Z0-9]{4}$": ["MiSeq"],  # MiSeq flow cell
     "^D[A-Z0-9]{4}$": ["MiSeq"],  # MiSeq nano flow cell
-    # "^D[A-Z0-9]{4}$" : ["HiSeq 2000", "HiSeq 2500"],                                 # Unknown HiSeq flow cell examined in SJ data
+    # "^D[A-Z0-9]{4}$" : ["HiSeq 2000", "HiSeq 2500"],  # Unknown HiSeq flow cell examined in SJ data
     "^G[A-Z0-9]{4}$": ["MiSeq"],  # MiSeq micro flow cell
 }
 
@@ -109,7 +109,6 @@ def predict_instrument_from_iids(iids):
 
 def derive_instrument_from_fcid(fcid):
     matching_instruments = set()
-    detected_at_least_one_instrument = False
 
     for pattern in flowcell_ids.keys():
         if re.search(pattern, fcid):
@@ -155,16 +154,28 @@ def resolve_instrument(
             return set(["unknown"]), "no confidence", "no match"
 
     if len(possible_instruments_by_iid) == 0:
-        confidence = "medium confidence"
-        if len(possible_instruments_by_fcid) > 1:
+        if not malformed_read_names_detected:
+            confidence = "medium confidence"
+            if len(possible_instruments_by_fcid) > 1:
+                confidence = "low confidence"
+            return possible_instruments_by_fcid, confidence, "flowcell id"
+        else:
             confidence = "low confidence"
-        return possible_instruments_by_fcid, confidence, "flowcell id"
+            return possible_instruments_by_fcid, confidence, "flowcell id"
 
     if len(possible_instruments_by_fcid) == 0:
-        confidence = "medium confidence"
-        if len(possible_instruments_by_fcid) > 1:
+        if not malformed_read_names_detected:
+            confidence = "medium confidence"
+            if len(possible_instruments_by_iid) > 1:
+                confidence = "low confidence"
+            return possible_instruments_by_iid, confidence, "instrument id"
+        else:
             confidence = "low confidence"
-        return possible_instruments_by_iid, confidence, "instrument id"
+            return (
+                possible_instruments_by_iid,
+                confidence,
+                "instrument id",
+            )
 
     overlapping_instruments = possible_instruments_by_iid & possible_instruments_by_fcid
     if len(overlapping_instruments) == 0:
@@ -220,11 +231,22 @@ def main(ngsfiles, outfile=sys.stdout, n_samples=10000):
             parts = read["query_name"].split(":")
             if len(parts) != 7:  # not Illumina format
                 malformed_read_names = True
+                iid = parts[0]  # attempt to recover machine name
+                instruments.add(iid)
+                for rg in ngsfile.handle.header.to_dict()["RG"]:
+                    if rg["ID"] == read["read_group"]:
+                        if "PU" in rg:
+                            flowcells.add(rg["PU"])
+                        if "PM" in rg:
+                            instruments.add(rg["PM"])
                 continue
             iid, fcid = parts[0], parts[2]
             instruments.add(iid)
             flowcells.add(fcid)
-
+        if malformed_read_names:
+            logger.warning(
+                "Encountered read names not in Illumina format. Recovery attempted."
+            )
         (
             possible_instruments_by_iid,
             detected_instrument_by_iid,
