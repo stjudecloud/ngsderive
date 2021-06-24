@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v2.2.0 (2021-06-24)
+### Feature
+* **instrument:** Attempt to recover when read names not in Illumina format ([#14](https://github.com/stjudecloud/ngsderive/issues/14)) ([`9ab0951`](https://github.com/stjudecloud/ngsderive/commit/9ab0951a04bdcffdd12f2291ec25c46d74d666d1))
+
 ## v2.1.0 (2021-04-05)
 ### Feature
 * Instead of failing on an unknown contig, try new gene ([#11](https://github.com/stjudecloud/ngsderive/issues/11)) ([`6ff35a5`](https://github.com/stjudecloud/ngsderive/commit/6ff35a5c033c5d16145562cb85a2177c65ddd478))
