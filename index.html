@@ -173,7 +173,7 @@
 
 
   <p align="center">
-    Forensic analysis tool useful in backwards computing information from next-generation sequencing data. 
+    Forensic analysis tool useful in backwards computing information from next-generation sequencing data and annotating splice junctions.
     <br />
     <a href="https://stjudecloud.github.io/ngsderive/"><strong>Explore the docs »</strong></a>
     <br />
@@ -188,9 +188,10 @@
 </p>
 
 <blockquote>
-<p>Notice: <code>ngsderive</code> is a forensic analysis tool useful in backwards computing information 
-from next-generation sequencing data. Notably, results are provided as a 'best guess' — 
-the tool does not claim 100% accuracy and results should be considered with that understanding.</p>
+<p>Notice: <code>ngsderive</code> is largely a forensic analysis tool useful in backwards computing information
+from next-generation sequencing data. Notably, most results are provided as a 'best guess' —
+the tool does not claim 100% accuracy and results should be considered with that understanding.
+An exception would be the <code>junction-annotation</code> tool which analyzes more concrete evidence than the other tools.</p>
 </blockquote>
 <h2 id="features">🎨 Features</h2>
 <p>The following attributes can be guessed using ngsderive:</p>
@@ -227,7 +228,7 @@ poetry install
 <p>This project is licensed as follows:</p>
 <ul>
 <li>All code related to the <code>instrument</code> subcommand is licensed under the <a href="http://www.affero.org/agpl2.html">AGPL
-  v2.0</a>. This is not due any strict requirement, but out of deference
+  v2.0</a>. This is not due to any strict requirement, but out of deference
   to some <a href="https://github.com/10XGenomics/supernova/blob/master/tenkit/lib/python/tenkit/illumina_instrument.py">code</a> I drew inspiration from (and copied patterns
   from), the decision was made to license this code consistently.</li>
 <li>The rest of the project is licensed under the MIT License - see the
@@ -318,5 +319,5 @@ poetry install
 
 <!--
 MkDocs version : 1.1.2
-Build Date UTC : 2021-06-24 16:48:12.623036+00:00
+Build Date UTC : 2021-06-25 17:10:58.285263+00:00
 -->
