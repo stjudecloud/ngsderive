@@ -28,7 +28,7 @@
 
 
   <p align="center">
-    Forensic analysis tool useful in backwards computing information from next-generation sequencing data. 
+    Forensic analysis tool useful in backwards computing information from next-generation sequencing data and annotating splice junctions.
     <br />
     <a href="https://stjudecloud.github.io/ngsderive/"><strong>Explore the docs »</strong></a>
     <br />
@@ -42,9 +42,10 @@
   </p>
 </p>
 
-> Notice: `ngsderive` is a forensic analysis tool useful in backwards computing information 
-> from next-generation sequencing data. Notably, results are provided as a 'best guess' — 
+> Notice: `ngsderive` is largely a forensic analysis tool useful in backwards computing information
+> from next-generation sequencing data. Notably, most results are provided as a 'best guess' —
 > the tool does not claim 100% accuracy and results should be considered with that understanding.
+> An exception would be the `junction-annotation` tool which analyzes more concrete evidence than the other tools.
 
 ## 🎨 Features
 
@@ -99,7 +100,7 @@ Contributions, issues and feature requests are welcome!<br />Feel free to check 
 This project is licensed as follows:
 
 * All code related to the `instrument` subcommand is licensed under the [AGPL
-  v2.0][agpl-v2]. This is not due any strict requirement, but out of deference
+  v2.0][agpl-v2]. This is not due to any strict requirement, but out of deference
   to some [code][10x-inspiration] I drew inspiration from (and copied patterns
   from), the decision was made to license this code consistently.
 * The rest of the project is licensed under the MIT License - see the

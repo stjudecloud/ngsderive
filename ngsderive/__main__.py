@@ -169,7 +169,7 @@ def get_args():
     junction_annotation.add_argument(
         "-d",
         "--disable-junction-files",
-        help="Disable generating junction files in current working directory.",
+        help="Disable generating junction files.",
         action="store_true",
     )
     junction_annotation.add_argument(
@@ -183,7 +183,7 @@ def get_args():
         "-q",
         "--min-mapq",
         type=int,
-        help="Minimum MAPQ to consider for reads.",
+        help="Minimum MAPQ to consider for supporting reads.",
         default=30,
     )
     junction_annotation.add_argument(
