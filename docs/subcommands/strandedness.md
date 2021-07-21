@@ -115,7 +115,10 @@ the first `n` reads that match its criteria. If the BAM is coordinate sorted,
 this would mean its not uncommon to have all of the evidence at the beginning of
 `chr1`. Anecdotally, this method differs in that it is slightly slower than
 `infer_experiment.py` but is expected to be more robust to biases caused by
-which reads are sampled.
+which reads are sampled. Further, reads within RSeQC may fall into ambiguous
+regions for which a read is not decisively evidence for a particular strandedness.
+These cases are eliminated by the use of (a) filtering to only coding regions and
+(b) removal of any regions of the gene model for which genes overlap on each strand.
 
 ## Limitations
 
