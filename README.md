@@ -69,8 +69,7 @@ pip install ngsderive
 
 ## 🖥️ Development
 
-If you are interested in contributing to the code, please first review
-our [CONTRIBUTING.md][contributing-md] document. 
+If you are interested in contributing to the code, please first review our [CONTRIBUTING.md][contributing-md] document. 
 
 To bootstrap a development environment, please use the following commands.
 
@@ -99,12 +98,8 @@ Contributions, issues and feature requests are welcome!<br />Feel free to check 
 
 This project is licensed as follows:
 
-* All code related to the `instrument` subcommand is licensed under the [AGPL
-  v2.0][agpl-v2]. This is not due to any strict requirement, but out of deference
-  to some [code][10x-inspiration] I drew inspiration from (and copied patterns
-  from), the decision was made to license this code consistently.
-* The rest of the project is licensed under the MIT License - see the
-  [LICENSE.md](LICENSE.md) file for details.
+* All code related to the `instrument` subcommand is licensed under the [AGPL v2.0][agpl-v2]. This is not due to any strict requirement, but out of deference to some [code][10x-inspiration] I drew inspiration from (and copied patterns from), the decision was made to license this code consistently.
+* The rest of the project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
 Copyright © 2020 [St. Jude Cloud Team](https://github.com/stjudecloud).<br />
 
