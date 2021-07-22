@@ -17,7 +17,7 @@ Given the notation above, the following lookup table can be used to see whether 
 | `1++`, `1--`, `2+-`, `2-+` | Forward                        |
 | `2++`, `2--`, `1+-`, `1-+` | Reverse                        |
 
-Any valid GTF or GFF file should be compatible with `ngsderive`. The strandedness check requires random access of the gene model, which means the file must be sorted and tabixed. If you supply an unsorted or untabixed GTF/GFF, we will create one for you using the supplied file. If you encounter any errors related to your gene model choice, please let us know using GitHub Issues.
+Any valid GTF or GFF file should be compatible with `ngsderive`. The strandedness check requires random access of the gene model, which means the file must be sorted and tabixed. If you supply an unsorted or untabixed GTF/GFF, we will create one for you using the supplied file. If you encounter any errors related to your gene model choice, please let us know using [GitHub Issues][issues].
 
 ## Algorithm
 
@@ -53,7 +53,8 @@ The most popular strandedness inference tool that the author is aware of is RSeQ
 
 ## Limitations
 
-* Does not yet work with single-end data (simply because the author doesn't have any on hand). The tool will throw an error if any unpaired reads are discovered (let us know in the issues if you need this supported).
+* Does not yet work with single-end data (simply because the author doesn't have any on hand). The tool will throw an error if any unpaired reads are discovered (let us know in [the issues][issues] if you need this supported).
 * Though hundreds of Unstranded and Stranded-Reverse data has been tested and verified, Stranded-Forward data has not been tested to work with this tool (simply because the author doesn't have on hand). We do not anticipate any issues since Stranded-Reverse is working well.
 
 [gencode-website]: https://www.gencodegenes.org
+[issues]: https://github.com/stjudecloud/ngsderive/issues
