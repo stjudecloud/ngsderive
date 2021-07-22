@@ -173,10 +173,10 @@ def sort_gff(filename):
 
         if not line:
             continue
-        elif not header_parsed and line[0] == "#":
+        if not header_parsed and line[0] == "#":
             header_lines.append(line)
             continue
-        elif line[0] == "#":
+        if line[0] == "#":
             continue
         header_parsed = True
 
