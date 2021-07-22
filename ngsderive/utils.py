@@ -4,13 +4,14 @@ import logging
 import os
 import random
 import re
-import tabix
-import pysam
 import subprocess
 from collections import defaultdict
-from gtfparse import read_gtf
-from sortedcontainers import SortedList
 from operator import itemgetter
+
+import gtfparse
+import pysam
+import tabix
+from sortedcontainers import SortedList
 
 logger = logging.getLogger("utils")
 
@@ -172,10 +173,10 @@ def sort_gff(filename):
 
         if not line:
             continue
-        elif not header_parsed and line[0] == "#":
+        if not header_parsed and line[0] == "#":
             header_lines.append(line)
             continue
-        elif line[0] == "#":
+        if line[0] == "#":
             continue
         header_parsed = True
 
@@ -254,9 +255,9 @@ class GFF:
 
         if dataframe_mode:
             if self.feature_type:
-                self.df = read_gtf(filename, features=[self.feature_type])
+                self.df = gtfparse.read_gtf(filename, features=[self.feature_type])
             else:
-                self.df = read_gtf(filename)
+                self.df = gtfparse.read_gtf(filename)
             if self.gene_exclude_list:
                 if "gene_name" in self.df.columns:
                     self.df = self.df[

@@ -63,7 +63,11 @@ def get_predicted_strandedness(forward_evidence_pct, reverse_evidence_pct):
     predicted = "Inconclusive"
     if 0.4 <= forward_evidence_pct and forward_evidence_pct <= 0.6:
         predicted = "Unstranded"
-    if 0.8 <= forward_evidence_pct:
+    # This second Unstranded check is redundant with the first check,
+    # but more explicit
+    elif 0.4 <= reverse_evidence_pct and reverse_evidence_pct <= 0.6:
+        predicted = "Unstranded"
+    elif 0.8 <= forward_evidence_pct:
         predicted = "Stranded-Forward"
     elif 0.8 <= reverse_evidence_pct:
         predicted = "Stranded-Reverse"
