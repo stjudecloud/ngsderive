@@ -59,10 +59,10 @@ def main(
 
     for ngsfilepath in ngsfiles:
         results = dict()
-        logger.info(
-            f"Beginning annotate_junctions() with a sample rate of {sample_percent / 100}"
-        )
         for sample_percent in sample_percents:
+            logger.info(
+                f"Beginning annotate_junctions() with a sample rate of {sample_percent / 100}"
+            )
             result = annotate_junctions(
                 ngsfilepath,
                 cache,
@@ -80,9 +80,9 @@ def main(
             value
             for percent in sample_percents
             for value in (
-                results[percent]["known_junctions"],
-                results[percent]["partial_novel_junctions"],
-                results[percent]["complete_novel_junctions"],
+                str(results[percent]["known_junctions"]),
+                str(results[percent]["partial_novel_junctions"]),
+                str(results[percent]["complete_novel_junctions"]),
             )
         ]
 
