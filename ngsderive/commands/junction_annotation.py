@@ -2,6 +2,7 @@ import logging
 import sys
 import os
 import csv
+import random
 
 from collections import defaultdict
 from pathlib import Path
@@ -32,6 +33,7 @@ def annotate_junctions(
     fuzzy_range,
     junction_dir,
     disable_junction_files,
+    sample_rate=1,
 ):
     try:
         ngsfile = NGSFile(ngsfilepath)
@@ -47,7 +49,7 @@ def annotate_junctions(
             "complete_novel_spliced_reads": "N/A",
             "partial_novel_spliced_reads": "N/A",
         }
-        return [result]
+        return result
 
     if ngsfile.filetype != NGSFileType.BAM:
         raise RuntimeError(
@@ -95,6 +97,11 @@ def annotate_junctions(
         logger.debug(
             f"Found {len(events)} potential splice junctions. {len(found_introns) - len(events)} potential junctions too short."
         )
+
+        if sample_rate < 1:
+            n_samples = round(len(events) * sample_rate)
+            events = random.sample(events, n_samples)
+            logger.debug(f"Randomly sampled {n_samples} events.")
 
         if contig not in cache.exon_starts:
             logger.info(f"{contig} not found in GFF. All events novel.")

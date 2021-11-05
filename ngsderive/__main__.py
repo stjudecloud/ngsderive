@@ -12,6 +12,7 @@ from ngsderive.commands import (
     strandedness,
     encoding,
     junction_annotation,
+    junction_saturation,
 )
 
 logger = logging.getLogger("ngsderive")
@@ -201,6 +202,62 @@ def get_args():
         default=0,
     )
 
+    junction_saturation = subparsers.add_parser(
+        "junction-saturation", parents=[common], formatter_class=SaneFormatter
+    )
+    junction_saturation.add_argument(
+        "-g", "--gene-model", help="Gene model as a GFF/GTF file.", required=True
+    )
+    junction_saturation.add_argument(
+        "-s",
+        "--sample-start",
+        type=int,
+        help="Percentage to begin sampling.",
+        default=5,
+    )
+    junction_saturation.add_argument(
+        "-p",
+        "--sample-step",
+        type=int,
+        help="Percentage to step between sample-start and sample-end.",
+        default=5,
+    )
+    junction_saturation.add_argument(
+        "-e",
+        "--sample-end",
+        type=int,
+        help="Percentage to stop sampling.",
+        default=100,
+    )
+    junction_saturation.add_argument(
+        "-i",
+        "--min-intron",
+        type=int,
+        help="Minimum size of intron to be considered a splice.",
+        default=50,
+    )
+    junction_saturation.add_argument(
+        "-q",
+        "--min-mapq",
+        type=int,
+        help="Minimum MAPQ to consider for supporting reads.",
+        default=30,
+    )
+    junction_saturation.add_argument(
+        "-m",
+        "--min-reads",
+        type=int,
+        help="Filter any junctions that don't have at least `m` reads.",
+        default=2,
+    )
+    junction_saturation.add_argument(
+        "-k",
+        "--fuzzy-junction-match-range",
+        type=int,
+        help="Consider found splices within `+-k` bases of a known splice event annotated.",
+        default=0,
+    )
+
     args = parser.parse_args()
     if not args.subcommand:
         parser.print_help()
@@ -261,6 +318,21 @@ def process_args(args):
     else:
         args.outfile = open(args.outfile, "w")
 
+    # check junction-saturation args
+    if args.subcommand == "junction-saturation":
+        if (
+            (not 0 <= args.sample_start and not args.sample_start <= 100)
+            or (not 0 <= args.sample_step and not args.sample_step <= 100)
+            or (not 0 <= args.sample_end and not args.sample_end <= 100)
+        ):
+            raise argparse.ArgumentError(
+                "--sample-start, --sample-step, and --sample-end must be percentages between 0 and 100 (inclusive)"
+            )
+        if args.sample_start > args.sample_end:
+            raise argparse.ArgumentError(
+                "--sample-start must be less than --sample-end"
+            )
+
 
 def run():
     args = get_args()
@@ -308,4 +380,17 @@ def run():
             fuzzy_range=args.fuzzy_junction_match_range,
             junction_dir=args.junction_files_dir,
             disable_junction_files=args.disable_junction_files,
+        )
+    if args.subcommand == "junction-saturation":
+        junction_saturation.main(
+            args.ngsfiles,
+            args.gene_model,
+            outfile=args.outfile,
+            sample_start=args.sample_start,
+            sample_step=args.sample_step,
+            sample_end=args.sample_end,
+            min_intron=args.min_intron,
+            min_mapq=args.min_mapq,
+            min_reads=args.min_reads,
+            fuzzy_range=args.fuzzy_junction_match_range,
         )
