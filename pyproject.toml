@@ -31,24 +31,24 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-colorlog = "^4.0.2"
-pysam = "^0.15.3"
-rstr = "^2.2.6"
+python = "^3.9"
+colorlog = "^6.6.0"
+rstr = "^3.0.0"
 gtfparse = "^1.2.1"
-sortedcontainers = "^2.3.0"
+sortedcontainers = "^2.4.0"
 pytabix = "^0.1"
+pysam = "^0.18"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.3.5"
-twine = "^3.1.1"
-mkdocs = "^1.1"
+pytest = "^6.2.5"
+twine = "^3.7"
+mkdocs = "^1.2.3"
 mkdocs-bootswatch = "^1.1"
-python-semantic-release = "^7.11.0"
-pycodestyle = "^2.6.0"
-black = {version = "^20.8b1", allow-prereleases = true}
-mypy = "^0.790"
-pydocstyle = "^5.1.1"
+python-semantic-release = "^7.23.0"
+pycodestyle = "^2.8.0"
+black = {version = "^21.11b1", allow-prereleases = true}
+mypy = "^0.910"
+pydocstyle = "^6.1.1"
 
 
 [tool.poetry.scripts]
