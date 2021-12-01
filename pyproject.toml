@@ -31,7 +31,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 colorlog = "^6.6.0"
 rstr = "^3.0.0"
 gtfparse = "^1.2.1"
