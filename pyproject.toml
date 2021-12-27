@@ -47,7 +47,7 @@ mkdocs-bootswatch = "^1.1"
 python-semantic-release = "^7.23.0"
 pycodestyle = "^2.8.0"
 black = {version = "^21.12b0", allow-prereleases = true}
-mypy = "^0.920"
+mypy = "^0.930"
 pydocstyle = "^6.1.1"
 
 
