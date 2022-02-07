@@ -41,7 +41,7 @@ pysam = "^0.18"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
-twine = "^3.7"
+twine = "^3.8"
 mkdocs = "^1.2.3"
 mkdocs-bootswatch = "^1.1"
 python-semantic-release = "^7.23.0"
