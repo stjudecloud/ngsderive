@@ -45,7 +45,7 @@ This lookup table is used for the classification of strandedness based on the ev
 | 80% <= `reverse_reads_pct`        | `Stranded-Reverse` |
 | Else                              | `Inconclusive`     |
 
-The tool will repeat the strandedness test at most `--max-tries` times to try to find a non-`Inconclusive` prediction.
+The tool will repeat the strandedness test at most `--max-tries` times to try to find a non-`Inconclusive` prediction. Results are cumulative, so each repeated test adds to the sample size used to derive strandedness.
 
 ## Differences
 
