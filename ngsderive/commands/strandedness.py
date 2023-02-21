@@ -84,7 +84,7 @@ def determine_strandedness(
     split_by_rg=False,
     max_iterations_per_try=1000,
     checked_genes=set(),
-    overall_evidence=defaultdict(dict)
+    overall_evidence=defaultdict(lambda: defaultdict(int)),
 ):
     try:
         ngsfile = NGSFile(ngsfilepath)
@@ -117,10 +117,6 @@ def determine_strandedness(
     read_groups = ["unknown_read_group"]
     if "RG" in samfile.header:
         read_groups += [rg["ID"] for rg in samfile.header["RG"]]
-
-    for rg in read_groups:
-        if not overall_evidence[rg]:
-            overall_evidence[rg] = defaultdict(int)
 
     logger.debug("Starting sampling...")
     total_iterations = 0
@@ -253,11 +249,7 @@ def determine_strandedness(
                     "Predicted": predicted,
                 }
             )
-        return (
-            results,
-            checked_genes,
-            overall_evidence
-        )
+        return (results, checked_genes, overall_evidence)
     else:
         evidence_stranded_forward = 0
         evidence_stranded_reverse = 0
@@ -295,7 +287,7 @@ def determine_strandedness(
                 }
             ],
             checked_genes,
-            overall_evidence
+            overall_evidence,
         )
 
 
@@ -350,7 +342,7 @@ def main(
     for ngsfilepath in ngsfiles:
         tries_for_file = 0
         checked_genes = set()
-        overall_evidence = defaultdict(dict)
+        overall_evidence = defaultdict(lambda: defaultdict(int))
 
         while True:
             tries_for_file += 1
@@ -365,7 +357,7 @@ def main(
                 split_by_rg=split_by_rg,
                 max_iterations_per_try=max_iterations_per_try,
                 checked_genes=checked_genes,
-                overall_evidence=overall_evidence
+                overall_evidence=overall_evidence,
             )
 
             entries_contains_inconclusive = False
