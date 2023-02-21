@@ -94,7 +94,8 @@ def get_args():
         "--max-tries",
         type=int,
         default=3,
-        help="When inconclusive, the test will repeat until this many tries have been reached.",
+        help="When inconclusive, the test will repeat until this many tries have been reached. \
+            Evidence of previous attempts is saved and reused, leading to a larger sample size with multiple attempts.",
     )
     strandedness.add_argument(
         "--max-iterations-per-try",

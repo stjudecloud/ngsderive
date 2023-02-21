@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v2.3.0 (2023-02-21)
+### Feat
+* **strandedness** Make `--max-tries` cumulative. Instead of discarding accumulated results on an `Inconclusive` run, add to them on subsequent runs. This has the probable effects of making `Inconclusive` results more common, but results between runs more consistent.
+
 ## v2.2.1 (2023-02-21)
 ### Fix
 * **strandedness** Make `--max-iterations-per-try` dynamic, based on `--n-genes` instead of a static default of `1000` ([#88](https://github.com/stjudecloud/ngsderive/pull/88))
