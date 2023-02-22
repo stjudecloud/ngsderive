@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v2.3.1 (2023-02-22)
+### Fix
+* Set default `n-genes` to 1000 for improved accuracy ([`914525d`](https://github.com/stjudecloud/ngsderive/commit/914525da2449ad6588c1518287a9b73cc91cf9d4))
+
 ## v2.3.0 (2023-02-21)
 ### Feature
 * Make retries cumulative instead of a reset ([#91](https://github.com/stjudecloud/ngsderive/issues/91)) ([`72c7b0f`](https://github.com/stjudecloud/ngsderive/commit/72c7b0fca9c72b4caafb307451ff3b1c08c671bc))
