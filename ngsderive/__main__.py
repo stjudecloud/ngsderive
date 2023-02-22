@@ -111,7 +111,7 @@ def get_args():
         default=10,
     )
     strandedness.add_argument(
-        "-n", "--n-genes", type=int, help="How many genes to sample.", default=100
+        "-n", "--n-genes", type=int, help="How many genes to sample.", default=1000
     )
     strandedness.add_argument(
         "-q",
