@@ -201,6 +201,12 @@ def get_args():
         help="Consider found splices within `+-k` bases of a known splice event annotated.",
         default=0,
     )
+    junction_annotation.add_argument(
+        "-u",
+        "--discard-unannotated-contigs",
+        action="store_true",
+        help="Discard junctions which occur on an unannotated contig. Default considers them `complete_novel`.",
+    )
 
     args = parser.parse_args()
     if not args.subcommand:
@@ -310,6 +316,7 @@ def run():
             min_mapq=args.min_mapq,
             min_reads=args.min_reads,
             fuzzy_range=args.fuzzy_junction_match_range,
+            discard_unannotated_contigs=args.discard_unannotated_contigs,
             junction_dir=args.junction_files_dir,
             disable_junction_files=args.disable_junction_files,
         )

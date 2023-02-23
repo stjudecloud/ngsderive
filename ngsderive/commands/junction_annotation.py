@@ -30,6 +30,7 @@ def annotate_junctions(
     min_mapq,
     min_reads,
     fuzzy_range,
+    discard_unannotated_contigs,
     junction_dir,
     disable_junction_files,
 ):
@@ -97,6 +98,9 @@ def annotate_junctions(
         )
 
         if contig not in cache.exon_starts:
+            if discard_unannotated_contigs:
+                logger.info(f"{contig} not found in GFF. All events discarded.")
+                continue
             logger.info(f"{contig} not found in GFF. All events novel.")
             annotation = "complete_novel"
             for intron_start, intron_end, num_reads in events:
@@ -255,6 +259,7 @@ def main(
     min_mapq=30,
     min_reads=1,
     fuzzy_range=0,
+    discard_unannotated_contigs=False,
     junction_dir="./",
     disable_junction_files=False,
 ):
@@ -264,6 +269,7 @@ def main(
     logger.info("  - Minimum MAPQ: {}".format(min_mapq))
     logger.info("  - Minimum reads per junction: {}".format(min_reads))
     logger.info("  - Fuzzy junction range: +-{}".format(fuzzy_range))
+    logger.info("  - Discard unannotated contigs: {}".format(discard_unannotated_contigs))
 
     logger.debug("Processing gene model...")
     gff = GFF(
@@ -302,6 +308,7 @@ def main(
             min_mapq=min_mapq,
             min_reads=min_reads,
             fuzzy_range=fuzzy_range,
+            discard_unannotated_contigs=discard_unannotated_contigs,
             junction_dir=junction_dir,
             disable_junction_files=disable_junction_files,
         )
