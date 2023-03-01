@@ -1,4 +1,4 @@
-name: NGS Derive Release
+name: ngsderive Release
 on:
   push:
     branches:

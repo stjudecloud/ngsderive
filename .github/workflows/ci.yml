@@ -1,4 +1,4 @@
-name: NGS Derive CI
+name: ngsderive CI
 on:
   push:
     branches:

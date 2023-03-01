@@ -1,4 +1,4 @@
-name: NGS Derive CD
+name: ngsderive CD
 
 on:
   push:
