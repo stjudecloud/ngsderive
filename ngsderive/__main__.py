@@ -95,7 +95,7 @@ def get_args():
         type=int,
         default=3,
         help="When inconclusive, the test will repeat until this many tries have been reached. "
-            "Evidence of previous attempts is saved and reused, leading to a larger sample size with multiple attempts.",
+             "Evidence of previous attempts is saved and reused, leading to a larger sample size with multiple attempts.",
     )
     strandedness.add_argument(
         "--max-iterations-per-try",
@@ -206,8 +206,8 @@ def get_args():
         "--consider-unannotated-references-novel",
         action="store_true",
         help="For the summary report, consider all events on unannotated reference sequences `complete_novel`. "
-            "Default is to exclude them from the summary. "
-            "Either way, they will be annotated as `unannotated_reference` in the junctions file.",
+             "Default is to exclude them from the summary. "
+             "Either way, they will be annotated as `unannotated_reference` in the junctions file.",
     )
 
     args = parser.parse_args()
