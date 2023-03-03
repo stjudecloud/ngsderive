@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v2.4.0 (2023-03-03)
+### Feature
+* Adds Dockerfile ([`2a663ff`](https://github.com/stjudecloud/ngsderive/commit/2a663ff4eca81faf3fceb889b0efb10ef540a745))
+
 ## v2.3.1 (2023-02-22)
 ### Fix
 * Set default `n-genes` to 1000 for improved accuracy ([`914525d`](https://github.com/stjudecloud/ngsderive/commit/914525da2449ad6588c1518287a9b73cc91cf9d4))
