@@ -4,7 +4,7 @@ The `encoding` subcommand detects the likely PHRED score encoding schema used fo
 
 As a hypothetical example of a mis-translation; a FASTQ sequenced by an Illumina1.3 machine has PHRED quality scores ranging from 6-22. They would be encoded as ASCII values 70-86. If those ASCII values are not adjusted during BAM alignment, someone decoding the PHRED score according to the PHRED+33 specification would think the quality range for that sample was 37-53. This is erroneously high, and may convey undue confidence in the quality of the BAM.
 
-`ngsderive`'s encoding check implementation is based on details of the encoding schemes described [here][https://en.wikipedia.org/wiki/FASTQ_format#Encoding].
+`ngsderive`'s encoding check implementation is based on details of the encoding schemes described [here](https://en.wikipedia.org/wiki/FASTQ_format#Encoding).
 
 ## Limitations
 
