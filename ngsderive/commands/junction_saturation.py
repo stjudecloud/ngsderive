@@ -26,9 +26,9 @@ def main(
 ):
     logger.info("Arguments:")
     logger.info("  - Gene model file: {}".format(gene_model_file))
-    logger.info("  - Sample start fraction: {}".format(sample_start))
-    logger.info("  - Sample step fraction MAPQ: {}".format(sample_step))
-    logger.info("  - Sample end fraction : {}".format(sample_end))
+    logger.info("  - Sample start percentage: {}".format(sample_start))
+    logger.info("  - Sample step percentage: {}".format(sample_step))
+    logger.info("  - Sample end percentage : {}".format(sample_end))
     logger.info("  - Minimum intron length: {}".format(min_intron))
     logger.info("  - Minimum MAPQ: {}".format(min_mapq))
     logger.info("  - Minimum reads per junction: {}".format(min_reads))
