@@ -70,6 +70,7 @@ def main(
                 min_mapq=min_mapq,
                 min_reads=min_reads,
                 fuzzy_range=fuzzy_range,
+                consider_unannotated_references_novel=False,
                 junction_dir=None,
                 disable_junction_files=True,
                 sample_rate=sample_percent / 100,
