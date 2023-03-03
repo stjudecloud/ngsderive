@@ -95,13 +95,14 @@ def get_args():
         "--max-tries",
         type=int,
         default=3,
-        help="When inconclusive, the test will repeat until this many tries have been reached.",
+        help="When inconclusive, the test will repeat until this many tries have been reached. \
+            Evidence of previous attempts is saved and reused, leading to a larger sample size with multiple attempts.",
     )
     strandedness.add_argument(
         "--max-iterations-per-try",
         type=int,
-        default=1000,
-        help="At most, search this many times for genes that satisfy our search criteria.",
+        default=None,
+        help="At most, search this many times for genes that satisfy our search criteria. Default is 10 * n-genes.",
     )
     strandedness.add_argument(
         "-m",
@@ -111,7 +112,7 @@ def get_args():
         default=10,
     )
     strandedness.add_argument(
-        "-n", "--n-genes", type=int, help="How many genes to sample.", default=100
+        "-n", "--n-genes", type=int, help="How many genes to sample.", default=1000
     )
     strandedness.add_argument(
         "-q",
@@ -352,6 +353,9 @@ def run():
             n_samples=args.n_samples,
         )
     if args.subcommand == "strandedness":
+        max_iters = args.max_iterations_per_try
+        if not max_iters:
+            max_iters = 10 * args.n_genes
         strandedness.main(
             args.ngsfiles,
             args.gene_model,
@@ -361,7 +365,7 @@ def run():
             only_protein_coding_genes=args.only_protein_coding_genes,
             min_mapq=args.min_mapq,
             split_by_rg=args.split_by_rg,
-            max_iterations_per_try=args.max_iterations_per_try,
+            max_iterations_per_try=max_iters,
         )
     if args.subcommand == "encoding":
         encoding.main(

@@ -2,6 +2,22 @@
 
 <!--next-version-placeholder-->
 
+## v2.3.1 (2023-02-22)
+### Fix
+* Set default `n-genes` to 1000 for improved accuracy ([`914525d`](https://github.com/stjudecloud/ngsderive/commit/914525da2449ad6588c1518287a9b73cc91cf9d4))
+
+## v2.3.0 (2023-02-21)
+### Feature
+* Make retries cumulative instead of a reset ([#91](https://github.com/stjudecloud/ngsderive/issues/91)) ([`72c7b0f`](https://github.com/stjudecloud/ngsderive/commit/72c7b0fca9c72b4caafb307451ff3b1c08c671bc))
+
+### Documentation
+* Clarify other important improvement regarding disambiguation of… ([#15](https://github.com/stjudecloud/ngsderive/issues/15)) ([`5d58156`](https://github.com/stjudecloud/ngsderive/commit/5d58156f79ddf57f8d0518bc45745e923d8f4c04))
+* Refactor to exclude junction-annotation from "best guess" notice ([#13](https://github.com/stjudecloud/ngsderive/issues/13)) ([`c8e208e`](https://github.com/stjudecloud/ngsderive/commit/c8e208e2edf4c8d81fb5cddc322b38a5acc57a44))
+
+## v2.2.1 (2023-02-21)
+### Fix
+* **strandedness** Make `--max-iterations-per-try` dynamic, based on `--n-genes` instead of a static default of `1000` ([#88](https://github.com/stjudecloud/ngsderive/pull/88))
+
 ## v2.2.0 (2021-06-24)
 ### Feature
 * **instrument:** Attempt to recover when read names not in Illumina format ([#14](https://github.com/stjudecloud/ngsderive/issues/14)) ([`9ab0951`](https://github.com/stjudecloud/ngsderive/commit/9ab0951a04bdcffdd12f2291ec25c46d74d666d1))

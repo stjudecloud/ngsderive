@@ -1,4 +1,4 @@
-name: CI
+name: ngsderive CI
 on:
   push:
     branches:
@@ -14,12 +14,11 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v1
         with:
-          python-version: '3.8'
+          python-version: "3.8"
       - name: Install Dependencies
         run: |
-          python3 -m pip install poetry==1.0.5
+          python3 -m pip install poetry
           poetry config virtualenvs.create false
           poetry install
       - name: Test with Pytest
         run: pytest
-
