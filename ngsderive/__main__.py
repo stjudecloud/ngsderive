@@ -94,8 +94,8 @@ def get_args():
         "--max-tries",
         type=int,
         default=3,
-        help="When inconclusive, the test will repeat until this many tries have been reached. \
-            Evidence of previous attempts is saved and reused, leading to a larger sample size with multiple attempts.",
+        help="When inconclusive, the test will repeat until this many tries have been reached. "
+            "Evidence of previous attempts is saved and reused, leading to a larger sample size with multiple attempts.",
     )
     strandedness.add_argument(
         "--max-iterations-per-try",
@@ -202,10 +202,12 @@ def get_args():
         default=0,
     )
     junction_annotation.add_argument(
-        "-u",
-        "--discard-unannotated-contigs",
+        "-c",
+        "--consider-unannotated-references-novel",
         action="store_true",
-        help="Discard junctions which occur on an unannotated contig. Default considers them `complete_novel`.",
+        help="For the summary report, consider all events on unannotated reference sequences `complete_novel`. "
+            "Default is to exclude them from the summary. "
+            "Either way, they will be annotated as `unannotated_reference` in the junctions file.",
     )
 
     args = parser.parse_args()
@@ -316,7 +318,7 @@ def run():
             min_mapq=args.min_mapq,
             min_reads=args.min_reads,
             fuzzy_range=args.fuzzy_junction_match_range,
-            discard_unannotated_contigs=args.discard_unannotated_contigs,
+            consider_unannotated_references_novel=args.consider_unannotated_references_novel,
             junction_dir=args.junction_files_dir,
             disable_junction_files=args.disable_junction_files,
         )

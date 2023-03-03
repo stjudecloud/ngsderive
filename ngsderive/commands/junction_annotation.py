@@ -30,7 +30,7 @@ def annotate_junctions(
     min_mapq,
     min_reads,
     fuzzy_range,
-    discard_unannotated_contigs,
+    consider_unannotated_references_novel,
     junction_dir,
     disable_junction_files,
 ):
@@ -98,17 +98,19 @@ def annotate_junctions(
         )
 
         if contig not in cache.exon_starts:
-            if discard_unannotated_contigs:
-                logger.info(f"{contig} not found in GFF. All events discarded.")
-                continue
-            logger.info(f"{contig} not found in GFF. All events novel.")
-            annotation = "complete_novel"
+            logger.info(f"{contig} not found in GFF. All events marked `unannotated_reference`.")
+            annotation = "unannotated_reference"
+            if consider_unannotated_references_novel:
+                logger.info(f"Events being considered novel for summary report.")
+
             for intron_start, intron_end, num_reads in events:
                 if num_reads < min_reads:
                     num_too_few_reads += 1
                     continue
-                num_novel += 1
-                num_novel_spliced_reads += num_reads
+                if consider_unannotated_references_novel:
+                    num_novel += 1
+                    num_novel_spliced_reads += num_reads
+
                 if junction_file:
                     print(
                         "\t".join(
@@ -259,7 +261,7 @@ def main(
     min_mapq=30,
     min_reads=1,
     fuzzy_range=0,
-    discard_unannotated_contigs=False,
+    consider_unannotated_references_novel=False,
     junction_dir="./",
     disable_junction_files=False,
 ):
@@ -269,7 +271,7 @@ def main(
     logger.info("  - Minimum MAPQ: {}".format(min_mapq))
     logger.info("  - Minimum reads per junction: {}".format(min_reads))
     logger.info("  - Fuzzy junction range: +-{}".format(fuzzy_range))
-    logger.info("  - Discard unannotated contigs: {}".format(discard_unannotated_contigs))
+    logger.info("  - Consider unannotated references novel: {}".format(consider_unannotated_references_novel))
 
     logger.debug("Processing gene model...")
     gff = GFF(
@@ -308,7 +310,7 @@ def main(
             min_mapq=min_mapq,
             min_reads=min_reads,
             fuzzy_range=fuzzy_range,
-            discard_unannotated_contigs=discard_unannotated_contigs,
+            consider_unannotated_references_novel=consider_unannotated_references_novel,
             junction_dir=junction_dir,
             disable_junction_files=disable_junction_files,
         )
