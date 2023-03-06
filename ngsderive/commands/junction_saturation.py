@@ -21,7 +21,7 @@ def main(
     sample_end=100,
     min_intron=50,
     min_mapq=30,
-    min_reads=1,
+    min_reads=2,
     fuzzy_range=0,
 ):
     logger.info("Arguments:")
