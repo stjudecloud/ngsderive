@@ -206,6 +206,7 @@ def get_args():
         "-c",
         "--consider-unannotated-references-novel",
         action="store_true",
+        default=False,
         help="For the summary report, consider all events on unannotated reference sequences `complete_novel`. "
              "Default is to exclude them from the summary. "
              "Either way, they will be annotated as `unannotated_reference` in the junctions file.",
