@@ -259,7 +259,7 @@ def main(
     outfile=sys.stdout,
     min_intron=50,
     min_mapq=30,
-    min_reads=1,
+    min_reads=2,
     fuzzy_range=0,
     consider_unannotated_references_novel=False,
     junction_dir="./",
