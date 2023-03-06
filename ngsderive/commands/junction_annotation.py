@@ -78,7 +78,7 @@ def annotate_junctions(
 
     for contig in samfile.references:
         num_too_few_reads = 0
-        logger.debug(f"Searching {contig} for splice junctions...")
+        logger.info(f"Searching {contig} for splice junctions...")
         found_introns = samfile.find_introns(
             [seg for seg in samfile.fetch(contig) if seg.mapping_quality >= min_mapq]
         )
@@ -272,36 +272,25 @@ def main(
     logger.info("  - Minimum reads per junction: {}".format(min_reads))
     logger.info("  - Fuzzy junction range: +-{}".format(fuzzy_range))
     logger.info("  - Consider unannotated references novel: {}".format(consider_unannotated_references_novel))
+    if not disable_junction_files:
+        logger.info("  - Junction file directory: {}".format(junction_dir))
+    else:
+        logger.info("  - Junction file directory: <disabled>")
 
-    logger.debug("Processing gene model...")
+    logger.info("Processing gene model...")
     gff = GFF(
         gene_model_file,
         feature_type="exon",
         dataframe_mode=False,
     )
     cache = JunctionCache(gff)
-    logger.debug("Done")
-
-    fieldnames = [
-        "File",
-        "total_junctions",
-        "total_splice_events",
-        "known_junctions",
-        "partial_novel_junctions",
-        "complete_novel_junctions",
-        "known_spliced_reads",
-        "partial_novel_spliced_reads",
-        "complete_novel_spliced_reads",
-    ]
-
-    writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter="\t")
-    writer.writeheader()
-    outfile.flush()
+    logger.info("Done")
 
     junction_dir = Path(junction_dir)
     if not disable_junction_files:
         junction_dir.mkdir(parents=True, exist_ok=True)
 
+    writer = None
     for ngsfilepath in ngsfiles:
         entry = annotate_junctions(
             ngsfilepath,
@@ -314,5 +303,21 @@ def main(
             junction_dir=junction_dir,
             disable_junction_files=disable_junction_files,
         )
+
+        if not writer:
+            fieldnames = [
+                "File",
+                "total_junctions",
+                "total_splice_events",
+                "known_junctions",
+                "partial_novel_junctions",
+                "complete_novel_junctions",
+                "known_spliced_reads",
+                "partial_novel_spliced_reads",
+                "complete_novel_spliced_reads",
+            ]
+
+            writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter="\t")
+            writer.writeheader()
         writer.writerow(entry)
         outfile.flush()

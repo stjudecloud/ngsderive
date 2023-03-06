@@ -335,9 +335,7 @@ def main(
         fieldnames = ["ReadGroup"] + fieldnames
     fieldnames = ["File"] + fieldnames
 
-    writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter="\t")
-    writer.writeheader()
-    outfile.flush()
+    writer = None
 
     for ngsfilepath in ngsfiles:
         tries_for_file = 0
@@ -369,6 +367,9 @@ def main(
             if entries_contains_inconclusive and tries_for_file < max_tries:
                 continue
 
+            if not writer:
+                writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter="\t")
+                writer.writeheader()
             for entry in entries:
                 writer.writerow(entry)
                 outfile.flush()
