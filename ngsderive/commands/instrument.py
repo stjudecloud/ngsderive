@@ -244,7 +244,7 @@ def main(ngsfiles, outfile=sys.stdout, n_samples=10000):
                 iid, fcid = parts[0], parts[2]
                 instruments.add(iid)
                 flowcells.add(fcid)
-        except KeyError:
+        except KeyError:  # no RG tag is present
             result = {
                 "File": ngsfilepath,
                 "Instrument": "unknown",
