@@ -30,6 +30,7 @@ def annotate_junctions(
     min_mapq,
     min_reads,
     fuzzy_range,
+    consider_unannotated_references_novel,
     junction_dir,
     disable_junction_files,
 ):
@@ -77,7 +78,7 @@ def annotate_junctions(
 
     for contig in samfile.references:
         num_too_few_reads = 0
-        logger.debug(f"Searching {contig} for splice junctions...")
+        logger.info(f"Searching {contig} for splice junctions...")
         found_introns = samfile.find_introns(
             [seg for seg in samfile.fetch(contig) if seg.mapping_quality >= min_mapq]
         )
@@ -97,14 +98,19 @@ def annotate_junctions(
         )
 
         if contig not in cache.exon_starts:
-            logger.info(f"{contig} not found in GFF. All events novel.")
-            annotation = "complete_novel"
+            logger.info(f"{contig} not found in GFF. All events marked `unannotated_reference`.")
+            annotation = "unannotated_reference"
+            if consider_unannotated_references_novel:
+                logger.info(f"Events being considered novel for summary report.")
+
             for intron_start, intron_end, num_reads in events:
                 if num_reads < min_reads:
                     num_too_few_reads += 1
                     continue
-                num_novel += 1
-                num_novel_spliced_reads += num_reads
+                if consider_unannotated_references_novel:
+                    num_novel += 1
+                    num_novel_spliced_reads += num_reads
+
                 if junction_file:
                     print(
                         "\t".join(
@@ -253,8 +259,9 @@ def main(
     outfile=sys.stdout,
     min_intron=50,
     min_mapq=30,
-    min_reads=1,
+    min_reads=2,
     fuzzy_range=0,
+    consider_unannotated_references_novel=False,
     junction_dir="./",
     disable_junction_files=False,
 ):
@@ -264,36 +271,26 @@ def main(
     logger.info("  - Minimum MAPQ: {}".format(min_mapq))
     logger.info("  - Minimum reads per junction: {}".format(min_reads))
     logger.info("  - Fuzzy junction range: +-{}".format(fuzzy_range))
+    logger.info("  - Consider unannotated references novel: {}".format(consider_unannotated_references_novel))
+    if not disable_junction_files:
+        logger.info("  - Junction file directory: {}".format(junction_dir))
+    else:
+        logger.info("  - Junction file directory: <disabled>")
 
-    logger.debug("Processing gene model...")
+    logger.info("Processing gene model...")
     gff = GFF(
         gene_model_file,
         feature_type="exon",
         dataframe_mode=False,
     )
     cache = JunctionCache(gff)
-    logger.debug("Done")
-
-    fieldnames = [
-        "File",
-        "total_junctions",
-        "total_splice_events",
-        "known_junctions",
-        "partial_novel_junctions",
-        "complete_novel_junctions",
-        "known_spliced_reads",
-        "partial_novel_spliced_reads",
-        "complete_novel_spliced_reads",
-    ]
-
-    writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter="\t")
-    writer.writeheader()
-    outfile.flush()
+    logger.info("Done")
 
     junction_dir = Path(junction_dir)
     if not disable_junction_files:
         junction_dir.mkdir(parents=True, exist_ok=True)
 
+    writer = None
     for ngsfilepath in ngsfiles:
         entry = annotate_junctions(
             ngsfilepath,
@@ -302,8 +299,25 @@ def main(
             min_mapq=min_mapq,
             min_reads=min_reads,
             fuzzy_range=fuzzy_range,
+            consider_unannotated_references_novel=consider_unannotated_references_novel,
             junction_dir=junction_dir,
             disable_junction_files=disable_junction_files,
         )
+
+        if not writer:
+            fieldnames = [
+                "File",
+                "total_junctions",
+                "total_splice_events",
+                "known_junctions",
+                "partial_novel_junctions",
+                "complete_novel_junctions",
+                "known_spliced_reads",
+                "partial_novel_spliced_reads",
+                "complete_novel_spliced_reads",
+            ]
+
+            writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter="\t")
+            writer.writeheader()
         writer.writerow(entry)
         outfile.flush()
