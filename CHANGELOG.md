@@ -2,6 +2,14 @@
 
 <!--next-version-placeholder-->
 
+## v3.0.0 (2023-03-22)
+### Feature
+* **junction-annotation:** By default discard unannotated contigs ([#96](https://github.com/stjudecloud/ngsderive/issues/96)) ([`d2f2e18`](https://github.com/stjudecloud/ngsderive/commit/d2f2e18338656da53e2d6d8c74f2a48850a1f125))
+* Adds Dockerfile ([#97](https://github.com/stjudecloud/ngsderive/issues/97)) ([`26242b2`](https://github.com/stjudecloud/ngsderive/commit/26242b27fe2d73e2413f872a61496cffca3922f2))
+
+### Breaking
+* Always annotate as `unannotated_reference` in the junctions file. By default, exclude from the summary report. With flag, call them "novel" in the summary ([`d2f2e18`](https://github.com/stjudecloud/ngsderive/commit/d2f2e18338656da53e2d6d8c74f2a48850a1f125))
+
 ## v2.3.1 (2023-02-22)
 ### Fix
 * Set default `n-genes` to 1000 for improved accuracy ([`914525d`](https://github.com/stjudecloud/ngsderive/commit/914525da2449ad6588c1518287a9b73cc91cf9d4))
