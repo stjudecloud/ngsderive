@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v3.1.0 (2023-03-23)
+### Feature
+* Junction-saturation ([#16](https://github.com/stjudecloud/ngsderive/issues/16)) ([`e4811e7`](https://github.com/stjudecloud/ngsderive/commit/e4811e73e2164dd8f6150d6f3ae2f0f6a8af2f99))
+
 ## v3.0.0 (2023-03-22)
 ### Feature
 * **junction-annotation:** By default discard unannotated contigs ([#96](https://github.com/stjudecloud/ngsderive/issues/96)) ([`d2f2e18`](https://github.com/stjudecloud/ngsderive/commit/d2f2e18338656da53e2d6d8c74f2a48850a1f125))
