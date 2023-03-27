@@ -1030,28 +1030,33 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pysam"
-version = "0.18.0"
+version = "0.20.0"
 description = "pysam"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "pysam-0.18.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ef5d8ad01cac8974cd09832c226cbb63a3f7c5bd63727d8e59447021ee16a186"},
-    {file = "pysam-0.18.0-cp310-cp310-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:ca0c9289dfdc5e1a81bccdb8305192cd14cf9730bd21320ceca949fde071a572"},
-    {file = "pysam-0.18.0-cp310-cp310-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:e13e496da3a432db24f424439834b0ab5f40700a3db6e610d06f8bd639d9fd2d"},
-    {file = "pysam-0.18.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:c90341434e7a99439174aa64ca5406f63528be4217d4401fb30ec4ea4629c559"},
-    {file = "pysam-0.18.0-cp36-cp36m-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:a88f875114bd3d8efb7fade80e0640094383ec5043861aa575175fa9a56edf90"},
-    {file = "pysam-0.18.0-cp36-cp36m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:7ea2e019294e4bf25e4892b5de69c43f54fb6ac42b681265268aa322e1f36f5b"},
-    {file = "pysam-0.18.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:cfb162358c5284b31b2b88b10947e0f1013da2d85ba0fd0b5723dd142c15329e"},
-    {file = "pysam-0.18.0-cp37-cp37m-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:9422c2d0b581c3d24f247c15bb8981569e636003c4d6cad39ccd1bf205a79f2c"},
-    {file = "pysam-0.18.0-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:cfffad99cf3968cf85aadb70a8a02303f9172ea21abe02d587c44f808c504f52"},
-    {file = "pysam-0.18.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:7a8a25fceaaa96e5b4c8b0a7fd6bb0b20b6c262dc4cc867c6d1467ac990f1d77"},
-    {file = "pysam-0.18.0-cp38-cp38-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:493988420db16e6ee03393518e4d272df05f0a35780248c08c61da7411e520e7"},
-    {file = "pysam-0.18.0-cp38-cp38-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:7f6a4ec58ad7995b791a71bf35f673ea794e734c587ea7329fca5cce9c53a7af"},
-    {file = "pysam-0.18.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:0cfa16f76ed3c3119c7b3c8dfdcba9e010fbcdcf87eaa165351bb369da5a6bf1"},
-    {file = "pysam-0.18.0-cp39-cp39-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:2717509556fecddf7c73966fa62066c6a59a7d39b755d8972afa8d143a1d5aa5"},
-    {file = "pysam-0.18.0-cp39-cp39-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:f5a23a5dcf32f01c66d44e89113fa8f7522997ea43fbc0f98e5250a907911a5f"},
-    {file = "pysam-0.18.0.tar.gz", hash = "sha256:1d6d49a0b3c626fae410a93d4c80583a8b5ddaacc9b46a080b250dbcebd30a59"},
+    {file = "pysam-0.20.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:d919f40db3027f092bb39177aecbb49a02e2fd746bb5adfbe48eb839b2225e51"},
+    {file = "pysam-0.20.0-cp310-cp310-manylinux_2_24_aarch64.whl", hash = "sha256:7145694675a0cfe0c04abb5582c70b3f6a19d6b30e6835931016afd57d423719"},
+    {file = "pysam-0.20.0-cp310-cp310-manylinux_2_24_i686.whl", hash = "sha256:fa98bd2e6bf1252dac7c275fe7c34bbc125644b781a6196bfe25cc078c6cb341"},
+    {file = "pysam-0.20.0-cp310-cp310-manylinux_2_24_x86_64.whl", hash = "sha256:12c56353739f2b76266407502e06127235197030a8e11188cb80693ca46321d1"},
+    {file = "pysam-0.20.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:d4744e162476a62fab9458aa3d1e2e51614e0f919e4578c14e986c7e7cab377e"},
+    {file = "pysam-0.20.0-cp36-cp36m-manylinux_2_24_aarch64.whl", hash = "sha256:e61c3a68fb254ffd2c34ce956277615663c5ecab7a30e6308744873984794330"},
+    {file = "pysam-0.20.0-cp36-cp36m-manylinux_2_24_i686.whl", hash = "sha256:ff15d6a6ac29541d5dee30ea8233356c43a5f3a99886451fd0188b80daa0422d"},
+    {file = "pysam-0.20.0-cp36-cp36m-manylinux_2_24_x86_64.whl", hash = "sha256:29d1a2c60944f1bc46b9324f9e78dd343fd6a8de039badff71df43df960e223c"},
+    {file = "pysam-0.20.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:7e017a3b8baeee7c0df7f666138e8bf5a73f9805c2ab6287a2a4d5351f6822d5"},
+    {file = "pysam-0.20.0-cp37-cp37m-manylinux_2_24_aarch64.whl", hash = "sha256:7c57867c80af3b5c3a4ae391ec86b914bb6361bb5cd41d985cbe06a75163188c"},
+    {file = "pysam-0.20.0-cp37-cp37m-manylinux_2_24_i686.whl", hash = "sha256:38f292478f32cbf6f2981021f7c2a961956e9b49141493557ace79810221c4e4"},
+    {file = "pysam-0.20.0-cp37-cp37m-manylinux_2_24_x86_64.whl", hash = "sha256:3d8c86ae4413c25d047aa4e9529b2adc366ecfeb1eb3f0098c525705314a0332"},
+    {file = "pysam-0.20.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:3b8a07732549ff10dfad8b0db7663076b39727a558e1f6d06ab5c6819f3cae9f"},
+    {file = "pysam-0.20.0-cp38-cp38-manylinux_2_24_aarch64.whl", hash = "sha256:d958ce70865869f2aa8c8c0880ad451bafd4d5a8c94fb78a269ab913a57d9303"},
+    {file = "pysam-0.20.0-cp38-cp38-manylinux_2_24_i686.whl", hash = "sha256:93f0ea6b2050ad470b5b1cdd19fae0b88afd5ae48ee6e66a0dcd054b61e9fba4"},
+    {file = "pysam-0.20.0-cp38-cp38-manylinux_2_24_x86_64.whl", hash = "sha256:e14e33703bdb8ed812ab16b5c816ce68ffee2ae2a19906efdc5732c3e446791e"},
+    {file = "pysam-0.20.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:f5aefffd4ac1fad35b720cb7a1663be9bdb18376d0d361d33a744254a0da8e96"},
+    {file = "pysam-0.20.0-cp39-cp39-manylinux_2_24_aarch64.whl", hash = "sha256:3ed4dbf8613007daf8b127c32743206126badc35822730de767d86f9ead445ad"},
+    {file = "pysam-0.20.0-cp39-cp39-manylinux_2_24_i686.whl", hash = "sha256:7ca81b7e5af5f3cdac460e0ce59a0eab11fdbe1a216ddee6f3172aa16445ae54"},
+    {file = "pysam-0.20.0-cp39-cp39-manylinux_2_24_x86_64.whl", hash = "sha256:a2d8f2e15934100ce6b380659af884066d5ebffa69e36025b4029f8c9e8b3adc"},
+    {file = "pysam-0.20.0.tar.gz", hash = "sha256:7cc250148ba0ffc9bdc38db6988b91e13b75db0d11c18cf1336467d1c97dd312"},
 ]
 
 [[package]]
@@ -1603,4 +1608,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8,<3.10"
-content-hash = "860d68b825cc270123b2ff82a4a97840423550617619b1a1ab49e78d96447a8f"
+content-hash = "3a59c9862b36418da4c47f6e845715ad82eb88997edf992a85f3a41a4329f093"
