@@ -1320,14 +1320,14 @@ idna2008 = ["idna"]
 
 [[package]]
 name = "rstr"
-version = "3.2.0"
+version = "3.2.1"
 description = "Generate random strings in Python"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "rstr-3.2.0-py3-none-any.whl", hash = "sha256:29f4870c70141c26cb75cc639fbd658e2aad1e75c7dedfb5d3afd74de62acb02"},
-    {file = "rstr-3.2.0.tar.gz", hash = "sha256:54b36313a3aecb37450083004f3951cbf04687eeadb1ede90e8bf48fcbabd736"},
+    {file = "rstr-3.2.1-py3-none-any.whl", hash = "sha256:c0d59fa8a64683acc43646603e7570546a93d842be49b6e4cb72d0abc96cbacf"},
+    {file = "rstr-3.2.1.tar.gz", hash = "sha256:c51924c626540eb626ed3eb8e5e6c1d2f2c73959d039c8ff61ee562baeb4e0ff"},
 ]
 
 [[package]]
