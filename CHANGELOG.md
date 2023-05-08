@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v3.1.1 (2023-05-08)
+### Fix
+* Revert "feat: junction-saturation (#16)" ([#110](https://github.com/stjudecloud/ngsderive/issues/110)) ([`9262af0`](https://github.com/stjudecloud/ngsderive/commit/9262af0d8290e3f1ae70ba47b58fbea9b9c15d35))
+
 ## v3.1.0 (2023-03-23)
 ### Feature
 * Junction-saturation ([#16](https://github.com/stjudecloud/ngsderive/issues/16)) ([`e4811e7`](https://github.com/stjudecloud/ngsderive/commit/e4811e73e2164dd8f6150d6f3ae2f0f6a8af2f99))
