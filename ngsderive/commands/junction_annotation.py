@@ -256,14 +256,14 @@ def annotate_junctions(
 def main(
     ngsfiles,
     gene_model_file,
-    outfile=sys.stdout,
-    min_intron=50,
-    min_mapq=30,
-    min_reads=2,
-    fuzzy_range=0,
-    consider_unannotated_references_novel=False,
-    junction_dir="./",
-    disable_junction_files=False,
+    outfile,
+    min_intron,
+    min_mapq,
+    min_reads,
+    fuzzy_range,
+    consider_unannotated_references_novel,
+    junction_dir,
+    disable_junction_files,
 ):
     logger.info("Arguments:")
     logger.info("  - Gene model file: {}".format(gene_model_file))

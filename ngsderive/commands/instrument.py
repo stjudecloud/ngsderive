@@ -195,7 +195,7 @@ def resolve_instrument(
         )
 
 
-def main(ngsfiles, outfile=sys.stdout, n_samples=10000):
+def main(ngsfiles, outfile, n_reads):
     writer = csv.DictWriter(
         outfile,
         fieldnames=["File", "Instrument", "Confidence", "Basis"],
@@ -204,8 +204,8 @@ def main(ngsfiles, outfile=sys.stdout, n_samples=10000):
     writer.writeheader()
     outfile.flush()
 
-    if n_samples < 1:
-        n_samples = None
+    if n_reads < 1:
+        n_reads = None
 
     for ngsfilepath in ngsfiles:
         try:
@@ -227,7 +227,7 @@ def main(ngsfiles, outfile=sys.stdout, n_samples=10000):
         malformed_read_names = False
 
         # accumulate instrument and flowcell IDs
-        for read in itertools.islice(ngsfile, n_samples):
+        for read in itertools.islice(ngsfile, n_reads):
             parts = read["query_name"].split(":")
             if len(parts) != 7:  # not Illumina format
                 malformed_read_names = True

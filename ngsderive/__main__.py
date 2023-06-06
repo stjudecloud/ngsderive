@@ -67,10 +67,10 @@ def get_args():
     )
     readlen.add_argument(
         "-n",
-        "--n-samples",
+        "--n-reads",
         type=int,
-        help="How many reads to sample. Any n < 1 to parse whole file.",
-        default=1000000,
+        help="How many reads to analyze from the start of the file. Any n < 1 to parse whole file.",
+        default=-1,
     )
 
     instrument = subparsers.add_parser(
@@ -78,9 +78,9 @@ def get_args():
     )
     instrument.add_argument(
         "-n",
-        "--n-samples",
+        "--n-reads",
         type=int,
-        help="How many reads to sample. Any n < 1 to parse whole file.",
+        help="How many reads to analyze from the start of the file. Any n < 1 to parse whole file.",
         default=10000,
     )
 
@@ -149,9 +149,9 @@ def get_args():
     )
     encoding.add_argument(
         "-n",
-        "--n-samples",
+        "--n-reads",
         type=int,
-        help="How many reads to sample. Any n < 1 to parse whole file.",
+        help="How many reads to analyze from the start of the file. Any n < 1 to parse whole file.",
         default=1000000,
     )
 
@@ -280,14 +280,14 @@ def run():
         readlen.main(
             args.ngsfiles,
             outfile=args.outfile,
-            n_samples=args.n_samples,
+            n_reads=args.n_reads,
             majority_vote_cutoff=args.majority_vote_cutoff,
         )
     if args.subcommand == "instrument":
         instrument.main(
             args.ngsfiles,
             outfile=args.outfile,
-            n_samples=args.n_samples,
+            n_reads=args.n_reads,
         )
     if args.subcommand == "strandedness":
         max_iters = args.max_iterations_per_try
@@ -308,7 +308,7 @@ def run():
         encoding.main(
             args.ngsfiles,
             outfile=args.outfile,
-            n_samples=args.n_samples,
+            n_reads=args.n_reads,
         )
     if args.subcommand == "junction-annotation":
         junction_annotation.main(
