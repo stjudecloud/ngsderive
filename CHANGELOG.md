@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v3.2.0 (2023-06-26)
+### Feature
+* Handle case of BAM without RG tag ([#100](https://github.com/stjudecloud/ngsderive/issues/100)) ([`4436abf`](https://github.com/stjudecloud/ngsderive/commit/4436abf70540a33b1825deba3c8b0b499b93bbc5))
+
 ## v3.1.1 (2023-05-08)
 ### Fix
 * Revert "feat: junction-saturation (#16)" ([#110](https://github.com/stjudecloud/ngsderive/issues/110)) ([`9262af0`](https://github.com/stjudecloud/ngsderive/commit/9262af0d8290e3f1ae70ba47b58fbea9b9c15d35))

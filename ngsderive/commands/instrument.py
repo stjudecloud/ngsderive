@@ -227,22 +227,34 @@ def main(ngsfiles, outfile, n_reads):
         malformed_read_names = False
 
         # accumulate instrument and flowcell IDs
-        for read in itertools.islice(ngsfile, n_reads):
-            parts = read["query_name"].split(":")
-            if len(parts) != 7:  # not Illumina format
-                malformed_read_names = True
-                iid = parts[0]  # attempt to recover machine name
+        try:
+            for read in itertools.islice(ngsfile, n_reads):
+                parts = read["query_name"].split(":")
+                if len(parts) != 7:  # not Illumina format
+                    malformed_read_names = True
+                    iid = parts[0]  # attempt to recover machine name
+                    instruments.add(iid)
+                    for rg in ngsfile.handle.header.to_dict()["RG"]:
+                        if rg["ID"] == read["read_group"]:
+                            if "PU" in rg:
+                                flowcells.add(rg["PU"])
+                            if "PM" in rg:
+                                instruments.add(rg["PM"])
+                    continue
+                iid, fcid = parts[0], parts[2]
                 instruments.add(iid)
-                for rg in ngsfile.handle.header.to_dict()["RG"]:
-                    if rg["ID"] == read["read_group"]:
-                        if "PU" in rg:
-                            flowcells.add(rg["PU"])
-                        if "PM" in rg:
-                            instruments.add(rg["PM"])
-                continue
-            iid, fcid = parts[0], parts[2]
-            instruments.add(iid)
-            flowcells.add(fcid)
+                flowcells.add(fcid)
+        except KeyError:  # no RG tag is present
+            result = {
+                "File": ngsfilepath,
+                "Instrument": "unknown",
+                "Confidence": "no confidence",
+                "Basis": "no RG tag present",
+            }
+            writer.writerow(result)
+            outfile.flush()
+            continue
+
         if malformed_read_names:
             logger.warning(
                 "Encountered read names not in Illumina format. Recovery attempted."
