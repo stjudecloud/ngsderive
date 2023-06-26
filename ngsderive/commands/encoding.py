@@ -17,7 +17,7 @@ ILLUMINA_1_0_SET = set([i for i in range(26, 93)])
 ILLUMINA_1_3_SET = set([i for i in range(31, 93)])
 
 
-def main(ngsfiles, outfile=sys.stdout, n_samples=1000000):
+def main(ngsfiles, outfile, n_reads):
 
     writer = csv.DictWriter(
         outfile,
@@ -27,8 +27,8 @@ def main(ngsfiles, outfile=sys.stdout, n_samples=1000000):
     writer.writeheader()
     outfile.flush()
 
-    if n_samples < 1:
-        n_samples = None
+    if n_reads < 1:
+        n_reads = None
 
     for ngsfilepath in ngsfiles:
         try:
@@ -44,7 +44,7 @@ def main(ngsfiles, outfile=sys.stdout, n_samples=1000000):
             continue
 
         score_set = set()
-        for read in itertools.islice(ngsfile, n_samples):
+        for read in itertools.islice(ngsfile, n_reads):
             score_set.update(read["quality"])
 
         highest_ascii = str(max(score_set) + 33)

@@ -10,7 +10,7 @@ from ..utils import NGSFile, NGSFileType, GFF
 logger = logging.getLogger("strandedness")
 
 
-def get_filtered_reads_from_region(samfile, gene, min_quality=30, apply_filters=True):
+def get_filtered_reads_from_region(samfile, gene, min_quality, apply_filters=True):
     for read in samfile.fetch(gene["seqname"], gene["start"], gene["end"]):
         if apply_filters and (
             read.is_qcfail
@@ -78,13 +78,13 @@ def get_predicted_strandedness(forward_evidence_pct, reverse_evidence_pct):
 def determine_strandedness(
     ngsfilepath,
     gff,
-    n_genes=100,
-    min_mapq=30,
-    minimum_reads_per_gene=10,
-    split_by_rg=False,
-    max_iterations_per_try=1000,
-    checked_genes=set(),
-    overall_evidence=defaultdict(lambda: defaultdict(int)),
+    n_genes,
+    min_mapq,
+    minimum_reads_per_gene,
+    split_by_rg,
+    max_iterations_per_try,
+    checked_genes,
+    overall_evidence,
 ):
     try:
         ngsfile = NGSFile(ngsfilepath)
@@ -294,14 +294,14 @@ def determine_strandedness(
 def main(
     ngsfiles,
     gene_model_file,
-    outfile=sys.stdout,
-    n_genes=100,
-    minimum_reads_per_gene=10,
-    only_protein_coding_genes=True,
-    min_mapq=30,
-    split_by_rg=False,
-    max_tries=3,
-    max_iterations_per_try=1000,
+    outfile,
+    n_genes,
+    minimum_reads_per_gene,
+    only_protein_coding_genes,
+    min_mapq,
+    split_by_rg,
+    max_tries,
+    max_iterations_per_try,
 ):
     logger.info("Arguments:")
     logger.info("  - Gene model file: {}".format(gene_model_file))

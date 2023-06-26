@@ -12,9 +12,9 @@ logger = logging.getLogger("readlen")
 
 def main(
     ngsfiles,
-    outfile=sys.stdout,
-    n_samples=100000,
-    majority_vote_cutoff=0.7,
+    outfile,
+    n_reads,
+    majority_vote_cutoff,
 ):
 
     writer = csv.DictWriter(
@@ -25,8 +25,8 @@ def main(
     writer.writeheader()
     outfile.flush()
 
-    if n_samples < 1:
-        n_samples = None
+    if n_reads < 1:
+        n_reads = None
 
     for ngsfilepath in ngsfiles:
         read_lengths = defaultdict(int)
@@ -46,7 +46,7 @@ def main(
 
         # accumulate read lengths
         total_reads_sampled = 0
-        for read in itertools.islice(ngsfile, n_samples):
+        for read in itertools.islice(ngsfile, n_reads):
             total_reads_sampled += 1
             read_lengths[len(read["query"])] += 1
 
