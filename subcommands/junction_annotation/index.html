@@ -145,9 +145,13 @@
 <td><code>-k</code>, <code>--fuzzy-junction-match-range</code></td>
 <td>Consider exonic starts/ends within <code>+-k</code> bases of a known intron start/end to be known (default: <code>0</code>)</td>
 </tr>
+<tr>
+<td><code>-c</code>, <code>--consider-unannotated-references-novel</code></td>
+<td>For the summary report, consider all events on unannotated reference sequences <code>complete_novel</code>. Default is to exclude them from the summary. Either way, they will be annotated as <code>unannotated_reference</code> in the junctions file. (default: False)</td>
+</tr>
 </tbody>
 </table>
-<p>In the resulting <code>&lt;basename&gt;.junctions.tsv</code> files, note that the coordinates are 0-based, end-exclusive. Generation of these files can be disabled with <code>--disable-junction-files</code>. Instead only the summary file of junction and splice counts will be generated.</p></div>
+<p>In the resulting <code>&lt;basename&gt;.junctions.tsv</code> files, note that the coordinates are 0-based, end-exclusive. Generation of these files can be disabled with <code>--disable-junction-files</code>. Instead only the summary of junction and splice counts will be generated.</p></div>
             </div>
         </div>
 

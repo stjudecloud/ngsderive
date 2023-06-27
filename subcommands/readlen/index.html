@@ -127,7 +127,7 @@
 <h2 id="algorithm">Algorithm</h2>
 <p>At the time of writing, the algorithm used is roughly:</p>
 <ol>
-<li>Compute distribution of read lengths for the first <code>--n-samples</code> reads in a file.</li>
+<li>Compute distribution of read lengths for the first <code>--n-reads</code> reads in a file.</li>
 <li>Assuming read length in the file can only decrease from the actual read length (from adapter trimming or similar), the putative maximum read length is considered to be the highest detected read length.</li>
 <li>If the percentage of reads that are evidence for the putative maximum read length makes up at least <code>--majority-vote-cutoff</code>% of the reads, the putative read length is considered to be confirmed. If not, the consensus read length will be return as -1 (could not determine).</li>
 <li>For example, if 100bp is the maximum read length detected and 85% percent of the reads support that claim, then we considered 100bp as the consensus read length. If only 30% of the reads indicated 100bp, the tool cannot report a consensus.</li>

@@ -202,7 +202,7 @@
 </tr>
 </tbody>
 </table>
-<p>The tool will repeat the strandedness test at most <code>--max-tries</code> times to try to find a non-<code>Inconclusive</code> prediction.</p>
+<p>The tool will repeat the strandedness test at most <code>--max-tries</code> times to try to find a non-<code>Inconclusive</code> prediction. Results are cumulative, so each repeated test adds to the sample size used to derive strandedness.</p>
 <h2 id="differences">Differences</h2>
 <p>The most popular strandedness inference tool that the author is aware of is RSeQC's <a href="http://rseqc.sourceforge.net/#infer-experiment-py">infer_experiment.py</a>. The main difference is that RSeQC starts at the beginning of the BAM file and takes the first <code>n</code> reads that match its criteria. If the BAM is coordinate sorted, this would mean its not uncommon to have all of the evidence at the beginning of <code>chr1</code>. Anecdotally, this method differs in that it is slightly slower than <code>infer_experiment.py</code> but is expected to be more robust to biases caused by which reads are sampled. Further, reads within RSeQC may fall into ambiguous regions for which a read is not decisively evidence for a particular strandedness. These cases are eliminated by the use of (a) filtering to only coding regions and (b) removal of any regions of the gene model for which genes overlap on each strand.</p>
 <h2 id="limitations">Limitations</h2>
