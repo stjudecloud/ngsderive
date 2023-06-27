@@ -10,4 +10,4 @@ As a hypothetical example of a mis-translation; a FASTQ sequenced by an Illumina
 
 * All 3 possible encodings have the same upper range, and only differ in terms of lower quality scores. Thus if the provided read data is all of high quality, it may be classified as a stricter encoding than was originally used to generate the data.
 
-    If the downstream use of this value is needed to ensure all PHRED scores are within the derived encoding, use `--n-samples -1` to parse the entire file.
+    If the downstream use of this value is needed to ensure all PHRED scores are within the derived encoding, use `--n-reads -1` to parse the entire file.
