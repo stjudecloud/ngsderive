@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v3.2.1 (2023-06-27)
+### Fix
+* -1 n-reads default for encoding. don't falsely imply random sampling ([#119](https://github.com/stjudecloud/ngsderive/issues/119)) ([`c83275a`](https://github.com/stjudecloud/ngsderive/commit/c83275a018703c57f0ce8c90cf4b94fbd658e300))
+
 ## v3.2.0 (2023-06-26)
 ### Feature
 * Handle case of BAM without RG tag ([#100](https://github.com/stjudecloud/ngsderive/issues/100)) ([`4436abf`](https://github.com/stjudecloud/ngsderive/commit/4436abf70540a33b1825deba3c8b0b499b93bbc5))
