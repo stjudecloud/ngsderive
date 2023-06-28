@@ -98,16 +98,14 @@ def derive_instrument_from_iid(iid):
 
 def predict_instrument_from_iids(iids):
     possible_instruments_by_iid = set()
-    detected_at_least_one_instrument = False
 
     for iid in iids:
         if len(possible_instruments_by_iid) == 0:
             possible_instruments_by_iid = derive_instrument_from_iid(iid)
         else:
             possible_instruments_by_iid &= derive_instrument_from_iid(iid)
-            detected_at_least_one_instrument = True
 
-    return possible_instruments_by_iid, detected_at_least_one_instrument
+    return possible_instruments_by_iid
 
 
 def derive_instrument_from_fcid(fcid):
@@ -122,32 +120,23 @@ def derive_instrument_from_fcid(fcid):
 
 def predict_instrument_from_fcids(fcids):
     possible_instruments_by_fcid = set()
-    detected_at_least_one_instrument = False
 
     for fcid in fcids:
         if len(possible_instruments_by_fcid) == 0:
             possible_instruments_by_fcid = derive_instrument_from_fcid(fcid)
         else:
             possible_instruments_by_fcid &= derive_instrument_from_fcid(fcid)
-            detected_at_least_one_instrument = True
 
-    return possible_instruments_by_fcid, detected_at_least_one_instrument
+    return possible_instruments_by_fcid
 
 
 def resolve_instrument(
     possible_instruments_by_iid,
     possible_instruments_by_fcid,
-    at_least_one_instrument_detected,
     malformed_read_names_detected,
 ):
     if len(possible_instruments_by_iid) == 0 and len(possible_instruments_by_fcid) == 0:
-        if at_least_one_instrument_detected:
-            return (
-                set(["multiple instruments"]),
-                "unknown confidence",
-                "multiple instruments were detected in this sample",
-            )
-        elif malformed_read_names_detected:
+        if malformed_read_names_detected:
             return (
                 set(["unknown"]),
                 "no confidence",
@@ -262,19 +251,12 @@ def main(ngsfiles, outfile, n_reads):
             logger.warning(
                 "Encountered read names not in Illumina format. Recovery attempted."
             )
-        (
-            possible_instruments_by_iid,
-            detected_instrument_by_iid,
-        ) = predict_instrument_from_iids(instruments)
-        (
-            possible_instruments_by_fcid,
-            detected_instrument_by_fcid,
-        ) = predict_instrument_from_fcids(flowcells)
+        possible_instruments_by_iid = predict_instrument_from_iids(instruments)
+        possible_instruments_by_fcid = predict_instrument_from_fcids(flowcells)
 
         instruments, confidence, based_on = resolve_instrument(
             possible_instruments_by_iid,
             possible_instruments_by_fcid,
-            detected_instrument_by_iid | detected_instrument_by_fcid,
             malformed_read_names,
         )
         for upgrade_set in upgrade_sets:
