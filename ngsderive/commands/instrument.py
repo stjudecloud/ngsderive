@@ -103,9 +103,9 @@ def predict_instrument_from_iids(iids):
     for iid in iids:
         if len(possible_instruments_by_iid) == 0:
             possible_instruments_by_iid = derive_instrument_from_iid(iid)
-            detected_at_least_one_instrument = True
         else:
             possible_instruments_by_iid &= derive_instrument_from_iid(iid)
+            detected_at_least_one_instrument = True
 
     return possible_instruments_by_iid, detected_at_least_one_instrument
 
@@ -127,9 +127,9 @@ def predict_instrument_from_fcids(fcids):
     for fcid in fcids:
         if len(possible_instruments_by_fcid) == 0:
             possible_instruments_by_fcid = derive_instrument_from_fcid(fcid)
-            detected_at_least_one_instrument = True
         else:
             possible_instruments_by_fcid &= derive_instrument_from_fcid(fcid)
+            detected_at_least_one_instrument = True
 
     return possible_instruments_by_fcid, detected_at_least_one_instrument
 
