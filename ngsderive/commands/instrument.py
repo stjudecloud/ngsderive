@@ -20,7 +20,7 @@ instrument_ids = {
     "^C[0-9]{5}$": ["HiSeq 1500"],
     "^HWI-ST[0-9]{3,5}(_[0-9]{9})?$": ["HiSeq 2000"],
     "^HWI-D[0-9]{5}$": ["HiSeq 2000", "HiSeq 2500"],
-    "^A[0-9]{5}$": ["NovaSeq"],
+    "^A[0-9]{5}$": ["NovaSeq 6000"],
     "^D[0-9]{5}$": ["HiSeq 2500"],
     "^J[0-9]{5}$": ["HiSeq 3000"],
     "^K[0-9]{5}$": ["HiSeq 3000", "HiSeq 4000"],
@@ -69,10 +69,10 @@ flowcell_ids = {
     "^H[A-Z0-9]{4}ALXX$": ["HiSeq X"],  # (8-lane) flow cell
     "^H[A-Z0-9]{4}BGX[A-Z,0-9]$": ["NextSeq"],  # High output flow cell
     "^H[A-Z0-9]{4}AFXX$": ["NextSeq"],  # Mid output flow cell
-    "^H[A-Z0-9]{5}RXX$": ["NovaSeq"],  # S1 flow cell
-    "^H[A-Z0-9]{5}RXX$": ["NovaSeq"],  # SP flow cell
-    "^H[A-Z0-9]{5}MXX$": ["NovaSeq"],  # S2 flow cell
-    "^H[A-Z0-9]{5}SXX$": ["NovaSeq"],  # S4 flow cell
+    "^H[A-Z0-9]{5}RXX$": ["NovaSeq 6000"],  # S1 flow cell
+    "^H[A-Z0-9]{5}RXX$": ["NovaSeq 6000"],  # SP flow cell
+    "^H[A-Z0-9]{5}MXX$": ["NovaSeq 6000"],  # S2 flow cell
+    "^H[A-Z0-9]{5}SXX$": ["NovaSeq 6000"],  # S4 flow cell
     "^A[A-Z0-9]{4}$": ["MiSeq"],  # MiSeq flow cell
     "^B[A-Z0-9]{4}$": ["MiSeq"],  # MiSeq flow cell
     "^D[A-Z0-9]{4}$": ["MiSeq"],  # MiSeq nano flow cell
