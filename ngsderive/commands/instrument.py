@@ -80,6 +80,9 @@ flowcell_ids = {
     "^G[A-Z0-9]{4}$": ["MiSeq"],  # MiSeq micro flow cell
 }
 
+# There is an upgrade kit for HiSeq 2000 machines which makes them indistinguishable
+# from Hiseq 2500 machines. Since we can't know whether an upgrade kit has been
+# applied, we can never differentiate between HiSeq 2000 and 2500 machines.
 upgrade_sets = [(set(["HiSeq 2000", "HiSeq 2500"]), ["HiSeq 2000", "HiSeq 2500"])]
 
 
