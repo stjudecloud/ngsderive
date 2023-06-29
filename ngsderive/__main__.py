@@ -53,7 +53,6 @@ def get_args():
         action="store_true",
         help="Enable INFO log level.",
     )
-    common.add_argument("--version", action="version", version="%(prog)s 1.0.0")
 
     readlen = subparsers.add_parser(
         "readlen", parents=[common], formatter_class=SaneFormatter
