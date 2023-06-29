@@ -29,6 +29,7 @@ instrument_ids = {
     "^NB[0-9]{6}$": ["NextSeq"],
     "^NS[0-9]{6}$": ["NextSeq"],
     "^MN[0-9]{5}$": ["MiniSeq"],
+    "^SN671$": ["HiSeq 2000"],
 }
 
 flowcell_ids = {
@@ -85,6 +86,13 @@ flowcell_ids = {
 # applied, we can never differentiate between HiSeq 2000 and 2500 machines.
 upgrade_sets = [(set(["HiSeq 2000", "HiSeq 2500"]), ["HiSeq 2000", "HiSeq 2500"])]
 
+# if item[0] pattern matches, remove item[1] from set, add item[2] to set
+specific_iid_patterns = [
+    ("^K00(?:258|3(?:09|2[679]))$", set(["HiSeq 3000"]), set(["HiSeq 4000"])),
+    ("^NB551266$", set(["NextSeq"]), set(["NextSeq 550"])),
+    ("^NS500229$", set(["NextSeq"]), set(["NextSeq 500"])),
+]
+
 
 def derive_instrument_from_iid(iid):
     matching_instruments = set()
@@ -92,6 +100,10 @@ def derive_instrument_from_iid(iid):
     for pattern in instrument_ids.keys():
         if re.search(pattern, iid):
             matching_instruments |= set(instrument_ids[pattern])
+    for pattern, set_to_remove, set_to_add in specific_iid_patterns:
+        if re.search(pattern, iid):
+            matching_instruments.difference_update(set_to_remove)
+            matching_instruments.update(set_to_add)
 
     return matching_instruments
 
