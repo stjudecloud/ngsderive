@@ -112,7 +112,7 @@ def predict_instrument_from_iids(iids):
     possible_instruments_by_iid = set()
 
     for iid in iids:
-        possible_instruments_by_iid &= derive_instrument_from_iid(iid)
+        possible_instruments_by_iid |= derive_instrument_from_iid(iid)
 
     return possible_instruments_by_iid
 
@@ -131,7 +131,7 @@ def predict_instrument_from_fcids(fcids):
     possible_instruments_by_fcid = set()
 
     for fcid in fcids:
-        possible_instruments_by_fcid &= derive_instrument_from_fcid(fcid)
+        possible_instruments_by_fcid |= derive_instrument_from_fcid(fcid)
 
     return possible_instruments_by_fcid
 
