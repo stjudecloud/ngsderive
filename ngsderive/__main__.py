@@ -12,6 +12,7 @@ from ngsderive.commands import (
     strandedness,
     encoding,
     junction_annotation,
+    endedness,
 )
 
 logger = logging.getLogger("ngsderive")
@@ -210,6 +211,35 @@ def get_args():
         + "Either way, they will be annotated as `unannotated_reference` in the junctions file.",
     )
 
+    endedness = subparsers.add_parser(
+        "endedness", parents=[common], formatter_class=SaneFormatter
+    )
+    endedness.add_argument(
+        "-n",
+        "--n-reads",
+        type=int,
+        help="How many reads to analyze from the start of the file. Any n < 1 to parse whole file.",
+        default=10000,
+    )
+    endedness.add_argument(
+        "--lenient",
+        action="store_true",
+        default=False,
+        help="Return a zero exit code on inconclusive results or "
+        + "when illegal mate states are discovered",
+    )
+    split_by_rg_parser = endedness.add_mutually_exclusive_group(required=False)
+    split_by_rg_parser.add_argument(
+        "--split-by-rg",
+        dest="split_by_rg",
+        action="store_true",
+        help="Contain one entry per read group.",
+    )
+    split_by_rg_parser.add_argument(
+        "--no-split-by-rg", dest="split_by_rg", action="store_false"
+    )
+    endedness.set_defaults(split_by_rg=False)
+
     args = parser.parse_args()
     if not args.subcommand:
         parser.print_help()
@@ -321,4 +351,11 @@ def run():
             consider_unannotated_references_novel=args.consider_unannotated_references_novel,
             junction_dir=args.junction_files_dir,
             disable_junction_files=args.disable_junction_files,
+        )
+    if args.subcommand == "endedness":
+        endedness.main(
+            args.ngsfiles,
+            outfile=args.outfile,
+            n_reads=args.n_reads,
+            split_by_rg=args.split_by_rg,
         )
