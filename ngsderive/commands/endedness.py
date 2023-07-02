@@ -18,7 +18,7 @@ def get_reads_rg(read, default="unknown_read_group"):
     return default
 
 
-def resolve_flag_count(read1s, read2s, neither, both):
+def resolve_flag_count(read1s, read2s, neither, both, paired_deviance):
     # only read1s present
     if (read1s > 0) and (read2s == 0 and neither == 0 and both == 0):
         return {
@@ -75,7 +75,7 @@ def resolve_flag_count(read1s, read2s, neither, both):
         assert neither == 0 and both == 0
 
         read1_frac = read1s / (read1s + read2s)
-        if read1_frac > 0.45 and read1_frac < 0.55:
+        if read1_frac > (0.5 - paired_deviance) and read1_frac < (0.5 + paired_deviance):
             return {
                 "Read1s": read1s,
                 "Read2s": read2s,
@@ -96,7 +96,7 @@ def resolve_flag_count(read1s, read2s, neither, both):
 
 
 
-def main(ngsfiles, outfile, n_reads, lenient, split_by_rg):
+def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
     if not split_by_rg:
         fieldnames = [
             "File",
@@ -197,7 +197,8 @@ def main(ngsfiles, outfile, n_reads, lenient, split_by_rg):
                 mate_flags["overall"]["read1s"],
                 mate_flags["overall"]["read2s"],
                 mate_flags["overall"]["neither"],
-                mate_flags["overall"]["both"]
+                mate_flags["overall"]["both"],
+                paired_deviance,
             )
             result["File"] = ngsfilepath
             writer.writerow(result)
@@ -221,7 +222,8 @@ def main(ngsfiles, outfile, n_reads, lenient, split_by_rg):
                     mate_flags[rg]["read1s"],
                     mate_flags[rg]["read2s"],
                     mate_flags[rg]["neither"],
-                    mate_flags[rg]["both"]
+                    mate_flags[rg]["both"],
+                    paired_deviance,
                 )
                 result["File"] = ngsfilepath
                 result["Read group"] = rg

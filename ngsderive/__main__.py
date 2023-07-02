@@ -222,6 +222,13 @@ def get_args():
         default=1000000,
     )
     endedness.add_argument(
+        "-p",
+        "--paired-deviance",
+        type=float,
+        help="Distance from 0.5 split between read1s and read2s allowed to be called 'Paired-End'.",
+        default=0.05,
+    )
+    endedness.add_argument(
         "--lenient",
         action="store_true",
         default=False,
@@ -357,6 +364,7 @@ def run():
             args.ngsfiles,
             outfile=args.outfile,
             n_reads=args.n_reads,
+            paired_deviance=args.paired_deviance,
             lenient=args.lenient,
             split_by_rg=args.split_by_rg,
         )
