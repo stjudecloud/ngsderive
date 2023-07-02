@@ -219,7 +219,7 @@ def get_args():
         "--n-reads",
         type=int,
         help="How many reads to analyze from the start of the file. Any n < 1 to parse whole file.",
-        default=10000,
+        default=1000000,
     )
     endedness.add_argument(
         "--lenient",
