@@ -55,7 +55,7 @@ def main(ngsfiles, outfile, n_reads, lenient, split_by_rg):
             outfile.flush()
             continue
 
-        if ngsfile.filetype != NGSFileType.BAM or ngsfile.filetype != NGSFileType.SAM:
+        if ngsfile.filetype != NGSFileType.BAM and ngsfile.filetype != NGSFileType.SAM:
             raise RuntimeError(
                 "Invalid file: {}. `endedness` only supports SAM/BAM files!".format(
                     ngsfilepath

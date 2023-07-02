@@ -357,5 +357,6 @@ def run():
             args.ngsfiles,
             outfile=args.outfile,
             n_reads=args.n_reads,
+            lenient=args.lenient,
             split_by_rg=args.split_by_rg,
         )
