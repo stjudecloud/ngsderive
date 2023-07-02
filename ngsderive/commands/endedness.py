@@ -40,9 +40,9 @@ def resolve_flag_count(read1s, read2s, neither, both, paired_deviance):
             "Endedness": "Single-End",
         }
     # only neither or only both present
-    if (
-        ((neither > 0) and (not both > 0)) or ((not neither > 0) and (both > 0))
-    ) and (read1s == 0 and read2s == 0):
+    if (((neither > 0) and (not both > 0)) or ((not neither > 0) and (both > 0))) and (
+        read1s == 0 and read2s == 0
+    ):
         return {
             "Read1s": read1s,
             "Read2s": read2s,
@@ -75,7 +75,9 @@ def resolve_flag_count(read1s, read2s, neither, both, paired_deviance):
         assert neither == 0 and both == 0
 
         read1_frac = read1s / (read1s + read2s)
-        if read1_frac > (0.5 - paired_deviance) and read1_frac < (0.5 + paired_deviance):
+        if read1_frac > (0.5 - paired_deviance) and read1_frac < (
+            0.5 + paired_deviance
+        ):
             return {
                 "Read1s": read1s,
                 "Read2s": read2s,
@@ -92,8 +94,6 @@ def resolve_flag_count(read1s, read2s, neither, both, paired_deviance):
             "Mate state": "Legal",
             "Endedness": "Inconclusive",
         }
-
-
 
 
 def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
@@ -161,7 +161,9 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
         if "RG" in samfile.header:
             read_groups += [rg["ID"] for rg in samfile.header["RG"]]
 
-        mate_flags = defaultdict(lambda: {"read1s": 0, "read2s": 0, "neither": 0, "both": 0})
+        mate_flags = defaultdict(
+            lambda: {"read1s": 0, "read2s": 0, "neither": 0, "both": 0}
+        )
 
         for read in itertools.islice(samfile, n_reads):
             # only count primary alignments
@@ -186,7 +188,8 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                 raise RuntimeError(
                     "This shouldn't be possible. Please contact the developers."
                 )
-        assert (mate_flags["overall"]["read1s"]
+        assert (
+            mate_flags["overall"]["read1s"]
             + mate_flags["overall"]["read2s"]
             + mate_flags["overall"]["neither"]
             + mate_flags["overall"]["both"]
@@ -216,7 +219,12 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
         else:
             for rg in mate_flags:
                 if rg == "unknown_read_group":
-                    if (mate_flags[rg]["read1s"] + mate_flags[rg]["read2s"] + mate_flags[rg]["neither"] + mate_flags[rg]["both"]) == 0:
+                    if (
+                        mate_flags[rg]["read1s"]
+                        + mate_flags[rg]["read2s"]
+                        + mate_flags[rg]["neither"]
+                        + mate_flags[rg]["both"]
+                    ) == 0:
                         continue
                 result = resolve_flag_count(
                     mate_flags[rg]["read1s"],
@@ -240,4 +248,3 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                         sysexit = 3
     if sysexit != 0:
         raise SystemExit(sysexit)
-
