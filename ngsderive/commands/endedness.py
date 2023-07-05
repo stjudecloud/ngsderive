@@ -19,58 +19,40 @@ def get_reads_rg(read, default="unknown_read_group"):
 
 
 def resolve_flag_count(read1s, read2s, neither, both, paired_deviance):
+    result = {
+        "Read1s": read1s,
+        "Read2s": read2s,
+        "Neither": neither,
+        "Both": both,
+    }
+
     # only read1s present
     if (read1s > 0) and (read2s == 0 and neither == 0 and both == 0):
-        return {
-            "Read1s": read1s,
-            "Read2s": read2s,
-            "Neither": neither,
-            "Both": both,
-            "Mate state": "Legal",
-            "Endedness": "Single-End",
-        }
+        result["Mate state"] = "Legal"
+        result["Endedness"] = "Single-End"
+        return result
     # only read2s present
     if (read2s > 0) and (read1s == 0 and neither == 0 and both == 0):
-        return {
-            "Read1s": read1s,
-            "Read2s": read2s,
-            "Neither": neither,
-            "Both": both,
-            "Mate state": "Illegal",
-            "Endedness": "Single-End",
-        }
+        result["Mate state"] = "Illegal"
+        result["Endedness"] = "Single-End"
+        return result
     # only neither or only both present
     if (((neither > 0) and (not both > 0)) or ((not neither > 0) and (both > 0))) and (
         read1s == 0 and read2s == 0
     ):
-        return {
-            "Read1s": read1s,
-            "Read2s": read2s,
-            "Neither": neither,
-            "Both": both,
-            "Mate state": "Illegal",
-            "Endedness": "Single-End",
-        }
+        result["Mate state"] = "Illegal"
+        result["Endedness"] = "Single-End"
+        return result
     # legal reads mixed with illegal reads
     if (read1s > 0 or read2s > 0) and (neither > 0 or both > 0):
-        return {
-            "Read1s": read1s,
-            "Read2s": read2s,
-            "Neither": neither,
-            "Both": both,
-            "Mate state": "Illegal",
-            "Endedness": "Inconclusive",
-        }
+        result["Mate state"] = "Illegal"
+        result["Endedness"] = "Inconclusive"
+        return result
     # any mix of neither and both, regardless of read1/2s
     if neither > 0 and both > 0:
-        return {
-            "Read1s": read1s,
-            "Read2s": read2s,
-            "Neither": neither,
-            "Both": both,
-            "Mate state": "Illegal",
-            "Endedness": "Inconclusive",
-        }
+        result["Mate state"] = "Illegal"
+        result["Endedness"] = "Inconclusive"
+        return result
     else:
         assert neither == 0 and both == 0
 
@@ -78,22 +60,12 @@ def resolve_flag_count(read1s, read2s, neither, both, paired_deviance):
         if read1_frac > (0.5 - paired_deviance) and read1_frac < (
             0.5 + paired_deviance
         ):
-            return {
-                "Read1s": read1s,
-                "Read2s": read2s,
-                "Neither": neither,
-                "Both": both,
-                "Mate state": "Legal",
-                "Endedness": "Paired-End",
-            }
-        return {
-            "Read1s": read1s,
-            "Read2s": read2s,
-            "Neither": neither,
-            "Both": both,
-            "Mate state": "Legal",
-            "Endedness": "Inconclusive",
-        }
+            result["Mate state"] = "Legal"
+            result["Endedness"] = "Paired-End"
+            return result
+        result["Mate state"] = "Legal"
+        result["Endedness"] = "Inconclusive"
+        return result
 
 
 def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
