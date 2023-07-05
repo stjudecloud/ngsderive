@@ -166,8 +166,8 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
         )
 
         for read in itertools.islice(samfile, n_reads):
-            # only count primary alignments
-            if read.is_secondary:  # true if not primary alignment
+            # only count primary alignments and unmapped reads
+            if read.is_secondary and not read.is_unmapped:
                 continue
 
             rg = get_reads_rg(read)
