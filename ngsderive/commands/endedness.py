@@ -36,14 +36,17 @@ def resolve_flag_count(read1s, read2s, neither, both, paired_deviance):
         result["Mate state"] = "Unexpected"
         result["Endedness"] = "Single-End"
         return result
-    # only neither or only both present
-    if (((neither > 0) and (not both > 0)) or ((not neither > 0) and (both > 0))) and (
-        read1s == 0 and read2s == 0
-    ):
+    # only neither present
+    if (neither > 0) and (read1s == 0 and read2s == 0 and both == 0):
+        result["Mate state"] = "Expected"
+        result["Endedness"] = "Single-End"
+        return result
+    # only both present
+    if (both > 0) and (read1s == 0 and read2s == 0 and neither == 0):
         result["Mate state"] = "Unexpected"
         result["Endedness"] = "Single-End"
         return result
-    # Expected reads mixed with Unexpected reads
+    # read1/2s mixed with neither/both reads
     if (read1s > 0 or read2s > 0) and (neither > 0 or both > 0):
         result["Mate state"] = "Unexpected"
         result["Endedness"] = "Inconclusive"
