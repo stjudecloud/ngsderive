@@ -233,7 +233,7 @@ def get_args():
         action="store_true",
         default=False,
         help="Return a zero exit code on inconclusive results or "
-        + "when illegal mate states are discovered",
+        + "when unexpected mate states are discovered",
     )
     split_by_rg_parser = endedness.add_mutually_exclusive_group(required=False)
     split_by_rg_parser.add_argument(

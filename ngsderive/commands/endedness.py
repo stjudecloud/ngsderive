@@ -28,29 +28,29 @@ def resolve_flag_count(read1s, read2s, neither, both, paired_deviance):
 
     # only read1s present
     if (read1s > 0) and (read2s == 0 and neither == 0 and both == 0):
-        result["Mate state"] = "Legal"
+        result["Mate state"] = "Expected"
         result["Endedness"] = "Single-End"
         return result
     # only read2s present
     if (read2s > 0) and (read1s == 0 and neither == 0 and both == 0):
-        result["Mate state"] = "Illegal"
+        result["Mate state"] = "Unexpected"
         result["Endedness"] = "Single-End"
         return result
     # only neither or only both present
     if (((neither > 0) and (not both > 0)) or ((not neither > 0) and (both > 0))) and (
         read1s == 0 and read2s == 0
     ):
-        result["Mate state"] = "Illegal"
+        result["Mate state"] = "Unexpected"
         result["Endedness"] = "Single-End"
         return result
-    # legal reads mixed with illegal reads
+    # Expected reads mixed with Unexpected reads
     if (read1s > 0 or read2s > 0) and (neither > 0 or both > 0):
-        result["Mate state"] = "Illegal"
+        result["Mate state"] = "Unexpected"
         result["Endedness"] = "Inconclusive"
         return result
     # any mix of neither and both, regardless of read1/2s
     if neither > 0 and both > 0:
-        result["Mate state"] = "Illegal"
+        result["Mate state"] = "Unexpected"
         result["Endedness"] = "Inconclusive"
         return result
     else:
@@ -60,10 +60,10 @@ def resolve_flag_count(read1s, read2s, neither, both, paired_deviance):
         if read1_frac > (0.5 - paired_deviance) and read1_frac < (
             0.5 + paired_deviance
         ):
-            result["Mate state"] = "Legal"
+            result["Mate state"] = "Expected"
             result["Endedness"] = "Paired-End"
             return result
-        result["Mate state"] = "Legal"
+        result["Mate state"] = "Expected"
         result["Endedness"] = "Inconclusive"
         return result
 
@@ -179,8 +179,8 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
             writer.writerow(result)
             outfile.flush()
 
-            if result["Mate state"] == "Illegal":
-                logger.warning("Illegal mate state detected!")
+            if result["Mate state"] == "Unexpected":
+                logger.warning("Unexpected mate state detected!")
                 if not lenient:
                     sysexit = 2
             if result["Endedness"] == "Inconclusive":
@@ -210,8 +210,8 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                 writer.writerow(result)
                 outfile.flush()
 
-                if result["Mate state"] == "Illegal":
-                    logger.warning("Illegal mate state detected!")
+                if result["Mate state"] == "Unexpected":
+                    logger.warning("Unexpected mate state detected!")
                     if not lenient:
                         sysexit = 2
                 if result["Endedness"] == "Inconclusive":
