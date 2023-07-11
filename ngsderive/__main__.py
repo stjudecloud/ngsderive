@@ -219,7 +219,7 @@ def get_args():
         "--n-reads",
         type=int,
         help="How many reads to analyze from the start of the file. Any n < 1 to parse whole file.",
-        default=1000000,
+        default=-1,
     )
     endedness.add_argument(
         "-p",
@@ -232,8 +232,7 @@ def get_args():
         "--lenient",
         action="store_true",
         default=False,
-        help="Return a zero exit code on inconclusive results or "
-        + "when unexpected mate states are discovered",
+        help="Return a zero exit code on unknown results",
     )
     split_by_rg_parser = endedness.add_mutually_exclusive_group(required=False)
     split_by_rg_parser.add_argument(
