@@ -3,7 +3,7 @@ import itertools
 import logging
 from collections import defaultdict
 
-from strandedness import get_reads_rg
+from .strandedness import get_reads_rg
 
 from ..utils import NGSFile, NGSFileType
 
