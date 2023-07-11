@@ -134,7 +134,7 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
         ordering_flags = defaultdict(
             lambda: {"firsts": 0, "lasts": 0, "neither": 0, "both": 0}
         )
-        read_names = defaultdict(lambda: 0)
+        read_names = defaultdict(lambda: defaultdict(lambda: 0))
 
         for read in itertools.islice(samfile, n_reads):
             # only count primary alignments and unmapped reads
@@ -142,7 +142,8 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                 continue
 
             rg = get_reads_rg(read)
-            read_names[read.query_name] += 1
+            read_names["overall"][read.query_name] += 1
+            read_names[rg][read.query_name] += 1
 
             if read.is_read1 and not read.is_read2:
                 ordering_flags["overall"]["firsts"] += 1
@@ -167,8 +168,6 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
             + ordering_flags["overall"]["both"]
         ) > 0
 
-        reads_per_template = find_reads_per_template(read_names)
-
         if not split_by_rg:
             result = resolve_flag_count(
                 ordering_flags["overall"]["firsts"],
@@ -177,6 +176,7 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                 ordering_flags["overall"]["both"],
                 paired_deviance,
             )
+            reads_per_template = find_reads_per_template(read_names["overall"])
 
             if result["Endedness"] == "Unknown":
                 logger.warning("Could not determine endedness!")
@@ -209,6 +209,7 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                     ordering_flags[rg]["both"],
                     paired_deviance,
                 )
+                reads_per_template = find_reads_per_template(read_names[rg])
 
                 if result["Endedness"] == "Unknown":
                     logger.warning("Could not determine endedness!")
