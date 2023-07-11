@@ -21,33 +21,27 @@ def resolve_flag_count(firsts, lasts, neither, both, paired_deviance):
 
     # only firsts present
     if (firsts > 0) and (lasts == 0 and neither == 0 and both == 0):
-        result["Mate state"] = "Expected"
-        result["Endedness"] = "Single-End"
+        result["Endedness"] = "Unknown"
         return result
     # only lasts present
     if (lasts > 0) and (firsts == 0 and neither == 0 and both == 0):
-        result["Mate state"] = "Unexpected"
-        result["Endedness"] = "Single-End"
+        result["Endedness"] = "Unknown"
         return result
     # only neither present
     if (neither > 0) and (firsts == 0 and lasts == 0 and both == 0):
-        result["Mate state"] = "Expected"
-        result["Endedness"] = "Single-End"
+        result["Endedness"] = "Unknown"
         return result
     # only both present
     if (both > 0) and (firsts == 0 and lasts == 0 and neither == 0):
-        result["Mate state"] = "Unexpected"
         result["Endedness"] = "Single-End"
         return result
     # first/lasts mixed with neither/both reads
     if (firsts > 0 or lasts > 0) and (neither > 0 or both > 0):
-        result["Mate state"] = "Unexpected"
-        result["Endedness"] = "Inconclusive"
+        result["Endedness"] = "Unknown"
         return result
     # any mix of neither and both, regardless of first/lasts
     if neither > 0 and both > 0:
-        result["Mate state"] = "Unexpected"
-        result["Endedness"] = "Inconclusive"
+        result["Endedness"] = "Unknown"
         return result
     else:
         assert neither == 0 and both == 0
@@ -56,12 +50,20 @@ def resolve_flag_count(firsts, lasts, neither, both, paired_deviance):
         if read1_frac > (0.5 - paired_deviance) and read1_frac < (
             0.5 + paired_deviance
         ):
-            result["Mate state"] = "Expected"
             result["Endedness"] = "Paired-End"
             return result
-        result["Mate state"] = "Expected"
-        result["Endedness"] = "Inconclusive"
+        result["Endedness"] = "Unknown"
         return result
+
+
+def find_reads_per_template(read_names):
+    count = 0
+    sum = 0
+    for c in read_names.values():
+        count += 1
+        sum += c
+    rpt = round(sum / count)
+    return rpt
 
 
 def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
@@ -72,7 +74,7 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
             "f-l+",
             "f-l-",
             "f+l+",
-            "Mate state",
+            "Reads per template",
             "Endedness",
         ]
     else:
@@ -83,7 +85,7 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
             "f-l+",
             "f-l-",
             "f+l+",
-            "Mate state",
+            "Reads per template",
             "Endedness",
         ]
     writer = csv.DictWriter(
@@ -108,7 +110,7 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                 "f-l+": "N/A",
                 "f-l-": "N/A",
                 "f+l+": "N/A",
-                "Mate state": "N/A",
+                "Reads per template": "N/A",
                 "Endedness": "File not found.",
             }
             if split_by_rg:
@@ -132,6 +134,7 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
         ordering_flags = defaultdict(
             lambda: {"firsts": 0, "lasts": 0, "neither": 0, "both": 0}
         )
+        read_names = defaultdict(lambda: 0)
 
         for read in itertools.islice(samfile, n_reads):
             # only count primary alignments and unmapped reads
@@ -139,6 +142,7 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                 continue
 
             rg = get_reads_rg(read)
+            read_names[read.query_name] += 1
 
             if read.is_read1 and not read.is_read2:
                 ordering_flags["overall"]["firsts"] += 1
@@ -163,6 +167,8 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
             + ordering_flags["overall"]["both"]
         ) > 0
 
+        reads_per_template = find_reads_per_template(read_names)
+
         if not split_by_rg:
             result = resolve_flag_count(
                 ordering_flags["overall"]["firsts"],
@@ -171,29 +177,31 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                 ordering_flags["overall"]["both"],
                 paired_deviance,
             )
+
+            if result["Endedness"] == "Unknown":
+                logger.warning("Could not determine endedness!")
+                if not lenient:
+                    sysexit = 2
+
             result["File"] = ngsfilepath
+            result["Reads per template"] = reads_per_template
             writer.writerow(result)
             outfile.flush()
 
-            if result["Mate state"] == "Unexpected":
-                logger.warning("Unexpected mate state detected!")
-                if not lenient:
-                    sysexit = 2
-            if result["Endedness"] == "Inconclusive":
-                logger.warning("Could not determine endedness!")
-                if not lenient and sysexit == 0:
-                    sysexit = 3
-
         else:
             for rg in ordering_flags:
-                if rg == "unknown_read_group":
-                    if (
+                if (
+                    rg == "unknown_read_group"
+                    and (
                         ordering_flags[rg]["firsts"]
                         + ordering_flags[rg]["lasts"]
                         + ordering_flags[rg]["neither"]
                         + ordering_flags[rg]["both"]
-                    ) == 0:
-                        continue
+                    )
+                    == 0
+                ):
+                    continue
+
                 result = resolve_flag_count(
                     ordering_flags[rg]["firsts"],
                     ordering_flags[rg]["lasts"],
@@ -201,18 +209,17 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                     ordering_flags[rg]["both"],
                     paired_deviance,
                 )
+
+                if result["Endedness"] == "Unknown":
+                    logger.warning("Could not determine endedness!")
+                    if not lenient:
+                        sysexit = 2
+
                 result["File"] = ngsfilepath
                 result["Read group"] = rg
+                result["Reads per template"] = reads_per_template
                 writer.writerow(result)
                 outfile.flush()
 
-                if result["Mate state"] == "Unexpected":
-                    logger.warning("Unexpected mate state detected!")
-                    if not lenient:
-                        sysexit = 2
-                if result["Endedness"] == "Inconclusive":
-                    logger.warning("Could not determine endedness!")
-                    if not lenient and sysexit == 0:
-                        sysexit = 3
     if sysexit != 0:
         raise SystemExit(sysexit)
