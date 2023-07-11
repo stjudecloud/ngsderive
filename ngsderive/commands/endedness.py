@@ -1,21 +1,14 @@
 import csv
 import itertools
-
 import logging
 from collections import defaultdict
+
+from strandedness import get_reads_rg
 
 from ..utils import NGSFile, NGSFileType
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
-
-def get_reads_rg(read, default="unknown_read_group"):
-    for k, v in read.tags:
-        if k == "RG":
-            return v
-
-    return default
 
 
 def resolve_flag_count(firsts, lasts, neither, both, paired_deviance):
