@@ -18,40 +18,40 @@ def get_reads_rg(read, default="unknown_read_group"):
     return default
 
 
-def resolve_flag_count(read1s, read2s, neither, both, paired_deviance):
+def resolve_flag_count(firsts, lasts, neither, both, paired_deviance):
     result = {
-        "Read1s": read1s,
-        "Read2s": read2s,
-        "Neither": neither,
-        "Both": both,
+        "f+l-": firsts,
+        "f-l+": lasts,
+        "f-l-": neither,
+        "f+l+": both,
     }
 
-    # only read1s present
-    if (read1s > 0) and (read2s == 0 and neither == 0 and both == 0):
+    # only firsts present
+    if (firsts > 0) and (lasts == 0 and neither == 0 and both == 0):
         result["Mate state"] = "Expected"
         result["Endedness"] = "Single-End"
         return result
-    # only read2s present
-    if (read2s > 0) and (read1s == 0 and neither == 0 and both == 0):
+    # only lasts present
+    if (lasts > 0) and (firsts == 0 and neither == 0 and both == 0):
         result["Mate state"] = "Unexpected"
         result["Endedness"] = "Single-End"
         return result
     # only neither present
-    if (neither > 0) and (read1s == 0 and read2s == 0 and both == 0):
+    if (neither > 0) and (firsts == 0 and lasts == 0 and both == 0):
         result["Mate state"] = "Expected"
         result["Endedness"] = "Single-End"
         return result
     # only both present
-    if (both > 0) and (read1s == 0 and read2s == 0 and neither == 0):
+    if (both > 0) and (firsts == 0 and lasts == 0 and neither == 0):
         result["Mate state"] = "Unexpected"
         result["Endedness"] = "Single-End"
         return result
-    # read1/2s mixed with neither/both reads
-    if (read1s > 0 or read2s > 0) and (neither > 0 or both > 0):
+    # first/lasts mixed with neither/both reads
+    if (firsts > 0 or lasts > 0) and (neither > 0 or both > 0):
         result["Mate state"] = "Unexpected"
         result["Endedness"] = "Inconclusive"
         return result
-    # any mix of neither and both, regardless of read1/2s
+    # any mix of neither and both, regardless of first/lasts
     if neither > 0 and both > 0:
         result["Mate state"] = "Unexpected"
         result["Endedness"] = "Inconclusive"
@@ -59,7 +59,7 @@ def resolve_flag_count(read1s, read2s, neither, both, paired_deviance):
     else:
         assert neither == 0 and both == 0
 
-        read1_frac = read1s / (read1s + read2s)
+        read1_frac = firsts / (firsts + lasts)
         if read1_frac > (0.5 - paired_deviance) and read1_frac < (
             0.5 + paired_deviance
         ):
@@ -75,10 +75,10 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
     if not split_by_rg:
         fieldnames = [
             "File",
-            "Read1s",
-            "Read2s",
-            "Neither",
-            "Both",
+            "f+l-",
+            "f-l+",
+            "f-l-",
+            "f+l+",
             "Mate state",
             "Endedness",
         ]
@@ -86,10 +86,10 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
         fieldnames = [
             "File",
             "Read group",
-            "Read1s",
-            "Read2s",
-            "Neither",
-            "Both",
+            "f+l-",
+            "f-l+",
+            "f-l-",
+            "f+l+",
             "Mate state",
             "Endedness",
         ]
@@ -111,10 +111,10 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
         except FileNotFoundError:
             result = {
                 "File": ngsfilepath,
-                "Read1s": "N/A",
-                "Read2s": "N/A",
-                "Neither": "N/A",
-                "Both": "N/A",
+                "f+l-": "N/A",
+                "f-l+": "N/A",
+                "f-l-": "N/A",
+                "f+l+": "N/A",
                 "Mate state": "N/A",
                 "Endedness": "File not found.",
             }
@@ -136,8 +136,8 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
         if "RG" in samfile.header:
             read_groups += [rg["ID"] for rg in samfile.header["RG"]]
 
-        mate_flags = defaultdict(
-            lambda: {"read1s": 0, "read2s": 0, "neither": 0, "both": 0}
+        ordering_flags = defaultdict(
+            lambda: {"firsts": 0, "lasts": 0, "neither": 0, "both": 0}
         )
 
         for read in itertools.islice(samfile, n_reads):
@@ -148,34 +148,34 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
             rg = get_reads_rg(read)
 
             if read.is_read1 and not read.is_read2:
-                mate_flags["overall"]["read1s"] += 1
-                mate_flags[rg]["read1s"] += 1
+                ordering_flags["overall"]["firsts"] += 1
+                ordering_flags[rg]["firsts"] += 1
             elif not read.is_read1 and read.is_read2:
-                mate_flags["overall"]["read2s"] += 1
-                mate_flags[rg]["read2s"] += 1
+                ordering_flags["overall"]["lasts"] += 1
+                ordering_flags[rg]["lasts"] += 1
             elif not read.is_read1 and not read.is_read2:
-                mate_flags["overall"]["neither"] += 1
-                mate_flags[rg]["neither"] += 1
+                ordering_flags["overall"]["neither"] += 1
+                ordering_flags[rg]["neither"] += 1
             elif read.is_read1 and read.is_read2:
-                mate_flags["overall"]["both"] += 1
-                mate_flags[rg]["both"] += 1
+                ordering_flags["overall"]["both"] += 1
+                ordering_flags[rg]["both"] += 1
             else:
                 raise RuntimeError(
                     "This shouldn't be possible. Please contact the developers."
                 )
         assert (
-            mate_flags["overall"]["read1s"]
-            + mate_flags["overall"]["read2s"]
-            + mate_flags["overall"]["neither"]
-            + mate_flags["overall"]["both"]
+            ordering_flags["overall"]["firsts"]
+            + ordering_flags["overall"]["lasts"]
+            + ordering_flags["overall"]["neither"]
+            + ordering_flags["overall"]["both"]
         ) > 0
 
         if not split_by_rg:
             result = resolve_flag_count(
-                mate_flags["overall"]["read1s"],
-                mate_flags["overall"]["read2s"],
-                mate_flags["overall"]["neither"],
-                mate_flags["overall"]["both"],
+                ordering_flags["overall"]["firsts"],
+                ordering_flags["overall"]["lasts"],
+                ordering_flags["overall"]["neither"],
+                ordering_flags["overall"]["both"],
                 paired_deviance,
             )
             result["File"] = ngsfilepath
@@ -192,20 +192,20 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                     sysexit = 3
 
         else:
-            for rg in mate_flags:
+            for rg in ordering_flags:
                 if rg == "unknown_read_group":
                     if (
-                        mate_flags[rg]["read1s"]
-                        + mate_flags[rg]["read2s"]
-                        + mate_flags[rg]["neither"]
-                        + mate_flags[rg]["both"]
+                        ordering_flags[rg]["firsts"]
+                        + ordering_flags[rg]["lasts"]
+                        + ordering_flags[rg]["neither"]
+                        + ordering_flags[rg]["both"]
                     ) == 0:
                         continue
                 result = resolve_flag_count(
-                    mate_flags[rg]["read1s"],
-                    mate_flags[rg]["read2s"],
-                    mate_flags[rg]["neither"],
-                    mate_flags[rg]["both"],
+                    ordering_flags[rg]["firsts"],
+                    ordering_flags[rg]["lasts"],
+                    ordering_flags[rg]["neither"],
+                    ordering_flags[rg]["both"],
                     paired_deviance,
                 )
                 result["File"] = ngsfilepath
