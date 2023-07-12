@@ -11,12 +11,15 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def resolve_flag_count(firsts, lasts, neither, both, paired_deviance):
+def resolve_endedness(
+    reads_per_template, firsts, lasts, neither, both, paired_deviance
+):
     result = {
         "f+l-": firsts,
         "f-l+": lasts,
         "f-l-": neither,
         "f+l+": both,
+        "Reads per template": reads_per_template,
     }
 
     # only firsts present
@@ -33,7 +36,10 @@ def resolve_flag_count(firsts, lasts, neither, both, paired_deviance):
         return result
     # only both present
     if (both > 0) and (firsts == 0 and lasts == 0 and neither == 0):
-        result["Endedness"] = "Single-End"
+        if reads_per_template == 1:
+            result["Endedness"] = "Single-End"
+        else:
+            result["Endedness"] = "Unknown"
         return result
     # first/lasts mixed with neither/both reads
     if (firsts > 0 or lasts > 0) and (neither > 0 or both > 0):
@@ -50,7 +56,10 @@ def resolve_flag_count(firsts, lasts, neither, both, paired_deviance):
         if read1_frac > (0.5 - paired_deviance) and read1_frac < (
             0.5 + paired_deviance
         ):
-            result["Endedness"] = "Paired-End"
+            if reads_per_template == 2:
+                result["Endedness"] = "Paired-End"
+            else:
+                result["Endedness"] = "Unknown"
             return result
         result["Endedness"] = "Unknown"
         return result
@@ -169,14 +178,15 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
         ) > 0
 
         if not split_by_rg:
-            result = resolve_flag_count(
+            reads_per_template = find_reads_per_template(read_names["overall"])
+            result = resolve_endedness(
+                reads_per_template,
                 ordering_flags["overall"]["firsts"],
                 ordering_flags["overall"]["lasts"],
                 ordering_flags["overall"]["neither"],
                 ordering_flags["overall"]["both"],
                 paired_deviance,
             )
-            reads_per_template = find_reads_per_template(read_names["overall"])
 
             if result["Endedness"] == "Unknown":
                 logger.warning("Could not determine endedness!")
@@ -184,7 +194,6 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                     sysexit = 2
 
             result["File"] = ngsfilepath
-            result["Reads per template"] = reads_per_template
             writer.writerow(result)
             outfile.flush()
 
@@ -202,14 +211,15 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                 ):
                     continue
 
-                result = resolve_flag_count(
+                reads_per_template = find_reads_per_template(read_names[rg])
+                result = resolve_endedness(
+                    reads_per_template,
                     ordering_flags[rg]["firsts"],
                     ordering_flags[rg]["lasts"],
                     ordering_flags[rg]["neither"],
                     ordering_flags[rg]["both"],
                     paired_deviance,
                 )
-                reads_per_template = find_reads_per_template(read_names[rg])
 
                 if result["Endedness"] == "Unknown":
                     logger.warning("Could not determine endedness!")
@@ -218,7 +228,6 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
 
                 result["File"] = ngsfilepath
                 result["Read group"] = rg
-                result["Reads per template"] = reads_per_template
                 writer.writerow(result)
                 outfile.flush()
 
