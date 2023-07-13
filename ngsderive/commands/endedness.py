@@ -12,15 +12,16 @@ logger.setLevel(logging.INFO)
 
 
 def resolve_endedness(
-    reads_per_template, firsts, lasts, neither, both, paired_deviance
+    firsts, lasts, neither, both, paired_deviance, reads_per_template=None
 ):
     result = {
         "f+l-": firsts,
         "f-l+": lasts,
         "f-l-": neither,
         "f+l+": both,
-        "Reads per template": reads_per_template,
     }
+    if reads_per_template is not None:
+        result["Reads per template"] = reads_per_template
 
     # only firsts present
     if (firsts > 0) and (lasts == 0 and neither == 0 and both == 0):
@@ -36,7 +37,7 @@ def resolve_endedness(
         return result
     # only both present
     if (both > 0) and (firsts == 0 and lasts == 0 and neither == 0):
-        if round(reads_per_template) == 1:
+        if reads_per_template is None or round(reads_per_template) == 1:
             result["Endedness"] = "Single-End"
         else:
             result["Endedness"] = "Unknown"
@@ -56,7 +57,7 @@ def resolve_endedness(
         if read1_frac > (0.5 - paired_deviance) and read1_frac < (
             0.5 + paired_deviance
         ):
-            if round(reads_per_template) == 2:
+            if reads_per_template is None or round(reads_per_template) == 2:
                 result["Endedness"] = "Paired-End"
             else:
                 result["Endedness"] = "Unknown"
@@ -75,28 +76,20 @@ def find_reads_per_template(read_names):
     return rpt
 
 
-def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
-    if not split_by_rg:
-        fieldnames = [
-            "File",
-            "f+l-",
-            "f-l+",
-            "f-l-",
-            "f+l+",
-            "Reads per template",
-            "Endedness",
-        ]
-    else:
-        fieldnames = [
-            "File",
-            "Read group",
-            "f+l-",
-            "f-l+",
-            "f-l-",
-            "f+l+",
-            "Reads per template",
-            "Endedness",
-        ]
+def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, no_rpt, split_by_rg):
+    fieldnames = [
+        "File",
+        "f+l-",
+        "f-l+",
+        "f-l-",
+        "f+l+",
+        "Endedness",
+    ]
+    if split_by_rg:
+        fieldnames.insert(1, "Read group")
+    if not no_rpt:
+        fieldnames.insert(-1, "Reads per template")
+
     writer = csv.DictWriter(
         outfile,
         fieldnames=fieldnames,
@@ -119,11 +112,12 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                 "f-l+": "N/A",
                 "f-l-": "N/A",
                 "f+l+": "N/A",
-                "Reads per template": "N/A",
                 "Endedness": "File not found.",
             }
             if split_by_rg:
                 result["Read group"] = "N/A"
+            if not no_rpt:
+                result["Reads per template"] = "N/A"
             writer.writerow(result)
             outfile.flush()
             continue
@@ -143,7 +137,9 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
         ordering_flags = defaultdict(
             lambda: {"firsts": 0, "lasts": 0, "neither": 0, "both": 0}
         )
-        read_names = defaultdict(lambda: defaultdict(lambda: 0))
+        read_names = None
+        if not no_rpt:
+            read_names = defaultdict(lambda: defaultdict(lambda: 0))
 
         for read in itertools.islice(samfile, n_reads):
             # only count primary alignments and unmapped reads
@@ -151,8 +147,9 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                 continue
 
             rg = get_reads_rg(read)
-            read_names["overall"][read.query_name] += 1
-            read_names[rg][read.query_name] += 1
+            if read_names is not None:
+                read_names["overall"][read.query_name] += 1
+                read_names[rg][read.query_name] += 1
 
             if read.is_read1 and not read.is_read2:
                 ordering_flags["overall"]["firsts"] += 1
@@ -178,14 +175,17 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
         ) > 0
 
         if not split_by_rg:
-            reads_per_template = find_reads_per_template(read_names["overall"])
+            if read_names is not None:
+                reads_per_template = find_reads_per_template(read_names["overall"])
+            else:
+                reads_per_template = None
             result = resolve_endedness(
-                reads_per_template,
                 ordering_flags["overall"]["firsts"],
                 ordering_flags["overall"]["lasts"],
                 ordering_flags["overall"]["neither"],
                 ordering_flags["overall"]["both"],
                 paired_deviance,
+                reads_per_template=reads_per_template,
             )
 
             if result["Endedness"] == "Unknown":
@@ -211,14 +211,17 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, split_by_rg):
                 ):
                     continue
 
-                reads_per_template = find_reads_per_template(read_names[rg])
+                if read_names is not None:
+                    reads_per_template = find_reads_per_template(read_names[rg])
+                else:
+                    reads_per_template = None
                 result = resolve_endedness(
-                    reads_per_template,
                     ordering_flags[rg]["firsts"],
                     ordering_flags[rg]["lasts"],
                     ordering_flags[rg]["neither"],
                     ordering_flags[rg]["both"],
                     paired_deviance,
+                    reads_per_template=reads_per_template,
                 )
 
                 if result["Endedness"] == "Unknown":

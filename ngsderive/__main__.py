@@ -234,6 +234,14 @@ def get_args():
         default=False,
         help="Return a zero exit code on unknown results",
     )
+    endedness.add_argument(
+        "-r",
+        "--no-rpt",
+        action="store_true",
+        default=False,
+        help="Do not calculate Reads-Per-Template. This will produce a more naive estimate "
+        + "for endedness, but substantially reduces memory usage.",
+    )
     split_by_rg_parser = endedness.add_mutually_exclusive_group(required=False)
     split_by_rg_parser.add_argument(
         "--split-by-rg",
@@ -365,5 +373,6 @@ def run():
             n_reads=args.n_reads,
             paired_deviance=args.paired_deviance,
             lenient=args.lenient,
+            no_rpt=args.no_rpt,
             split_by_rg=args.split_by_rg,
         )
