@@ -36,7 +36,7 @@ def resolve_endedness(
         return result
     # only both present
     if (both > 0) and (firsts == 0 and lasts == 0 and neither == 0):
-        if reads_per_template == 1:
+        if round(reads_per_template) == 1:
             result["Endedness"] = "Single-End"
         else:
             result["Endedness"] = "Unknown"
@@ -56,7 +56,7 @@ def resolve_endedness(
         if read1_frac > (0.5 - paired_deviance) and read1_frac < (
             0.5 + paired_deviance
         ):
-            if reads_per_template == 2:
+            if round(reads_per_template) == 2:
                 result["Endedness"] = "Paired-End"
             else:
                 result["Endedness"] = "Unknown"
@@ -71,7 +71,7 @@ def find_reads_per_template(read_names):
     for c in read_names.values():
         count += 1
         sum += c
-    rpt = round(sum / count)
+    rpt = sum / count
     return rpt
 
 
