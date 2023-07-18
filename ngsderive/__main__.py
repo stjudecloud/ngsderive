@@ -238,11 +238,12 @@ def get_args():
     )
     endedness.add_argument(
         "-r",
-        "--no-rpt",
+        "--calc-rpt",
         action="store_true",
         default=False,
-        help="Do not calculate Reads-Per-Template. This will produce a more naive estimate "
-        + "for endedness, but substantially reduces memory usage.",
+        help="Calculate and output Reads-Per-Template. This will produce a more "
+        + "sophisticated estimate for endedness, but uses substantially more memory "
+        + "(can reach up to 2X BAM size in memory consumption).",
     )
     endedness.add_argument(
         "--round-rpt",
@@ -382,7 +383,7 @@ def run():
             n_reads=args.n_reads,
             paired_deviance=args.paired_deviance,
             lenient=args.lenient,
-            no_rpt=args.no_rpt,
+            calc_rpt=args.calc_rpt,
             round_rpt=args.round_rpt,
             split_by_rg=args.split_by_rg,
         )

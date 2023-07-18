@@ -81,7 +81,14 @@ def find_reads_per_template(read_names):
 
 
 def main(
-    ngsfiles, outfile, n_reads, paired_deviance, lenient, no_rpt, round_rpt, split_by_rg
+    ngsfiles,
+    outfile,
+    n_reads,
+    paired_deviance,
+    lenient,
+    calc_rpt,
+    round_rpt,
+    split_by_rg,
 ):
     fieldnames = [
         "File",
@@ -93,7 +100,7 @@ def main(
     ]
     if split_by_rg:
         fieldnames.insert(1, "Read group")
-    if not no_rpt:
+    if calc_rpt:
         fieldnames.insert(-1, "Reads per template")
 
     writer = csv.DictWriter(
@@ -122,7 +129,7 @@ def main(
             }
             if split_by_rg:
                 result["Read group"] = "N/A"
-            if not no_rpt:
+            if calc_rpt:
                 result["Reads per template"] = "N/A"
             writer.writerow(result)
             outfile.flush()
@@ -144,7 +151,7 @@ def main(
             lambda: {"firsts": 0, "lasts": 0, "neither": 0, "both": 0}
         )
         read_names = None
-        if not no_rpt:
+        if calc_rpt:
             read_names = defaultdict(lambda: defaultdict(lambda: 0))
 
         for read in itertools.islice(samfile, n_reads):
