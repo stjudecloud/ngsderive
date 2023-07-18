@@ -225,8 +225,10 @@ def get_args():
         "-p",
         "--paired-deviance",
         type=float,
-        help="Distance from 0.5 split between read1s and read2s allowed to be called 'Paired-End'.",
-        default=0.05,
+        help="Distance from 0.5 split between number of f+l- reads and f-l+ reads "
+        + "allowed to be called 'Paired-End'. Default of `0.0` only appropriate "
+        + "if the whole file is being processed.",
+        default=0.0,
     )
     endedness.add_argument(
         "--lenient",
@@ -241,6 +243,13 @@ def get_args():
         default=False,
         help="Do not calculate Reads-Per-Template. This will produce a more naive estimate "
         + "for endedness, but substantially reduces memory usage.",
+    )
+    endedness.add_argument(
+        "--round-rpt",
+        action="store_true",
+        default=False,
+        help="Round RPT to the nearest INT before comparing to expected values. "
+        + "Appropriate if using `-n` > 0.",
     )
     split_by_rg_parser = endedness.add_mutually_exclusive_group(required=False)
     split_by_rg_parser.add_argument(
@@ -374,5 +383,6 @@ def run():
             paired_deviance=args.paired_deviance,
             lenient=args.lenient,
             no_rpt=args.no_rpt,
+            round_rpt=args.round_rpt,
             split_by_rg=args.split_by_rg,
         )

@@ -12,7 +12,7 @@ logger.setLevel(logging.INFO)
 
 
 def resolve_endedness(
-    firsts, lasts, neither, both, paired_deviance, reads_per_template=None
+    firsts, lasts, neither, both, paired_deviance, round_rpt, reads_per_template=None
 ):
     result = {
         "f+l-": firsts,
@@ -22,6 +22,8 @@ def resolve_endedness(
     }
     if reads_per_template is not None:
         result["Reads per template"] = reads_per_template
+        if round_rpt:
+            reads_per_template = round(reads_per_template)
 
     # only firsts present
     if (firsts > 0) and (lasts == 0 and neither == 0 and both == 0):
@@ -37,7 +39,7 @@ def resolve_endedness(
         return result
     # only both present
     if (both > 0) and (firsts == 0 and lasts == 0 and neither == 0):
-        if reads_per_template is None or round(reads_per_template) == 1:
+        if reads_per_template is None or reads_per_template == 1.0:
             result["Endedness"] = "Single-End"
         else:
             result["Endedness"] = "Unknown"
@@ -57,7 +59,7 @@ def resolve_endedness(
         if read1_frac > (0.5 - paired_deviance) and read1_frac < (
             0.5 + paired_deviance
         ):
-            if reads_per_template is None or round(reads_per_template) == 2:
+            if reads_per_template is None or reads_per_template == 2.0:
                 result["Endedness"] = "Paired-End"
             else:
                 result["Endedness"] = "Unknown"
@@ -76,7 +78,9 @@ def find_reads_per_template(read_names):
     return rpt
 
 
-def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, no_rpt, split_by_rg):
+def main(
+    ngsfiles, outfile, n_reads, paired_deviance, lenient, no_rpt, round_rpt, split_by_rg
+):
     fieldnames = [
         "File",
         "f+l-",
@@ -221,6 +225,7 @@ def main(ngsfiles, outfile, n_reads, paired_deviance, lenient, no_rpt, split_by_
                     ordering_flags[rg]["neither"],
                     ordering_flags[rg]["both"],
                     paired_deviance,
+                    round_rpt,
                     reads_per_template=reads_per_template,
                 )
 
