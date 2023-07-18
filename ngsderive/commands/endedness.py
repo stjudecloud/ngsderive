@@ -2,10 +2,10 @@ import csv
 import itertools
 import logging
 from collections import defaultdict
-
-from .strandedness import get_reads_rg
+from math import isclose
 
 from ..utils import NGSFile, NGSFileType
+from .strandedness import get_reads_rg
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -39,7 +39,7 @@ def resolve_endedness(
         return result
     # only both present
     if (both > 0) and (firsts == 0 and lasts == 0 and neither == 0):
-        if reads_per_template is None or reads_per_template == 1.0:
+        if reads_per_template is None or isclose(reads_per_template, 1.0):
             result["Endedness"] = "Single-End"
         else:
             result["Endedness"] = "Unknown"
@@ -56,10 +56,12 @@ def resolve_endedness(
         assert neither == 0 and both == 0
 
         read1_frac = firsts / (firsts + lasts)
-        if read1_frac > (0.5 - paired_deviance) and read1_frac < (
-            0.5 + paired_deviance
+        lower_limit = 0.5 - paired_deviance
+        upper_limit = 0.5 + paired_deviance
+        if isclose(read1_frac, 0.5) or (
+            read1_frac < upper_limit and read1_frac > lower_limit
         ):
-            if reads_per_template is None or reads_per_template == 2.0:
+            if reads_per_template is None or isclose(reads_per_template, 2.0):
                 result["Endedness"] = "Paired-End"
             else:
                 result["Endedness"] = "Unknown"
@@ -189,7 +191,8 @@ def main(
                 ordering_flags["overall"]["neither"],
                 ordering_flags["overall"]["both"],
                 paired_deviance,
-                reads_per_template=reads_per_template,
+                round_rpt,
+                reads_per_template,
             )
 
             if result["Endedness"] == "Unknown":
@@ -226,7 +229,7 @@ def main(
                     ordering_flags[rg]["both"],
                     paired_deviance,
                     round_rpt,
-                    reads_per_template=reads_per_template,
+                    reads_per_template,
                 )
 
                 if result["Endedness"] == "Unknown":
