@@ -71,17 +71,22 @@ def resolve_endedness(
 
 
 def find_reads_per_template(read_names):
+    tot_reads = 0
+    tot_templates = 0
     read_group_reads = defaultdict(lambda: 0)
     read_group_templates = defaultdict(lambda: 0)
     for read_name, rg_list in read_names.items():
-        if len(set(rg_list)) == 1:
+        num_reads = len(rg_list)
+        tot_reads += num_reads
+        tot_templates += 1
+        rg_set = set(rg_list)
+        if len(rg_set) == 1:
             rg = rg_list[0]
-            read_group_reads[rg] += len(rg_list)
+            read_group_reads[rg] += num_reads
             read_group_templates[rg] += 1
         else:
             for rg in rg_list:
                 read_group_reads[rg] += 1
-            rg_set = set(rg_list)
             for rg in rg_set:
                 read_group_templates += 1
             logger.warning(
@@ -89,13 +94,9 @@ def find_reads_per_template(read_names):
             )
 
     read_group_rpt = {}
-    tot_reads = 0
-    tot_templates = 0
+    read_group_rpt["overall"] = tot_reads / tot_templates
     for rg in read_group_reads:
         read_group_rpt[rg] = read_group_reads[rg] / read_group_templates[rg]
-        tot_reads += read_group_reads[rg]
-        tot_templates += read_group_templates[rg]
-    read_group_rpt["overall"] = tot_reads / tot_templates
 
     return read_group_rpt
 
