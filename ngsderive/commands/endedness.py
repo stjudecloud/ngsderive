@@ -71,13 +71,32 @@ def resolve_endedness(
 
 
 def find_reads_per_template(read_names):
-    count = 0
-    sum = 0
-    for c in read_names.values():
-        count += 1
-        sum += c
-    rpt = sum / count
-    return rpt
+    read_group_reads = defaultdict(lambda: 0)
+    read_group_templates = defaultdict(lambda: 0)
+    for read_name, rg_list in read_names.items():
+        if len(set(rg_list)) == 1:
+            rg = rg_list[0]
+            read_group_reads[rg] += len(rg_list)
+            read_group_templates[rg] += 1
+        else:
+            for rg in rg_list:
+                read_group_reads[rg] += 1
+                read_group_templates[rg] += 1  # is this correct?
+            rg_set = set(rg_list)
+            logger.warning(
+                f"QNAME {read_name} in multiple read groups: {', '.join(rg_set)}"
+            )
+
+    read_group_rpt = {}
+    tot_reads = 0
+    tot_templates = 0
+    for rg in read_group_reads:
+        read_group_rpt[rg] = read_group_reads[rg] / read_group_templates[rg]
+        tot_reads += read_group_reads[rg]
+        tot_templates += read_group_templates[rg]
+    read_group_rpt["overall"] = tot_reads / tot_templates
+
+    return read_group_rpt
 
 
 def main(
@@ -152,7 +171,7 @@ def main(
         )
         read_names = None
         if calc_rpt:
-            read_names = defaultdict(lambda: defaultdict(lambda: 0))
+            read_names = defaultdict(list)
 
         for read in itertools.islice(samfile, n_reads):
             # only count primary alignments and unmapped reads
@@ -161,8 +180,7 @@ def main(
 
             rg = get_reads_rg(read)
             if read_names is not None:
-                read_names["overall"][read.query_name] += 1
-                read_names[rg][read.query_name] += 1
+                read_names[read.query_name].append(rg)
 
             if read.is_read1 and not read.is_read2:
                 ordering_flags["overall"]["firsts"] += 1
@@ -187,9 +205,13 @@ def main(
             + ordering_flags["overall"]["both"]
         ) > 0
 
+        rg_rpt = None
+        if read_names is not None:
+            rg_rpt = find_reads_per_template(read_names)
+
         if not split_by_rg:
-            if read_names is not None:
-                reads_per_template = find_reads_per_template(read_names["overall"])
+            if rg_rpt is not None:
+                reads_per_template = rg_rpt["overall"]
             else:
                 reads_per_template = None
             result = resolve_endedness(
@@ -225,8 +247,8 @@ def main(
                 ):
                     continue
 
-                if read_names is not None:
-                    reads_per_template = find_reads_per_template(read_names[rg])
+                if rg_rpt is not None:
+                    reads_per_template = rg_rpt[rg]
                 else:
                     reads_per_template = None
                 result = resolve_endedness(
