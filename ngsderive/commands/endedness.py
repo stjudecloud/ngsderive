@@ -85,13 +85,13 @@ def find_reads_per_template(read_names):
             read_group_reads[rg] += num_reads
             read_group_templates[rg] += 1
         else:
+            logger.warning(
+                f"QNAME {read_name} in multiple read groups: {', '.join(rg_set)}"
+            )
             for rg in rg_list:
                 read_group_reads[rg] += 1
             for rg in rg_set:
                 read_group_templates += 1
-            logger.warning(
-                f"QNAME {read_name} in multiple read groups: {', '.join(rg_set)}"
-            )
 
     read_group_rpt = {}
     read_group_rpt["overall"] = tot_reads / tot_templates
