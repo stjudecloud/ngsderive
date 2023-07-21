@@ -81,8 +81,9 @@ def find_reads_per_template(read_names):
         else:
             for rg in rg_list:
                 read_group_reads[rg] += 1
-                read_group_templates[rg] += 1  # is this correct?
             rg_set = set(rg_list)
+            for rg in rg_set:
+                read_group_templates += 1
             logger.warning(
                 f"QNAME {read_name} in multiple read groups: {', '.join(rg_set)}"
             )
