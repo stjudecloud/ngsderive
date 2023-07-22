@@ -164,10 +164,6 @@ def main(
             )
         samfile = ngsfile.handle
 
-        read_groups = ["unknown_read_group"]
-        if "RG" in samfile.header:
-            read_groups += [rg["ID"] for rg in samfile.header["RG"]]
-
         ordering_flags = defaultdict(
             lambda: {"firsts": 0, "lasts": 0, "neither": 0, "both": 0}
         )
