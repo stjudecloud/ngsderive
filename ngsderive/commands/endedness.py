@@ -3,6 +3,7 @@ import itertools
 import logging
 from collections import defaultdict
 from math import isclose
+from sys import intern
 
 from ..utils import NGSFile, NGSFileType
 from .strandedness import get_reads_rg
@@ -176,7 +177,7 @@ def main(
             if (read.is_secondary or read.is_supplementary) and not read.is_unmapped:
                 continue
 
-            rg = get_reads_rg(read)
+            rg = intern(get_reads_rg(read))
             if read_names is not None:
                 read_names[read.query_name].append(rg)
 
