@@ -243,7 +243,7 @@ def get_args():
         default=False,
         help="Calculate and output Reads-Per-Template. This will produce a more "
         + "sophisticated estimate for endedness, but uses substantially more memory "
-        + "(can reach up to 2X BAM size in memory consumption).",
+        + "(can reach up to 60-70%% of BAM size in memory consumption).",
     )
     endedness.add_argument(
         "--round-rpt",
