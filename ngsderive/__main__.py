@@ -12,6 +12,7 @@ from ngsderive.commands import (
     strandedness,
     encoding,
     junction_annotation,
+    endedness,
 )
 
 logger = logging.getLogger("ngsderive")
@@ -53,7 +54,6 @@ def get_args():
         action="store_true",
         help="Enable INFO log level.",
     )
-    common.add_argument("--version", action="version", version="%(prog)s 1.0.0")
 
     readlen = subparsers.add_parser(
         "readlen", parents=[common], formatter_class=SaneFormatter
@@ -95,7 +95,7 @@ def get_args():
         type=int,
         default=3,
         help="When inconclusive, the test will repeat until this many tries have been reached. "
-             "Evidence of previous attempts is saved and reused, leading to a larger sample size with multiple attempts.",
+        + "Evidence of previous attempts is saved and reused, leading to a larger sample size with multiple attempts.",
     )
     strandedness.add_argument(
         "--max-iterations-per-try",
@@ -207,9 +207,62 @@ def get_args():
         action="store_true",
         default=False,
         help="For the summary report, consider all events on unannotated reference sequences `complete_novel`. "
-             "Default is to exclude them from the summary. "
-             "Either way, they will be annotated as `unannotated_reference` in the junctions file.",
+        + "Default is to exclude them from the summary. "
+        + "Either way, they will be annotated as `unannotated_reference` in the junctions file.",
     )
+
+    endedness = subparsers.add_parser(
+        "endedness", parents=[common], formatter_class=SaneFormatter
+    )
+    endedness.add_argument(
+        "-n",
+        "--n-reads",
+        type=int,
+        help="How many reads to analyze from the start of the file. Any n < 1 to parse whole file.",
+        default=-1,
+    )
+    endedness.add_argument(
+        "-p",
+        "--paired-deviance",
+        type=float,
+        help="Distance from 0.5 split between number of f+l- reads and f-l+ reads "
+        + "allowed to be called 'Paired-End'. Default of `0.0` only appropriate "
+        + "if the whole file is being processed.",
+        default=0.0,
+    )
+    endedness.add_argument(
+        "--lenient",
+        action="store_true",
+        default=False,
+        help="Return a zero exit code on unknown results",
+    )
+    endedness.add_argument(
+        "-r",
+        "--calc-rpt",
+        action="store_true",
+        default=False,
+        help="Calculate and output Reads-Per-Template. This will produce a more "
+        + "sophisticated estimate for endedness, but uses substantially more memory "
+        + "(can reach up to 60-70%% of BAM size in memory consumption).",
+    )
+    endedness.add_argument(
+        "--round-rpt",
+        action="store_true",
+        default=False,
+        help="Round RPT to the nearest INT before comparing to expected values. "
+        + "Appropriate if using `-n` > 0.",
+    )
+    split_by_rg_parser = endedness.add_mutually_exclusive_group(required=False)
+    split_by_rg_parser.add_argument(
+        "--split-by-rg",
+        dest="split_by_rg",
+        action="store_true",
+        help="Contain one entry per read group.",
+    )
+    split_by_rg_parser.add_argument(
+        "--no-split-by-rg", dest="split_by_rg", action="store_false"
+    )
+    endedness.set_defaults(split_by_rg=False)
 
     args = parser.parse_args()
     if not args.subcommand:
@@ -322,4 +375,15 @@ def run():
             consider_unannotated_references_novel=args.consider_unannotated_references_novel,
             junction_dir=args.junction_files_dir,
             disable_junction_files=args.disable_junction_files,
+        )
+    if args.subcommand == "endedness":
+        endedness.main(
+            args.ngsfiles,
+            outfile=args.outfile,
+            n_reads=args.n_reads,
+            paired_deviance=args.paired_deviance,
+            lenient=args.lenient,
+            calc_rpt=args.calc_rpt,
+            round_rpt=args.round_rpt,
+            split_by_rg=args.split_by_rg,
         )
