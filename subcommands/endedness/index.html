@@ -8,7 +8,7 @@
         <meta name="author" content="St. Jude Cloud">
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>readlen - ngsderive</title>
+        <title>endedness - ngsderive</title>
         <link href="../../css/bootstrap.min.css" rel="stylesheet">
         <link href="../../css/font-awesome.min.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
@@ -42,7 +42,7 @@
                             <li class="navitem">
                                 <a href="../.." class="nav-link">Home</a>
                             </li>
-                            <li class="dropdown active">
+                            <li class="dropdown">
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Subcommands <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
                                     
@@ -55,7 +55,7 @@
 </li>
                                     
 <li>
-    <a href="./" class="dropdown-item active">readlen</a>
+    <a href="../readlen/" class="dropdown-item">readlen</a>
 </li>
                                     
 <li>
@@ -76,17 +76,7 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../instrument/" class="nav-link">
-                                    <i class="fa fa-arrow-left"></i> Previous
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a rel="next" href="../encoding/" class="nav-link">
-                                    Next <i class="fa fa-arrow-right"></i>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="https://github.com/stjudecloud/ngsderive/edit/master/docs/subcommands/readlen.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                                <a href="https://github.com/stjudecloud/ngsderive/edit/master/docs/subcommands/endedness.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
                             </li>
                     </ul>
                 </div>
@@ -106,9 +96,13 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#readlen" class="nav-link">readlen</a>
+            <li class="nav-item" data-level="1"><a href="#endedness" class="nav-link">endedness</a>
               <ul class="nav flex-column">
             <li class="nav-item" data-level="2"><a href="#algorithm" class="nav-link">Algorithm</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#limitations" class="nav-link">Limitations</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -119,16 +113,20 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="readlen">readlen</h1>
-<p>The <code>readlen</code> subcommand can be used to compute the read length used during sequencing can be estimated (or reported as inconclusive).</p>
+<h1 id="endedness">endedness</h1>
+<p>The <code>endedness</code> subcommand determines whether a BAM is made of Single-End or Paired-End reads <strong>according to the BAM specification</strong>. It will return <code>Unknown</code> if the BAM is in an ambiguous or unknown state.
+If ngsderive is returning <code>Unknown</code> for a case you believe should be supported, please log an issue on our GitHub with details.</p>
 <h2 id="algorithm">Algorithm</h2>
-<p>At the time of writing, the algorithm used is roughly:</p>
-<ol>
-<li>Compute distribution of read lengths for the first <code>--n-reads</code> reads in a file.</li>
-<li>Assuming read length in the file can only decrease from the actual read length (from adapter trimming or similar), the putative maximum read length is considered to be the highest detected read length.</li>
-<li>If the percentage of reads that are evidence for the putative maximum read length makes up at least <code>--majority-vote-cutoff</code>% of the reads, the putative read length is considered to be confirmed. If not, the consensus read length will be return as -1 (could not determine).</li>
-<li>For example, if 100bp is the maximum read length detected and 85% percent of the reads support that claim, then we considered 100bp as the consensus read length. If only 30% of the reads indicated 100bp, the tool cannot report a consensus.</li>
-</ol></div>
+<p>By default, ngsderive will examine the bitwise FLAG field of each read primary or unmapped read in the input BAM or SAM. It keeps a tally of how the bits <code>0x40</code> (first segment in the template) and <code>0x80</code> (last segment in the template) are set.
+For Single-End data, both bits should be set for every read. Each read is the only segment in the template, and is therefore both the first and the last segment.
+For Paired-End data, <em>exactly</em> half of all reads should be the first in the template (AKA read1, with <code>0x40</code> set) and <em>exactly</em> half should be the last in the template (AKA read2, with <code>0x80</code> set).</p>
+<p>With the <code>-r</code> or <code>--calc-rpt</code> option enabled, there is an additional check. ngsderive will count how many primary or unmapped reads belong to each unique query name (Reads-Per-Template, abbreviated RPT).
+For Single-End data, RPT should be exactly 1. There should only be one primary or unmapped read mapping to each query name.
+For Paired-End data, RPT should be exactly 2. Each query name should be used once for read1 and a second time for read2.
+This check has been disabled by default due to its large memory requirements.</p>
+<p>The default values for <code>--paired-deviance</code> (<code>0.0</code>) and <code>--round-rpt</code> (<code>False</code>) are suitable only if the default <code>--n-reads</code> (<code>-1</code>) is used. If only a subset of the BAM or SAM file is being processed, please set "paired deviance" to an appropriate 0\&lt;x\&lt;0.5 value and enable RPT rounding. An appropriate value for paired deviance depends on how much of the input file(s) is being processed.</p>
+<h2 id="limitations">Limitations</h2>
+<p>Many "Single-End" BAMs do not adhere to the SAM file format specification. Specifically, bits <code>0x40</code> and <code>0x80</code> of the bitwise FLAG field are left unset by many aligners. The SAM file format specification details this case as representing a loss of information; therefore ngsderive can make no claims about the endedness of such files.</p></div>
             </div>
         </div>
 
