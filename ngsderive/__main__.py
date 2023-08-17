@@ -355,6 +355,7 @@ def run():
             only_protein_coding_genes=args.only_protein_coding_genes,
             min_mapq=args.min_mapq,
             split_by_rg=args.split_by_rg,
+            max_tries=args.max_tries,
             max_iterations_per_try=max_iters,
         )
     if args.subcommand == "encoding":
