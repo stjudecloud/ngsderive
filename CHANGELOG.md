@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v3.3.1 (2023-08-17)
+
+### Fix
+
+* **strandedness:** Pass in required max_tries arg to main() ([#136](https://github.com/stjudecloud/ngsderive/issues/136)) ([`544be1a`](https://github.com/stjudecloud/ngsderive/commit/544be1ab85bcbede256b3f6b74fb80002a3de459))
+
 ## v3.3.0 (2023-08-16)
 
 ### Feature
