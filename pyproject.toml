@@ -44,7 +44,7 @@ pytest = "^6.2.5"
 twine = "^3.7"
 mkdocs = "^1.2.3"
 mkdocs-bootswatch = "^1.1"
-python-semantic-release = "^7.23.0"
+python-semantic-release = "^8.0.7"
 pycodestyle = "^2.8.0"
 black = {version = "^21.12b0", allow-prereleases = true}
 mypy = "^0.920"
