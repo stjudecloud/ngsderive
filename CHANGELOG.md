@@ -2,6 +2,22 @@
 
 <!--next-version-placeholder-->
 
+## v3.3.1 (2023-08-17)
+
+### Fix
+
+* **strandedness:** Pass in required max_tries arg to main() ([#136](https://github.com/stjudecloud/ngsderive/issues/136)) ([`544be1a`](https://github.com/stjudecloud/ngsderive/commit/544be1ab85bcbede256b3f6b74fb80002a3de459))
+
+## v3.3.0 (2023-08-16)
+
+### Feature
+
+* Endedness subcommand ([#124](https://github.com/stjudecloud/ngsderive/issues/124)) ([`d61e82d`](https://github.com/stjudecloud/ngsderive/commit/d61e82dd53272929dca2e825d172aff2bb97bacc))
+
+### Documentation
+
+* **encoding:** `n-samples` -> `n-reads` ([`665d1d2`](https://github.com/stjudecloud/ngsderive/commit/665d1d2dac56a09bed4101a52ce2f3cddeecd738))
+
 ## v3.2.1 (2023-06-27)
 ### Fix
 * -1 n-reads default for encoding. don't falsely imply random sampling ([#119](https://github.com/stjudecloud/ngsderive/issues/119)) ([`c83275a`](https://github.com/stjudecloud/ngsderive/commit/c83275a018703c57f0ce8c90cf4b94fbd658e300))
