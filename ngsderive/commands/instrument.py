@@ -207,8 +207,8 @@ def main(ngsfiles, outfile, n_reads):
             outfile.flush()
             continue
 
-        instruments = set()
-        flowcells = set()
+        instrument_iids = set()
+        flowcell_fcids = set()
         malformed_read_names = False
 
         # accumulate instrument and flowcell IDs
@@ -218,17 +218,17 @@ def main(ngsfiles, outfile, n_reads):
                 if len(parts) != 7:  # not Illumina format
                     malformed_read_names = True
                     iid = parts[0]  # attempt to recover machine name
-                    instruments.add(iid)
+                    instrument_iids.add(iid)
                     for rg in ngsfile.handle.header.to_dict()["RG"]:
                         if rg["ID"] == read["read_group"]:
                             if "PU" in rg:
-                                flowcells.add(rg["PU"])
+                                flowcell_fcids.add(rg["PU"])
                             if "PM" in rg:
-                                instruments.add(rg["PM"])
+                                instrument_iids.add(rg["PM"])
                     continue
                 iid, fcid = parts[0], parts[2]
-                instruments.add(iid)
-                flowcells.add(fcid)
+                instrument_iids.add(iid)
+                flowcell_fcids.add(fcid)
         except KeyError:  # no RG tag is present
             result = {
                 "File": ngsfilepath,
@@ -244,8 +244,8 @@ def main(ngsfiles, outfile, n_reads):
             logger.warning(
                 "Encountered read names not in Illumina format. Recovery attempted."
             )
-        possible_instruments_by_iid = predict_instrument_from_iids(instruments)
-        possible_instruments_by_fcid = predict_instrument_from_fcids(flowcells)
+        possible_instruments_by_iid = predict_instrument_from_iids(instrument_iids)
+        possible_instruments_by_fcid = predict_instrument_from_fcids(flowcell_fcids)
 
         instruments, confidence, based_on = resolve_instrument(
             possible_instruments_by_iid,
