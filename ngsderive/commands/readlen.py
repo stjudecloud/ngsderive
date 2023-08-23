@@ -1,10 +1,8 @@
 import csv
 import itertools
 import logging
-import pysam
-import sys
-
 from collections import defaultdict
+
 from ..utils import NGSFile
 
 logger = logging.getLogger("readlen")
@@ -16,7 +14,6 @@ def main(
     n_reads,
     majority_vote_cutoff,
 ):
-
     writer = csv.DictWriter(
         outfile,
         fieldnames=["File", "Evidence", "MajorityPctDetected", "ConsensusReadLength"],
@@ -61,13 +58,13 @@ def main(
 
         # if not, cannot determine, return -1
         pct = read_lengths[putative_max_readlen] / total_reads_sampled
-        logger.info("Max read length percentage: {}".format(pct))
+        logger.info(f"Max read length percentage: {pct}")
         majority_readlen = putative_max_readlen if pct > majority_vote_cutoff else -1
 
         result = {
             "File": ngsfilepath,
             "Evidence": ";".join(
-                ["{}={}".format(k, read_lengths[k]) for k in read_length_keys_sorted]
+                [f"{k}={read_lengths[k]}" for k in read_length_keys_sorted]
             ),
             "MajorityPctDetected": round(pct, 4),
             "ConsensusReadLength": majority_readlen,

@@ -1,12 +1,10 @@
-import logging
-import sys
-import os
 import csv
-
+import logging
+import os
 from collections import defaultdict
 from pathlib import Path
 
-from ..utils import NGSFile, NGSFileType, GFF, JunctionCache
+from ..utils import GFF, JunctionCache, NGSFile, NGSFileType
 
 logger = logging.getLogger("junction-annotation")
 
@@ -52,16 +50,16 @@ def annotate_junctions(
 
     if ngsfile.filetype != NGSFileType.BAM:
         raise RuntimeError(
-            "Invalid file: {}. `junction-annotation` only supports aligned BAM files!".format(
-                ngsfilepath
-            )
+            f"Invalid file: {ngsfilepath}. `junction-annotation` only supports aligned BAM files!"
         )
     samfile = ngsfile.handle
 
     junction_file = None
     if not disable_junction_files:
         junction_filename = os.path.join(junction_dir, ngsfile.basename)
-        junction_file = open(f"{junction_filename}.junctions.tsv", "w")
+        junction_file = open(
+            f"{junction_filename}.junctions.tsv", "w", encoding="utf-8"
+        )
         print(
             "\t".join(
                 ["chrom", "intron_start", "intron_end", "read_count", "annotation"]
@@ -98,10 +96,12 @@ def annotate_junctions(
         )
 
         if contig not in cache.exon_starts:
-            logger.info(f"{contig} not found in GFF. All events marked `unannotated_reference`.")
+            logger.info(
+                f"{contig} not found in GFF. All events marked `unannotated_reference`."
+            )
             annotation = "unannotated_reference"
             if consider_unannotated_references_novel:
-                logger.info(f"Events being considered novel for summary report.")
+                logger.info("Events being considered novel for summary report.")
 
             for intron_start, intron_end, num_reads in events:
                 if num_reads < min_reads:
@@ -266,14 +266,16 @@ def main(
     disable_junction_files,
 ):
     logger.info("Arguments:")
-    logger.info("  - Gene model file: {}".format(gene_model_file))
-    logger.info("  - Minimum intron length: {}".format(min_intron))
-    logger.info("  - Minimum MAPQ: {}".format(min_mapq))
-    logger.info("  - Minimum reads per junction: {}".format(min_reads))
-    logger.info("  - Fuzzy junction range: +-{}".format(fuzzy_range))
-    logger.info("  - Consider unannotated references novel: {}".format(consider_unannotated_references_novel))
+    logger.info(f"  - Gene model file: {gene_model_file}")
+    logger.info(f"  - Minimum intron length: {min_intron}")
+    logger.info(f"  - Minimum MAPQ: {min_mapq}")
+    logger.info(f"  - Minimum reads per junction: {min_reads}")
+    logger.info(f"  - Fuzzy junction range: +-{fuzzy_range}")
+    logger.info(
+        f"  - Consider unannotated references novel: {consider_unannotated_references_novel}"
+    )
     if not disable_junction_files:
-        logger.info("  - Junction file directory: {}".format(junction_dir))
+        logger.info(f"  - Junction file directory: {junction_dir}")
     else:
         logger.info("  - Junction file directory: <disabled>")
 

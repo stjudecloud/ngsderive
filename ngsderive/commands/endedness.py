@@ -8,8 +8,7 @@ from sys import intern
 from ..utils import NGSFile, NGSFileType
 from .strandedness import get_reads_rg
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger = logging.getLogger("endedness")
 
 
 def resolve_endedness(
@@ -53,22 +52,19 @@ def resolve_endedness(
     if neither > 0 and both > 0:
         result["Endedness"] = "Unknown"
         return result
-    else:
-        assert neither == 0 and both == 0
+    assert neither == 0 and both == 0
 
-        read1_frac = firsts / (firsts + lasts)
-        lower_limit = 0.5 - paired_deviance
-        upper_limit = 0.5 + paired_deviance
-        if isclose(read1_frac, 0.5) or (
-            read1_frac < upper_limit and read1_frac > lower_limit
-        ):
-            if reads_per_template is None or isclose(reads_per_template, 2.0):
-                result["Endedness"] = "Paired-End"
-            else:
-                result["Endedness"] = "Unknown"
-            return result
-        result["Endedness"] = "Unknown"
+    read1_frac = firsts / (firsts + lasts)
+    lower_limit = 0.5 - paired_deviance
+    upper_limit = 0.5 + paired_deviance
+    if isclose(read1_frac, 0.5) or (lower_limit < read1_frac < upper_limit):
+        if reads_per_template is None or isclose(reads_per_template, 2.0):
+            result["Endedness"] = "Paired-End"
+        else:
+            result["Endedness"] = "Unknown"
         return result
+    result["Endedness"] = "Unknown"
+    return result
 
 
 def find_reads_per_template(read_names):
@@ -157,11 +153,9 @@ def main(
             outfile.flush()
             continue
 
-        if ngsfile.filetype != NGSFileType.BAM and ngsfile.filetype != NGSFileType.SAM:
+        if ngsfile.filetype not in (NGSFileType.BAM, NGSFileType.SAM):
             raise RuntimeError(
-                "Invalid file: {}. `endedness` only supports SAM/BAM files!".format(
-                    ngsfilepath
-                )
+                f"Invalid file: {ngsfilepath}. `endedness` only supports SAM/BAM files!"
             )
         samfile = ngsfile.handle
 

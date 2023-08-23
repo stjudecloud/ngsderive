@@ -1,24 +1,18 @@
 import csv
 import itertools
-import pysam
-import sys
-
 import logging
-from collections import defaultdict
 
-from ..utils import NGSFile, NGSFileType
+from ..utils import NGSFile
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger = logging.getLogger("encoding")
 
 # sets are created by doing PHRED+33 decoding of each encoding's ASCII ranges
-SANGER_SET = set([i for i in range(0, 93)])
-ILLUMINA_1_0_SET = set([i for i in range(26, 93)])
-ILLUMINA_1_3_SET = set([i for i in range(31, 93)])
+SANGER_SET = set(i for i in range(0, 93))
+ILLUMINA_1_0_SET = set(i for i in range(26, 93))
+ILLUMINA_1_3_SET = set(i for i in range(31, 93))
 
 
 def main(ngsfiles, outfile, n_reads):
-
     writer = csv.DictWriter(
         outfile,
         fieldnames=["File", "Evidence", "ProbableEncoding"],
@@ -52,27 +46,25 @@ def main(ngsfiles, outfile, n_reads):
         if score_set <= ILLUMINA_1_3_SET:
             result = {
                 "File": ngsfilepath,
-                "Evidence": "ASCII range: {}-{}".format(lowest_ascii, highest_ascii),
+                "Evidence": f"ASCII range: {lowest_ascii}-{highest_ascii}",
                 "ProbableEncoding": "Illumina 1.3",
             }
         elif score_set <= ILLUMINA_1_0_SET:
             result = {
                 "File": ngsfilepath,
-                "Evidence": "ASCII range: {}-{}".format(lowest_ascii, highest_ascii),
+                "Evidence": f"ASCII range: {lowest_ascii}-{highest_ascii}",
                 "ProbableEncoding": "Solexa/Illumina 1.0",
             }
         elif score_set <= SANGER_SET:
             result = {
                 "File": ngsfilepath,
-                "Evidence": "ASCII range: {}-{}".format(lowest_ascii, highest_ascii),
+                "Evidence": f"ASCII range: {lowest_ascii}-{highest_ascii}",
                 "ProbableEncoding": "Sanger/Illumina 1.8",
             }
         else:
             result = {
                 "File": ngsfilepath,
-                "Evidence": "ASCII values outside known PHRED encoding ranges: {}-{}".format(
-                    lowest_ascii, highest_ascii
-                ),
+                "Evidence": f"ASCII values outside known PHRED encoding ranges: {lowest_ascii}-{highest_ascii}",
                 "ProbableEncoding": "Unknown",
             }
 
