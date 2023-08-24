@@ -37,14 +37,14 @@ def annotate_junctions(
     except FileNotFoundError:
         result = {
             "File": ngsfilepath,
-            "total_junctions": "N/A",
-            "total_splice_events": "N/A",
-            "known_junctions": "N/A",
-            "partial_novel_junctions": "N/A",
-            "complete_novel_junctions": "N/A",
-            "known_spliced_reads": "N/A",
-            "complete_novel_spliced_reads": "N/A",
-            "partial_novel_spliced_reads": "N/A",
+            "TotalJunctions": "N/A",
+            "TotalSpliceEvents": "N/A",
+            "KnownJunctions": "N/A",
+            "PartialNovelJunctions": "N/A",
+            "CompleteNovelJunctions": "N/A",
+            "KnownSplicedReads": "N/A",
+            "PartialNovelSplicedReads": "N/A",
+            "CompleteNovelSplicedReads": "N/A",
         }
         return [result]
 
@@ -239,16 +239,16 @@ def annotate_junctions(
 
     result = {
         "File": ngsfilepath,
-        "total_junctions": num_known + num_novel + num_partial,
-        "total_splice_events": num_known_spliced_reads
+        "TotalJunctions": num_known + num_novel + num_partial,
+        "TotalSpliceEvents": num_known_spliced_reads
         + num_novel_spliced_reads
         + num_partial_spliced_reads,
-        "known_junctions": num_known,
-        "partial_novel_junctions": num_partial,
-        "complete_novel_junctions": num_novel,
-        "known_spliced_reads": num_known_spliced_reads,
-        "partial_novel_spliced_reads": num_partial_spliced_reads,
-        "complete_novel_spliced_reads": num_novel_spliced_reads,
+        "KnownJunctions": num_known,
+        "PartialNovelJunctions": num_partial,
+        "CompleteNovelJunctions": num_novel,
+        "KnownSplicedReads": num_known_spliced_reads,
+        "PartialNovelSplicedReads": num_partial_spliced_reads,
+        "CompleteNovelSplicedReads": num_novel_spliced_reads,
     }
     return result
 
@@ -309,14 +309,14 @@ def main(
         if not writer:
             fieldnames = [
                 "File",
-                "total_junctions",
-                "total_splice_events",
-                "known_junctions",
-                "partial_novel_junctions",
-                "complete_novel_junctions",
-                "known_spliced_reads",
-                "partial_novel_spliced_reads",
-                "complete_novel_spliced_reads",
+                "TotalJunctions",
+                "TotalSpliceEvents",
+                "KnownJunctions",
+                "PartialNovelJunctions",
+                "CompleteNovelJunctions",
+                "KnownSplicedReads",
+                "PartialNovelSplicedReads",
+                "CompleteNovelSplicedReads",
             ]
 
             writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter="\t")

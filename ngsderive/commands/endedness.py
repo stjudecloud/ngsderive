@@ -21,7 +21,7 @@ def resolve_endedness(
         "f+l+": both,
     }
     if reads_per_template is not None:
-        result["Reads per template"] = reads_per_template
+        result["ReadsPerTemplate"] = reads_per_template
         if round_rpt:
             reads_per_template = round(reads_per_template)
 
@@ -117,9 +117,9 @@ def main(
         "Endedness",
     ]
     if split_by_rg:
-        fieldnames.insert(1, "Read group")
+        fieldnames.insert(1, "ReadGroup")
     if calc_rpt:
-        fieldnames.insert(-1, "Reads per template")
+        fieldnames.insert(-1, "ReadsPerTemplate")
 
     writer = csv.DictWriter(
         outfile,
@@ -146,9 +146,9 @@ def main(
                 "Endedness": "File not found.",
             }
             if split_by_rg:
-                result["Read group"] = "N/A"
+                result["ReadGroup"] = "N/A"
             if calc_rpt:
-                result["Reads per template"] = "N/A"
+                result["ReadsPerTemplate"] = "N/A"
             writer.writerow(result)
             outfile.flush()
             continue
@@ -260,7 +260,7 @@ def main(
                         sysexit = 2
 
                 result["File"] = ngsfilepath
-                result["Read group"] = rg
+                result["ReadGroup"] = rg
                 writer.writerow(result)
                 outfile.flush()
 
