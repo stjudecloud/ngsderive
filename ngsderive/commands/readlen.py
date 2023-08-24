@@ -57,7 +57,7 @@ def main(
         # but the read length should never grow past the maximum value.
 
         # if not, cannot determine, return -1
-        pct = read_lengths[putative_max_readlen] / total_reads_sampled
+        pct = round(read_lengths[putative_max_readlen] / total_reads_sampled * 100, 2)
         logger.info(f"Max read length percentage: {pct}")
         majority_readlen = putative_max_readlen if pct > majority_vote_cutoff else -1
 
@@ -66,7 +66,7 @@ def main(
             "Evidence": ";".join(
                 [f"{k}={read_lengths[k]}" for k in read_length_keys_sorted]
             ),
-            "MajorityPctDetected": round(pct, 4),
+            "MajorityPctDetected": pct,
             "ConsensusReadLength": majority_readlen,
         }
 

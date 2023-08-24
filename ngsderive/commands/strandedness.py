@@ -59,15 +59,15 @@ def get_reads_rg(read, default="unknown_read_group"):
 
 def get_predicted_strandedness(forward_evidence_pct, reverse_evidence_pct):
     predicted = "Inconclusive"
-    if 0.4 <= forward_evidence_pct <= 0.6:
+    if 40 <= forward_evidence_pct <= 60:
         predicted = "Unstranded"
     # This second Unstranded check is redundant with the first check,
     # but more explicit
-    elif 0.4 <= reverse_evidence_pct <= 0.6:
+    elif 40 <= reverse_evidence_pct <= 60:
         predicted = "Unstranded"
-    elif 0.8 <= forward_evidence_pct:
+    elif 80 <= forward_evidence_pct:
         predicted = "Stranded-Forward"
-    elif 0.8 <= reverse_evidence_pct:
+    elif 80 <= reverse_evidence_pct:
         predicted = "Stranded-Reverse"
 
     return predicted
@@ -214,12 +214,12 @@ def determine_strandedness(
             forward_pct = (
                 0
                 if total_reads <= 0
-                else round(evidence_stranded_forward / total_reads, 4)
+                else round(evidence_stranded_forward / total_reads * 100, 2)
             )
             reverse_pct = (
                 0
                 if total_reads <= 0
-                else round(evidence_stranded_reverse / total_reads, 4)
+                else round(evidence_stranded_reverse / total_reads * 100, 2)
             )
             predicted = get_predicted_strandedness(forward_pct, reverse_pct)
 
@@ -249,10 +249,14 @@ def determine_strandedness(
     )
     total_reads = evidence_stranded_forward + evidence_stranded_reverse
     forward_pct = (
-        0 if total_reads <= 0 else round(evidence_stranded_forward / total_reads, 4)
+        0
+        if total_reads <= 0
+        else round(evidence_stranded_forward / total_reads * 100, 2)
     )
     reverse_pct = (
-        0 if total_reads <= 0 else round(evidence_stranded_reverse / total_reads, 4)
+        0
+        if total_reads <= 0
+        else round(evidence_stranded_reverse / total_reads * 100, 2)
     )
     predicted = get_predicted_strandedness(forward_pct, reverse_pct)
 

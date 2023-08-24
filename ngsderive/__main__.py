@@ -57,9 +57,9 @@ def get_args():
     readlen_arg.add_argument(
         "-c",
         "--majority-vote-cutoff",
-        type=float,
+        type=int,
         help="To call a majority readlen, the maximum read length must have at least `majority-vote-cutoff`%% reads in support.",
-        default=0.7,
+        default=70,
     )
     readlen_arg.add_argument(
         "-n",
