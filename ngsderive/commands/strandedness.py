@@ -110,10 +110,6 @@ def determine_strandedness(
     n_reads_observed = 0
     checked_genes = set()
 
-    read_groups = ["unknown_read_group"]
-    if "RG" in samfile.header:
-        read_groups += [rg["ID"] for rg in samfile.header["RG"]]
-
     logger.debug("Starting sampling...")
     total_iterations = 0
     while True:
@@ -139,7 +135,6 @@ def determine_strandedness(
         logging.debug(
             f"  [*] Location: {gene['seqname']}:{gene['start']}-{gene['end']} ({gene['strand']})"
         )
-        logging.debug("  [*] Actions:")
 
         checked_genes.add(gene["gene_id"])
         relevant_reads = get_filtered_reads_from_region(
@@ -147,9 +142,7 @@ def determine_strandedness(
         )
 
         reads_in_gene = 0
-        this_genes_evidence = defaultdict(dict)
-        for rg in read_groups:
-            this_genes_evidence[rg] = defaultdict(int)
+        this_genes_evidence = defaultdict(lambda: defaultdict(int))
 
         for read in relevant_reads:
             reads_in_gene += 1
@@ -172,6 +165,7 @@ def determine_strandedness(
             gene_strand_id = gene["strand"]
             reads_observed_state = read_id + read_strand_id + gene_strand_id
             this_reads_rg = get_reads_rg(read)
+            this_genes_evidence["overall"][reads_observed_state] += 1
             this_genes_evidence[this_reads_rg][reads_observed_state] += 1
 
         if reads_in_gene >= minimum_reads_per_gene:
@@ -200,18 +194,18 @@ def determine_strandedness(
 
     if split_by_rg:
         results = []
-        for rg in read_groups:
+        for rg, rg_evidence in overall_evidence.items():
             evidence_stranded_forward = (
-                overall_evidence[rg]["1++"]
-                + overall_evidence[rg]["1--"]
-                + overall_evidence[rg]["2+-"]
-                + overall_evidence[rg]["2-+"]
+                rg_evidence["1++"]
+                + rg_evidence["1--"]
+                + rg_evidence["2+-"]
+                + rg_evidence["2-+"]
             )
             evidence_stranded_reverse = (
-                overall_evidence[rg]["1+-"]
-                + overall_evidence[rg]["1-+"]
-                + overall_evidence[rg]["2++"]
-                + overall_evidence[rg]["2--"]
+                rg_evidence["1+-"]
+                + rg_evidence["1-+"]
+                + rg_evidence["2++"]
+                + rg_evidence["2--"]
             )
             total_reads = evidence_stranded_forward + evidence_stranded_reverse
             if total_reads == 0 and rg == "unknown_read_group":
@@ -241,22 +235,18 @@ def determine_strandedness(
             )
         return (results, checked_genes, overall_evidence)
 
-    evidence_stranded_forward = 0
-    evidence_stranded_reverse = 0
-
-    for rg in read_groups:
-        evidence_stranded_forward += (
-            overall_evidence[rg]["1++"]
-            + overall_evidence[rg]["1--"]
-            + overall_evidence[rg]["2+-"]
-            + overall_evidence[rg]["2-+"]
-        )
-        evidence_stranded_reverse += (
-            overall_evidence[rg]["1+-"]
-            + overall_evidence[rg]["1-+"]
-            + overall_evidence[rg]["2++"]
-            + overall_evidence[rg]["2--"]
-        )
+    evidence_stranded_forward = (
+        overall_evidence["overall"]["1++"]
+        + overall_evidence["overall"]["1--"]
+        + overall_evidence["overall"]["2+-"]
+        + overall_evidence["overall"]["2-+"]
+    )
+    evidence_stranded_reverse = (
+        overall_evidence["overall"]["1+-"]
+        + overall_evidence["overall"]["1-+"]
+        + overall_evidence["overall"]["2++"]
+        + overall_evidence["overall"]["2--"]
+    )
     total_reads = evidence_stranded_forward + evidence_stranded_reverse
     forward_pct = (
         0 if total_reads <= 0 else round(evidence_stranded_forward / total_reads, 4)
