@@ -13,8 +13,6 @@ from ngsderive.commands import (
     strandedness,
 )
 
-# logger = logging.getLogger("ngsderive")
-
 
 def get_args():
     class SaneFormatter(
