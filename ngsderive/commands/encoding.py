@@ -43,30 +43,22 @@ def main(ngsfiles, outfile, n_reads):
 
         highest_ascii = str(max(score_set) + 33)
         lowest_ascii = str(min(score_set) + 33)
+        result = {
+            "File": ngsfilepath,
+            "Evidence": f"ASCII range: {lowest_ascii}-{highest_ascii}",
+        }
         if score_set <= ILLUMINA_1_3_SET:
-            result = {
-                "File": ngsfilepath,
-                "Evidence": f"ASCII range: {lowest_ascii}-{highest_ascii}",
-                "ProbableEncoding": "Illumina 1.3",
-            }
+            result["ProbableEncoding"] = "Illumina 1.3"
         elif score_set <= ILLUMINA_1_0_SET:
-            result = {
-                "File": ngsfilepath,
-                "Evidence": f"ASCII range: {lowest_ascii}-{highest_ascii}",
-                "ProbableEncoding": "Solexa/Illumina 1.0",
-            }
+            result["ProbableEncoding"] = "Solexa/Illumina 1.0"
         elif score_set <= SANGER_SET:
-            result = {
-                "File": ngsfilepath,
-                "Evidence": f"ASCII range: {lowest_ascii}-{highest_ascii}",
-                "ProbableEncoding": "Sanger/Illumina 1.8",
-            }
+            result["ProbableEncoding"] = "Sanger/Illumina 1.8"
         else:
-            result = {
-                "File": ngsfilepath,
-                "Evidence": f"ASCII values outside known PHRED encoding ranges: {lowest_ascii}-{highest_ascii}",
-                "ProbableEncoding": "Unknown",
-            }
+            # overwrite result["Evidence"] with more info
+            result[
+                "Evidence"
+            ] = f"ASCII values outside known PHRED encoding ranges: {lowest_ascii}-{highest_ascii}"
+            result["ProbableEncoding"] = ("Unknown",)
 
         writer.writerow(result)
         outfile.flush()
