@@ -280,7 +280,7 @@ def setup_logging(log_level=logging.INFO):
     Forked from MIT code here: https://github.com/MisterWil/abodepy.
     """
     logging.basicConfig(level=log_level)
-    fmt = "%(asctime)s %(levelname)s (%(threadName)s) " + "[%(name)s] %(message)s"
+    fmt = "%(asctime)s %(levelname)s (%(threadName)s) [%(name)s] %(message)s"
     colorfmt = f"%(log_color)s{fmt}%(reset)s"
     datefmt = "%H:%M:%S"
 
