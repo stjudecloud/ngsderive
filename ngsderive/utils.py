@@ -368,15 +368,15 @@ class GFF:
             return self.df.sample().to_dict("records")[0]
         return random.choice(self.entries)
 
-    def query(self, chrom, start, end):
+    def query(self, contig, start, end):
         if self.df is None and not self.entries:
             raise NotImplementedError("query() not implemented in iterator mode")
         if self.df is not None:
             return self.df.query(
-                f"seqname=='{chrom}' and start=={start} and end=={end}"
+                f"seqname=='{contig}' and start=={start} and end=={end}"
             ).to_dict("records")
 
-        raw_hits = self.tabix.query(chrom, start, end)
+        raw_hits = self.tabix.query(contig, start, end)
         hits = []
         for hit in raw_hits:
             if self.gene_exclude_list:
