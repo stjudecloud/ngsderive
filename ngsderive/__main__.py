@@ -13,6 +13,8 @@ from ngsderive.commands import (
     strandedness,
 )
 
+logger = logging.getLogger("")
+
 
 def get_args():
     class SaneFormatter(
@@ -302,7 +304,6 @@ def setup_logging(log_level=logging.INFO):
     except ImportError:
         pass
 
-    logger = logging.getLogger("ngsderive")
     logger.setLevel(log_level)
 
 
