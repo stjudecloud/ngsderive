@@ -62,7 +62,7 @@ def annotate_junctions(
         )
         print(
             "\t".join(
-                ["chrom", "intron_start", "intron_end", "read_count", "annotation"]
+                ["Contig", "IntronStart", "IntronEnd", "ReadCount", "Annotation"]
             ),
             file=junction_file,
         )
