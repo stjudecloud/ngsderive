@@ -58,7 +58,7 @@ def main(ngsfiles, outfile, n_reads):
             result[
                 "Evidence"
             ] = f"ASCII values outside known PHRED encoding ranges: {lowest_ascii}-{highest_ascii}"
-            result["ProbableEncoding"] = ("Unknown",)
+            result["ProbableEncoding"] = "Unknown"
 
         writer.writerow(result)
         outfile.flush()
