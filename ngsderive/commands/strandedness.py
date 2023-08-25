@@ -130,9 +130,9 @@ def determine_strandedness(
             checked_genes.add(gene["gene_id"])
             continue
 
-        logging.debug("== Candidate Gene ==")
-        logging.debug(f"  [*] ID: {gene['gene_id']}")
-        logging.debug(
+        logger.debug("== Candidate Gene ==")
+        logger.debug(f"  [*] ID: {gene['gene_id']}")
+        logger.debug(
             f"  [*] Location: {gene['seqname']}:{gene['start']}-{gene['end']} ({gene['strand']})"
         )
 
@@ -169,7 +169,7 @@ def determine_strandedness(
             this_genes_evidence[this_reads_rg][reads_observed_state] += 1
 
         if reads_in_gene >= minimum_reads_per_gene:
-            logging.debug(
+            logger.debug(
                 f"    - Sufficient read count ({reads_in_gene} >= {minimum_reads_per_gene})"
             )
             rg_log = ""
@@ -179,7 +179,7 @@ def determine_strandedness(
                 state_logs = ";".join([f"{state}={n}" for state, n in states.items()])
                 rg_log += f"{rg}:{state_logs} "
 
-            logging.debug(f"    - {rg_log}")
+            logger.debug(f"    - {rg_log}")
 
             for rg, evidence in this_genes_evidence.items():
                 for state, n in evidence.items():
@@ -188,7 +188,7 @@ def determine_strandedness(
             n_tested_genes += 1
             n_reads_observed += reads_in_gene
         else:
-            logging.debug(
+            logger.debug(
                 f"    - Read count too low ({reads_in_gene} < {minimum_reads_per_gene})"
             )
 
