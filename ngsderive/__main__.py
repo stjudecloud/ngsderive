@@ -51,17 +51,17 @@ def get_args():
         help="Enable INFO log level.",
     )
 
-    readlen_arg = subparsers.add_parser(
+    readlen_parser = subparsers.add_parser(
         "readlen", parents=[common], formatter_class=SaneFormatter
     )
-    readlen_arg.add_argument(
+    readlen_parser.add_argument(
         "-c",
         "--majority-vote-cutoff",
         type=int,
         help="To call a majority readlen, the maximum read length must have at least `majority-vote-cutoff`%% reads in support.",
         default=70,
     )
-    readlen_arg.add_argument(
+    readlen_parser.add_argument(
         "-n",
         "--n-reads",
         type=int,
@@ -69,10 +69,10 @@ def get_args():
         default=-1,
     )
 
-    instrument_arg = subparsers.add_parser(
+    instrument_parser = subparsers.add_parser(
         "instrument", parents=[common], formatter_class=SaneFormatter
     )
-    instrument_arg.add_argument(
+    instrument_parser.add_argument(
         "-n",
         "--n-reads",
         type=int,
@@ -80,43 +80,43 @@ def get_args():
         default=10000,
     )
 
-    strandedness_arg = subparsers.add_parser(
+    strandedness_parser = subparsers.add_parser(
         "strandedness", parents=[common], formatter_class=SaneFormatter
     )
-    strandedness_arg.add_argument(
+    strandedness_parser.add_argument(
         "-g", "--gene-model", help="Gene model as a GFF/GTF file.", required=True
     )
-    strandedness_arg.add_argument(
+    strandedness_parser.add_argument(
         "--max-tries",
         type=int,
         default=3,
         help="When inconclusive, the test will repeat until this many tries have been reached. "
         + "Evidence of previous attempts is saved and reused, leading to a larger sample size with multiple attempts.",
     )
-    strandedness_arg.add_argument(
+    strandedness_parser.add_argument(
         "--max-iterations-per-try",
         type=int,
         default=None,
         help="At most, search this many times for genes that satisfy our search criteria. Default is 10 * n-genes.",
     )
-    strandedness_arg.add_argument(
+    strandedness_parser.add_argument(
         "-m",
         "--minimum-reads-per-gene",
         type=int,
         help="Filter any genes that don't have at least `m` reads.",
         default=10,
     )
-    strandedness_arg.add_argument(
+    strandedness_parser.add_argument(
         "-n", "--n-genes", type=int, help="How many genes to sample.", default=1000
     )
-    strandedness_arg.add_argument(
+    strandedness_parser.add_argument(
         "-q",
         "--min-mapq",
         type=int,
         help="Minimum MAPQ to consider for reads.",
         default=30,
     )
-    protein_coding_parser = strandedness_arg.add_mutually_exclusive_group(
+    protein_coding_parser = strandedness_parser.add_mutually_exclusive_group(
         required=False
     )
     protein_coding_parser.add_argument(
@@ -130,7 +130,9 @@ def get_args():
         dest="only_protein_coding_genes",
         action="store_false",
     )
-    split_by_rg_parser = strandedness_arg.add_mutually_exclusive_group(required=False)
+    split_by_rg_parser = strandedness_parser.add_mutually_exclusive_group(
+        required=False
+    )
     split_by_rg_parser.add_argument(
         "--split-by-rg",
         dest="split_by_rg",
@@ -140,12 +142,12 @@ def get_args():
     split_by_rg_parser.add_argument(
         "--no-split-by-rg", dest="split_by_rg", action="store_false"
     )
-    strandedness_arg.set_defaults(only_protein_coding_genes=True, split_by_rg=False)
+    strandedness_parser.set_defaults(only_protein_coding_genes=True, split_by_rg=False)
 
-    encoding_arg = subparsers.add_parser(
+    encoding_parser = subparsers.add_parser(
         "encoding", parents=[common], formatter_class=SaneFormatter
     )
-    encoding_arg.add_argument(
+    encoding_parser.add_argument(
         "-n",
         "--n-reads",
         type=int,
@@ -153,53 +155,53 @@ def get_args():
         default=1000000,
     )
 
-    junction_annotation_arg = subparsers.add_parser(
+    junction_annotation_parser = subparsers.add_parser(
         "junction-annotation", parents=[common], formatter_class=SaneFormatter
     )
-    junction_annotation_arg.add_argument(
+    junction_annotation_parser.add_argument(
         "-g", "--gene-model", help="Gene model as a GFF/GTF file.", required=True
     )
-    junction_annotation_arg.add_argument(
+    junction_annotation_parser.add_argument(
         "-j",
         "--junction-files-dir",
         help="Directory to write annotated junction files to.",
         default="./",
     )
-    junction_annotation_arg.add_argument(
+    junction_annotation_parser.add_argument(
         "-d",
         "--disable-junction-files",
         help="Disable generating junction files.",
         action="store_true",
     )
-    junction_annotation_arg.add_argument(
+    junction_annotation_parser.add_argument(
         "-i",
         "--min-intron",
         type=int,
         help="Minimum size of intron to be considered a splice.",
         default=50,
     )
-    junction_annotation_arg.add_argument(
+    junction_annotation_parser.add_argument(
         "-q",
         "--min-mapq",
         type=int,
         help="Minimum MAPQ to consider for supporting reads.",
         default=30,
     )
-    junction_annotation_arg.add_argument(
+    junction_annotation_parser.add_argument(
         "-m",
         "--min-reads",
         type=int,
         help="Filter any junctions that don't have at least `m` reads.",
         default=2,
     )
-    junction_annotation_arg.add_argument(
+    junction_annotation_parser.add_argument(
         "-k",
         "--fuzzy-junction-match-range",
         type=int,
         help="Consider found splices within `+-k` bases of a known splice event annotated.",
         default=0,
     )
-    junction_annotation_arg.add_argument(
+    junction_annotation_parser.add_argument(
         "-c",
         "--consider-unannotated-references-novel",
         action="store_true",
@@ -209,17 +211,17 @@ def get_args():
         + "Either way, they will be annotated as `unannotated_reference` in the junctions file.",
     )
 
-    endedness_arg = subparsers.add_parser(
+    endedness_parser = subparsers.add_parser(
         "endedness", parents=[common], formatter_class=SaneFormatter
     )
-    endedness_arg.add_argument(
+    endedness_parser.add_argument(
         "-n",
         "--n-reads",
         type=int,
         help="How many reads to analyze from the start of the file. Any n < 1 to parse whole file.",
         default=-1,
     )
-    endedness_arg.add_argument(
+    endedness_parser.add_argument(
         "-p",
         "--paired-deviance",
         type=float,
@@ -228,13 +230,13 @@ def get_args():
         + "if the whole file is being processed.",
         default=0.0,
     )
-    endedness_arg.add_argument(
+    endedness_parser.add_argument(
         "--lenient",
         action="store_true",
         default=False,
         help="Return a zero exit code on unknown results",
     )
-    endedness_arg.add_argument(
+    endedness_parser.add_argument(
         "-r",
         "--calc-rpt",
         action="store_true",
@@ -243,14 +245,14 @@ def get_args():
         + "sophisticated estimate for endedness, but uses substantially more memory "
         + "(can reach up to 60-70%% of BAM size in memory consumption).",
     )
-    endedness_arg.add_argument(
+    endedness_parser.add_argument(
         "--round-rpt",
         action="store_true",
         default=False,
         help="Round RPT to the nearest INT before comparing to expected values. "
         + "Appropriate if using `-n` > 0.",
     )
-    split_by_rg_parser = endedness_arg.add_mutually_exclusive_group(required=False)
+    split_by_rg_parser = endedness_parser.add_mutually_exclusive_group(required=False)
     split_by_rg_parser.add_argument(
         "--split-by-rg",
         dest="split_by_rg",
@@ -260,7 +262,7 @@ def get_args():
     split_by_rg_parser.add_argument(
         "--no-split-by-rg", dest="split_by_rg", action="store_false"
     )
-    endedness_arg.set_defaults(split_by_rg=False)
+    endedness_parser.set_defaults(split_by_rg=False)
 
     args = parser.parse_args()
     if not args.subcommand:
