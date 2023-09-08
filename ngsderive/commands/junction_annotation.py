@@ -99,7 +99,7 @@ def annotate_junctions(
             logger.info(
                 f"{contig} not found in GFF. All events marked `unannotated_reference`."
             )
-            annotation = "unannotated_reference"
+            annotation = "UnannotatedReference"
             if consider_unannotated_references_novel:
                 logger.info("Events being considered novel for summary report.")
 
@@ -160,15 +160,15 @@ def annotate_junctions(
                     num_too_few_reads += 1
                     continue
                 if start_novel and end_novel:
-                    annotation = "complete_novel"
+                    annotation = "CompleteNovel"
                     num_novel += 1
                     num_novel_spliced_reads += num_reads
                 elif start_novel or end_novel:
-                    annotation = "partial_novel"
+                    annotation = "PartialNovel"
                     num_partial += 1
                     num_partial_spliced_reads += num_reads
                 else:
-                    annotation = "annotated"
+                    annotation = "Annotated"
                     num_known += 1
                     num_known_spliced_reads += num_reads
 
@@ -199,15 +199,15 @@ def annotate_junctions(
             end_novel, _ = annotate_event(intron_end, cache.exon_starts[contig], 0)
 
             if start_novel and end_novel:
-                annotation = "complete_novel"
+                annotation = "CompleteNovel"
                 num_novel += 1
                 num_novel_spliced_reads += num_reads
             elif start_novel or end_novel:
-                annotation = "partial_novel"
+                annotation = "PartialNovel"
                 num_partial += 1
                 num_partial_spliced_reads += num_reads
             else:
-                annotation = "annotated"
+                annotation = "Annotated"
                 num_known += 1
                 num_known_spliced_reads += num_reads
 
