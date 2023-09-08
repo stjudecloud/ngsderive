@@ -129,7 +129,7 @@ def sort_gff(filename):
     sorted_gff_name_tmp = filename
     ext = sorted_gff_name_tmp.split(".")[-1]
     gzipped = False
-    if ext.endswith("gz"):
+    if ext.endswith(".gz"):
         gzipped = True
         sorted_gff_name_tmp = ".".join(sorted_gff_name_tmp.split(".")[:-1])
         ext = sorted_gff_name_tmp.rsplit(".", maxsplit=1)[-1]

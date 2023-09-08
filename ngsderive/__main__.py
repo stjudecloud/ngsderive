@@ -13,7 +13,7 @@ from ngsderive.commands import (
     strandedness,
 )
 
-logger = logging.getLogger("")
+logger = logging.getLogger()
 
 
 def get_args():
