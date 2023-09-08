@@ -123,10 +123,10 @@ def sort_gff(filename):
     sorted_gff_name_tmp = filename
     ext = sorted_gff_name_tmp.split(".")[-1]
     gzipped = False
-    if ext.endswith(".gz"):
+    if ext == "gz":
         gzipped = True
         sorted_gff_name_tmp = ".".join(sorted_gff_name_tmp.split(".")[:-1])
-        ext = sorted_gff_name_tmp.rsplit(".", maxsplit=1)[-1]
+        ext = sorted_gff_name_tmp.rsplit(".", maxsplit=1)[-1]  # get ext behind `.gz`
         handle = gzip.open(filename, "r")
     else:
         handle = open(filename, "r", encoding="utf-8")
