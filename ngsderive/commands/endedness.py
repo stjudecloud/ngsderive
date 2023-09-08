@@ -88,7 +88,7 @@ def find_reads_per_template(read_names):
             for rg in rg_list:
                 read_group_reads[rg] += 1
             for rg in rg_set:
-                read_group_templates += 1
+                read_group_templates[rg] += 1
 
     read_group_rpt = {}
     read_group_rpt["overall"] = tot_reads / tot_templates

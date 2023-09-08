@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v3.3.2 (2023-08-26)
+
+### Fix
+
+* **endedness:** Missing key for dictionary ([`b077893`](https://github.com/stjudecloud/ngsderive/commit/b0778931e9240b51f904a56fe9823067189b2c88))
+
 ## v3.3.1 (2023-08-17)
 
 ### Fix
