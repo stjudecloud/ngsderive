@@ -107,22 +107,16 @@ class NGSFile:
 
         self.read_num += 1
 
+        result = {
+            "query_name": query_name,
+            "query": query,
+        }
         if self.store_qualities:
-            if read_group:
-                return {
-                    "query_name": query_name,
-                    "query": query,
-                    "read_group": read_group,
-                    "quality": quality,
-                }
-            return {"query_name": query_name, "query": query, "quality": quality}
+            result["quality"] = quality
         if read_group:
-            return {
-                "query_name": query_name,
-                "query": query,
-                "read_group": read_group,
-            }
-        return {"query_name": query_name, "query": query}
+            result["read_group"] = read_group
+
+        return result
 
 
 def sort_gff(filename):
@@ -415,9 +409,6 @@ class GFF:
             hits.append(result)
         return hits
 
-    def next(self):
-        return next(self)
-
 
 class JunctionCache:
     def __init__(self, gff):
@@ -445,6 +436,3 @@ class JunctionCache:
         start, end = exon["start"] - 1, exon["end"]
         self.exon_starts[exon["seqname"]].add(start)
         self.exon_ends[exon["seqname"]].add(end)
-
-    def next(self):
-        return next(self)

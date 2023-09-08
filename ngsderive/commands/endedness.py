@@ -52,7 +52,9 @@ def resolve_endedness(
     if neither > 0 and both > 0:
         result["Endedness"] = "Unknown"
         return result
-    assert neither == 0 and both == 0
+
+    # `neither` and `both` are now guarenteed to be `0`
+    # only do further checks on `firsts` and `lasts`
 
     read1_frac = firsts / (firsts + lasts)
     lower_limit = 0.5 - paired_deviance
