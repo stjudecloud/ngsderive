@@ -6,7 +6,7 @@ from math import isclose
 from sys import intern
 
 from ..utils import NGSFile, NGSFileType
-from .strandedness import get_reads_rg
+from .strandedness import check_read_group_info, get_reads_rg
 
 logger = logging.getLogger("endedness")
 
@@ -193,12 +193,15 @@ def main(
                 raise RuntimeError(
                     "This shouldn't be possible. Please contact the developers."
                 )
-        assert (
-            ordering_flags["overall"]["firsts"]
-            + ordering_flags["overall"]["lasts"]
-            + ordering_flags["overall"]["neither"]
-            + ordering_flags["overall"]["both"]
-        ) > 0
+
+        check_read_group_info(
+            {
+                rg
+                for rg in ordering_flags
+                if rg not in {"overall", "unknown_read_group"}
+            },
+            samfile.header,
+        )
 
         rg_rpt = None
         if read_names is not None:

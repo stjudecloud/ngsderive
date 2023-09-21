@@ -73,6 +73,22 @@ def get_predicted_strandedness(forward_evidence_pct, reverse_evidence_pct):
     return predicted
 
 
+def check_read_group_info(sequence_read_groups, header):
+    header_read_groups = set()
+    if "RG" in header:
+        header_read_groups = {rg["ID"] for rg in header["RG"]}
+    rgs_in_seq_not_in_header = sequence_read_groups - header_read_groups
+    for rg in rgs_in_seq_not_in_header:
+        logger.warning(
+            f"Read group '{rg}' was found in sequences but not the file header!"
+        )
+    rgs_in_header_not_in_seq = header_read_groups - sequence_read_groups
+    for rg in rgs_in_header_not_in_seq:
+        logger.warning(
+            f"Read group '{rg}' is in the file header but was not found in sampled reads!"
+        )
+
+
 def determine_strandedness(
     ngsfilepath,
     gff,
@@ -191,6 +207,11 @@ def determine_strandedness(
             logger.debug(
                 f"    - Read count too low ({reads_in_gene} < {minimum_reads_per_gene})"
             )
+
+    check_read_group_info(
+        {rg for rg in overall_evidence if rg not in {"overall", "unknown_read_group"}},
+        samfile.header,
+    )
 
     if split_by_rg:
         results = []
