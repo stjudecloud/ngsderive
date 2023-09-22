@@ -207,6 +207,8 @@ def main(
         rg_rpt = None
         if read_names is not None:
             rg_rpt = find_reads_per_template(read_names)
+            for rg in rgs_in_header_not_in_seq:
+                rg_rpt[rg] = 0
 
         if not split_by_rg:
             if rg_rpt is not None:
