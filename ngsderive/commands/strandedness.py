@@ -88,6 +88,8 @@ def check_read_group_info(sequence_read_groups, header):
             f"Read group '{rg}' is in the file header but was not found in sampled reads!"
         )
 
+    return rgs_in_header_not_in_seq
+
 
 def determine_strandedness(
     ngsfilepath,
@@ -208,10 +210,12 @@ def determine_strandedness(
                 f"    - Read count too low ({reads_in_gene} < {minimum_reads_per_gene})"
             )
 
-    check_read_group_info(
+    rgs_in_header_not_in_seq = check_read_group_info(
         {rg for rg in overall_evidence if rg not in {"overall", "unknown_read_group"}},
         samfile.header,
     )
+    for rg in rgs_in_header_not_in_seq:
+        overall_evidence[rg] = defaultdict(int)  # init rg to all zeroes
 
     if split_by_rg:
         results = []

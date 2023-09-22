@@ -194,7 +194,7 @@ def main(
                     "This shouldn't be possible. Please contact the developers."
                 )
 
-        check_read_group_info(
+        rgs_in_header_not_in_seq = check_read_group_info(
             {
                 rg
                 for rg in ordering_flags
@@ -202,6 +202,8 @@ def main(
             },
             samfile.header,
         )
+        for rg in rgs_in_header_not_in_seq:
+            ordering_flags[rg] = defaultdict(int)  # init rg to all zeroes
 
         rg_rpt = None
         if read_names is not None:
