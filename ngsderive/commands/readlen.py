@@ -32,7 +32,7 @@ def main(
         except FileNotFoundError:
             result = {
                 "File": ngsfilepath,
-                "Evidence": "File not found.",
+                "Evidence": "Error opening file.",
                 "MajorityPctDetected": "N/A",
                 "ConsensusReadLength": "N/A",
             }

@@ -200,7 +200,7 @@ def main(ngsfiles, outfile, n_reads):
         except FileNotFoundError:
             result = {
                 "File": ngsfilepath,
-                "Instrument": "File not found.",
+                "Instrument": "Error opening file.",
                 "Confidence": "N/A",
                 "Basis": "N/A",
             }

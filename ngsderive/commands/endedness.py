@@ -144,7 +144,7 @@ def main(
                 "f-l+": "N/A",
                 "f-l-": "N/A",
                 "f+l+": "N/A",
-                "Endedness": "File not found.",
+                "Endedness": "Error opening file.",
             }
             if split_by_rg:
                 result["ReadGroup"] = "N/A"
