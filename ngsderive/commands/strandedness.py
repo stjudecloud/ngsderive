@@ -3,7 +3,7 @@ import logging
 import sys
 from collections import defaultdict
 
-from ..utils import GFF, NGSFile, NGSFileType
+from ..utils import GFF, NGSFile, NGSFileType, get_reads_rg, validate_read_group_info
 
 logger = logging.getLogger("strandedness")
 
@@ -49,14 +49,6 @@ def disqualify_gene(gene, gff, samfile):
     return False
 
 
-def get_reads_rg(read, default="unknown_read_group"):
-    for k, v in read.tags:
-        if k == "RG":
-            return v
-
-    return default
-
-
 def get_predicted_strandedness(forward_evidence_pct, reverse_evidence_pct):
     predicted = "Inconclusive"
     if 40 <= forward_evidence_pct <= 60:
@@ -71,24 +63,6 @@ def get_predicted_strandedness(forward_evidence_pct, reverse_evidence_pct):
         predicted = "Stranded-Reverse"
 
     return predicted
-
-
-def check_read_group_info(sequence_read_groups, header):
-    header_read_groups = set()
-    if "RG" in header:
-        header_read_groups = {rg["ID"] for rg in header["RG"]}
-    rgs_in_seq_not_in_header = sequence_read_groups - header_read_groups
-    for rg in rgs_in_seq_not_in_header:
-        logger.warning(
-            f"Read group '{rg}' was found in sequences but not the file header!"
-        )
-    rgs_in_header_not_in_seq = header_read_groups - sequence_read_groups
-    for rg in rgs_in_header_not_in_seq:
-        logger.warning(
-            f"Read group '{rg}' is in the file header but was not found in sampled reads!"
-        )
-
-    return rgs_in_header_not_in_seq
 
 
 def determine_strandedness(
@@ -210,7 +184,7 @@ def determine_strandedness(
                 f"    - Read count too low ({reads_in_gene} < {minimum_reads_per_gene})"
             )
 
-    rgs_in_header_not_in_seq = check_read_group_info(
+    rgs_in_header_not_in_seq = validate_read_group_info(
         {rg for rg in overall_evidence if rg not in {"overall", "unknown_read_group"}},
         samfile.header,
     )

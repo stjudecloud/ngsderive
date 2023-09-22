@@ -5,8 +5,7 @@ from collections import defaultdict
 from math import isclose
 from sys import intern
 
-from ..utils import NGSFile, NGSFileType
-from .strandedness import check_read_group_info, get_reads_rg
+from ..utils import NGSFile, NGSFileType, get_reads_rg, validate_read_group_info
 
 logger = logging.getLogger("endedness")
 
@@ -194,7 +193,7 @@ def main(
                     "This shouldn't be possible. Please contact the developers."
                 )
 
-        rgs_in_header_not_in_seq = check_read_group_info(
+        rgs_in_header_not_in_seq = validate_read_group_info(
             {
                 rg
                 for rg in ordering_flags

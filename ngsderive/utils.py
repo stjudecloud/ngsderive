@@ -436,3 +436,29 @@ class JunctionCache:
         start, end = exon["start"] - 1, exon["end"]
         self.exon_starts[exon["seqname"]].add(start)
         self.exon_ends[exon["seqname"]].add(end)
+
+
+def get_reads_rg(read, default="unknown_read_group"):
+    for k, v in read.tags:
+        if k == "RG":
+            return v
+
+    return default
+
+
+def validate_read_group_info(sequence_read_groups, header):
+    header_read_groups = set()
+    if "RG" in header:
+        header_read_groups = {rg["ID"] for rg in header["RG"]}
+    rgs_in_seq_not_in_header = sequence_read_groups - header_read_groups
+    for rg in rgs_in_seq_not_in_header:
+        logger.warning(
+            f"Read group '{rg}' was found in sequences but not the file header!"
+        )
+    rgs_in_header_not_in_seq = header_read_groups - sequence_read_groups
+    for rg in rgs_in_header_not_in_seq:
+        logger.warning(
+            f"Read group '{rg}' is in the file header but was not found in sampled reads!"
+        )
+
+    return rgs_in_header_not_in_seq
