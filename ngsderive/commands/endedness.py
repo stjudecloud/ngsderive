@@ -24,6 +24,11 @@ def resolve_endedness(
         if round_rpt:
             reads_per_template = round(reads_per_template)
 
+    # all zeroes
+    if firsts == 0 and lasts == 0 and neither == 0 and both == 0:
+        result["Endedness"] = "Unknown"
+        return result
+
     # only firsts present
     if (firsts > 0) and (lasts == 0 and neither == 0 and both == 0):
         result["Endedness"] = "Unknown"

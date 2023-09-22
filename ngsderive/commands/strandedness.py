@@ -50,19 +50,23 @@ def disqualify_gene(gene, gff, samfile):
 
 
 def get_predicted_strandedness(forward_evidence_pct, reverse_evidence_pct):
-    predicted = "Inconclusive"
+    if (
+        forward_evidence_pct == 0 and reverse_evidence_pct == 0
+    ):  # no evidence for either
+        return "Unknown"
+
     if 40 <= forward_evidence_pct <= 60:
-        predicted = "Unstranded"
+        return "Unstranded"
     # This second Unstranded check is redundant with the first check,
     # but more explicit
-    elif 40 <= reverse_evidence_pct <= 60:
-        predicted = "Unstranded"
-    elif 80 <= forward_evidence_pct:
-        predicted = "Stranded-Forward"
-    elif 80 <= reverse_evidence_pct:
-        predicted = "Stranded-Reverse"
+    if 40 <= reverse_evidence_pct <= 60:
+        return "Unstranded"
+    if 80 <= forward_evidence_pct:
+        return "Stranded-Forward"
+    if 80 <= reverse_evidence_pct:
+        return "Stranded-Reverse"
 
-    return predicted
+    return "Inconclusive"
 
 
 def determine_strandedness(
