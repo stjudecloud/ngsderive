@@ -233,12 +233,6 @@ def get_args():
         default=0.0,
     )
     endedness_parser.add_argument(
-        "--lenient",
-        action="store_true",
-        default=False,
-        help="Return a zero exit code on unknown results",
-    )
-    endedness_parser.add_argument(
         "-r",
         "--calc-rpt",
         action="store_true",
@@ -384,7 +378,6 @@ def run():
             outfile=args.outfile,
             n_reads=args.n_reads,
             paired_deviance=args.paired_deviance,
-            lenient=args.lenient,
             calc_rpt=args.calc_rpt,
             round_rpt=args.round_rpt,
             split_by_rg=args.split_by_rg,

@@ -109,7 +109,6 @@ def main(
     outfile,
     n_reads,
     paired_deviance,
-    lenient,
     calc_rpt,
     round_rpt,
     split_by_rg,
@@ -138,7 +137,6 @@ def main(
     if n_reads < 1:
         n_reads = None
 
-    sysexit = 0
     for ngsfilepath in ngsfiles:
         try:
             ngsfile = NGSFile(ngsfilepath)
@@ -232,8 +230,6 @@ def main(
 
             if result["Endedness"] == "Unknown":
                 logger.warning("Could not determine endedness!")
-                if not lenient:
-                    sysexit = 2
 
             result["File"] = ngsfilepath
             writer.writerow(result)
@@ -269,13 +265,8 @@ def main(
 
                 if result["Endedness"] == "Unknown":
                     logger.warning("Could not determine endedness!")
-                    if not lenient:
-                        sysexit = 2
 
                 result["File"] = ngsfilepath
                 result["ReadGroup"] = rg
                 writer.writerow(result)
                 outfile.flush()
-
-    if sysexit != 0:
-        raise SystemExit(sysexit)
