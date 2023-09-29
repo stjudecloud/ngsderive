@@ -5,6 +5,8 @@ from collections import defaultdict
 from math import isclose
 from sys import intern
 
+import pygtrie
+
 from ..utils import NGSFile, NGSFileType, get_reads_rg, validate_read_group_info
 
 logger = logging.getLogger("endedness")
@@ -78,7 +80,7 @@ def find_reads_per_template(read_names):
     tot_templates = 0
     read_group_reads = defaultdict(lambda: 0)
     read_group_templates = defaultdict(lambda: 0)
-    for read_name, rg_list in read_names.items():
+    for read_name, rg_list in read_names.iteritems():
         num_reads = len(rg_list)
         tot_reads += num_reads
         tot_templates += 1
@@ -168,7 +170,7 @@ def main(
         )
         read_names = None
         if calc_rpt:
-            read_names = defaultdict(list)
+            read_names = pygtrie.CharTrie()
 
         for read in itertools.islice(samfile, n_reads):
             # only count primary alignments and unmapped reads
@@ -177,6 +179,9 @@ def main(
 
             rg = intern(get_reads_rg(read))
             if read_names is not None:
+                # setdefault() inits val of key to a list if not already
+                # defined. Otherwise is a no-op.
+                read_names.setdefault(read.query_name, [])
                 read_names[read.query_name].append(rg)
 
             if read.is_read1 and not read.is_read2:
