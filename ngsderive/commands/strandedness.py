@@ -231,8 +231,8 @@ def determine_strandedness(
                     "File": ngsfilepath,
                     "ReadGroup": rg,
                     "TotalReads": total_reads,
-                    "ForwardPct": forward_pct,
-                    "ReversePct": reverse_pct,
+                    "ForwardPct": str(forward_pct) + "%",
+                    "ReversePct": str(reverse_pct) + "%",
                     "Predicted": predicted,
                 }
             )
@@ -268,8 +268,8 @@ def determine_strandedness(
             {
                 "File": ngsfilepath,
                 "TotalReads": total_reads,
-                "ForwardPct": forward_pct,
-                "ReversePct": reverse_pct,
+                "ForwardPct": str(forward_pct) + "%",
+                "ReversePct": str(reverse_pct) + "%",
                 "Predicted": predicted,
             }
         ],

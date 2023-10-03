@@ -66,7 +66,7 @@ def main(
             "Evidence": ";".join(
                 [f"{k}={read_lengths[k]}" for k in read_length_keys_sorted]
             ),
-            "MajorityPctDetected": pct,
+            "MajorityPctDetected": str(pct) + "%",
             "ConsensusReadLength": majority_readlen,
         }
 
