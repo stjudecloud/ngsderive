@@ -144,7 +144,7 @@ def get_args():
     split_by_rg_parser.add_argument(
         "--no-split-by-rg", dest="split_by_rg", action="store_false"
     )
-    strandedness_parser.set_defaults(only_protein_coding_genes=True, split_by_rg=False)
+    strandedness_parser.set_defaults(only_protein_coding_genes=True, split_by_rg=True)
 
     encoding_parser = subparsers.add_parser(
         "encoding", parents=[common], formatter_class=SaneFormatter
@@ -258,7 +258,7 @@ def get_args():
     split_by_rg_parser.add_argument(
         "--no-split-by-rg", dest="split_by_rg", action="store_false"
     )
-    endedness_parser.set_defaults(split_by_rg=False)
+    endedness_parser.set_defaults(split_by_rg=True)
 
     args = parser.parse_args()
     if not args.subcommand:
