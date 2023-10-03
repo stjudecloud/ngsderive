@@ -189,7 +189,7 @@ def determine_strandedness(
             )
 
     rgs_in_header_not_in_seq = validate_read_group_info(
-        {rg for rg in overall_evidence if rg not in {"overall", "unknown_read_group"}},
+        set(overall_evidence.keys()),
         samfile.header,
     )
     for rg in rgs_in_header_not_in_seq:

@@ -438,6 +438,9 @@ class JunctionCache:
         self.exon_ends[exon["seqname"]].add(end)
 
 
+MOCK_READ_GROUPS = {"overall", "unknown_read_group"}
+
+
 def get_reads_rg(read, default="unknown_read_group"):
     for k, v in read.tags:
         if k == "RG":
@@ -447,6 +450,7 @@ def get_reads_rg(read, default="unknown_read_group"):
 
 
 def validate_read_group_info(sequence_read_groups, header):
+    sequence_read_groups -= MOCK_READ_GROUPS
     header_read_groups = set()
     if "RG" in header:
         header_read_groups = {rg["ID"] for rg in header["RG"]}

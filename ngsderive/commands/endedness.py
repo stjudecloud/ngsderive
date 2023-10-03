@@ -202,11 +202,7 @@ def main(
                 )
 
         rgs_in_header_not_in_seq = validate_read_group_info(
-            {
-                rg
-                for rg in ordering_flags
-                if rg not in {"overall", "unknown_read_group"}
-            },
+            set(ordering_flags.keys()),
             samfile.header,
         )
         for rg in rgs_in_header_not_in_seq:
