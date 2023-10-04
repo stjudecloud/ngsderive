@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v4.0.0 (2023-10-04)
+
+### Feature
+
+* V4 release ([`711ad95`](https://github.com/stjudecloud/ngsderive/commit/711ad958364357610c1f2ef4e3fdcea550d5416b))
+
+### Breaking
+
+* all TSV result headers are now PascalCase. `--split-by-rg` is now the default for `strandedness` and `endedness`. Percentages are now returned when 'Pct' is used in the header. `strandedness` now adds an `overall` entry when `--split-by-rg`. Read Groups are compared in the header definition and those found while sampling sequences. Discrepancies between the two are logged as an error. Header RGs without sequences are added as ZERO results to the output. `endedness` no longer exits with an ERROR on `Unknown` cases. ([`711ad95`](https://github.com/stjudecloud/ngsderive/commit/711ad958364357610c1f2ef4e3fdcea550d5416b))
+
 ## v3.4.0 (2023-10-04)
 
 ### Feature
