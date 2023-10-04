@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "ngsderive"
-version = "3.3.2"
+version = "3.4.0"
 description = "Forensic analysis tool useful in backwards computing information from next-generation sequencing data."
 license = "MIT"
 authors = [

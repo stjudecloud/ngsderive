@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v3.4.0 (2023-10-04)
+
+### Feature
+
+* V4 ([#139](https://github.com/stjudecloud/ngsderive/issues/139)) ([`33d9fb0`](https://github.com/stjudecloud/ngsderive/commit/33d9fb0b0e51cb08ad1b1dde4d6339ee6969815a))
+
 ## v3.3.2 (2023-08-26)
 
 ### Fix
