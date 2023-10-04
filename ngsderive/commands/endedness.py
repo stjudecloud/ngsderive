@@ -5,11 +5,11 @@ from collections import defaultdict
 from math import isclose
 from sys import intern
 
-from ..utils import NGSFile, NGSFileType
-from .strandedness import get_reads_rg
+import pygtrie
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+from ..utils import NGSFile, NGSFileType, get_reads_rg, validate_read_group_info
+
+logger = logging.getLogger("endedness")
 
 
 def resolve_endedness(
@@ -22,9 +22,14 @@ def resolve_endedness(
         "f+l+": both,
     }
     if reads_per_template is not None:
-        result["Reads per template"] = reads_per_template
+        result["ReadsPerTemplate"] = reads_per_template
         if round_rpt:
             reads_per_template = round(reads_per_template)
+
+    # all zeroes
+    if firsts == 0 and lasts == 0 and neither == 0 and both == 0:
+        result["Endedness"] = "Unknown"
+        return result
 
     # only firsts present
     if (firsts > 0) and (lasts == 0 and neither == 0 and both == 0):
@@ -53,22 +58,21 @@ def resolve_endedness(
     if neither > 0 and both > 0:
         result["Endedness"] = "Unknown"
         return result
-    else:
-        assert neither == 0 and both == 0
 
-        read1_frac = firsts / (firsts + lasts)
-        lower_limit = 0.5 - paired_deviance
-        upper_limit = 0.5 + paired_deviance
-        if isclose(read1_frac, 0.5) or (
-            read1_frac < upper_limit and read1_frac > lower_limit
-        ):
-            if reads_per_template is None or isclose(reads_per_template, 2.0):
-                result["Endedness"] = "Paired-End"
-            else:
-                result["Endedness"] = "Unknown"
-            return result
-        result["Endedness"] = "Unknown"
+    # `neither` and `both` are now guarenteed to be `0`
+    # only do further checks on `firsts` and `lasts`
+
+    read1_frac = firsts / (firsts + lasts)
+    lower_limit = 0.5 - paired_deviance
+    upper_limit = 0.5 + paired_deviance
+    if isclose(read1_frac, 0.5) or (lower_limit < read1_frac < upper_limit):
+        if reads_per_template is None or isclose(reads_per_template, 2.0):
+            result["Endedness"] = "Paired-End"
+        else:
+            result["Endedness"] = "Unknown"
         return result
+    result["Endedness"] = "Unknown"
+    return result
 
 
 def find_reads_per_template(read_names):
@@ -76,7 +80,7 @@ def find_reads_per_template(read_names):
     tot_templates = 0
     read_group_reads = defaultdict(lambda: 0)
     read_group_templates = defaultdict(lambda: 0)
-    for read_name, rg_list in read_names.items():
+    for read_name, rg_list in read_names.iteritems():
         num_reads = len(rg_list)
         tot_reads += num_reads
         tot_templates += 1
@@ -107,7 +111,6 @@ def main(
     outfile,
     n_reads,
     paired_deviance,
-    lenient,
     calc_rpt,
     round_rpt,
     split_by_rg,
@@ -121,9 +124,9 @@ def main(
         "Endedness",
     ]
     if split_by_rg:
-        fieldnames.insert(1, "Read group")
+        fieldnames.insert(1, "ReadGroup")
     if calc_rpt:
-        fieldnames.insert(-1, "Reads per template")
+        fieldnames.insert(-1, "ReadsPerTemplate")
 
     writer = csv.DictWriter(
         outfile,
@@ -136,7 +139,6 @@ def main(
     if n_reads < 1:
         n_reads = None
 
-    sysexit = 0
     for ngsfilepath in ngsfiles:
         try:
             ngsfile = NGSFile(ngsfilepath)
@@ -147,21 +149,19 @@ def main(
                 "f-l+": "N/A",
                 "f-l-": "N/A",
                 "f+l+": "N/A",
-                "Endedness": "File not found.",
+                "Endedness": "Error opening file.",
             }
             if split_by_rg:
-                result["Read group"] = "N/A"
+                result["ReadGroup"] = "N/A"
             if calc_rpt:
-                result["Reads per template"] = "N/A"
+                result["ReadsPerTemplate"] = "N/A"
             writer.writerow(result)
             outfile.flush()
             continue
 
-        if ngsfile.filetype != NGSFileType.BAM and ngsfile.filetype != NGSFileType.SAM:
+        if ngsfile.filetype not in (NGSFileType.BAM, NGSFileType.SAM):
             raise RuntimeError(
-                "Invalid file: {}. `endedness` only supports SAM/BAM files!".format(
-                    ngsfilepath
-                )
+                f"Invalid file: {ngsfilepath}. `endedness` only supports SAM/BAM files!"
             )
         samfile = ngsfile.handle
 
@@ -170,7 +170,7 @@ def main(
         )
         read_names = None
         if calc_rpt:
-            read_names = defaultdict(list)
+            read_names = pygtrie.CharTrie()
 
         for read in itertools.islice(samfile, n_reads):
             # only count primary alignments and unmapped reads
@@ -179,6 +179,9 @@ def main(
 
             rg = intern(get_reads_rg(read))
             if read_names is not None:
+                # setdefault() inits val of key to a list if not already
+                # defined. Otherwise is a no-op.
+                read_names.setdefault(read.query_name, [])
                 read_names[read.query_name].append(rg)
 
             if read.is_read1 and not read.is_read2:
@@ -197,16 +200,19 @@ def main(
                 raise RuntimeError(
                     "This shouldn't be possible. Please contact the developers."
                 )
-        assert (
-            ordering_flags["overall"]["firsts"]
-            + ordering_flags["overall"]["lasts"]
-            + ordering_flags["overall"]["neither"]
-            + ordering_flags["overall"]["both"]
-        ) > 0
+
+        rgs_in_header_not_in_seq = validate_read_group_info(
+            set(ordering_flags.keys()),
+            samfile.header,
+        )
+        for rg in rgs_in_header_not_in_seq:
+            ordering_flags[rg] = defaultdict(int)  # init rg to all zeroes
 
         rg_rpt = None
         if read_names is not None:
             rg_rpt = find_reads_per_template(read_names)
+            for rg in rgs_in_header_not_in_seq:
+                rg_rpt[rg] = 0
 
         if not split_by_rg:
             if rg_rpt is not None:
@@ -225,8 +231,6 @@ def main(
 
             if result["Endedness"] == "Unknown":
                 logger.warning("Could not determine endedness!")
-                if not lenient:
-                    sysexit = 2
 
             result["File"] = ngsfilepath
             writer.writerow(result)
@@ -262,13 +266,8 @@ def main(
 
                 if result["Endedness"] == "Unknown":
                     logger.warning("Could not determine endedness!")
-                    if not lenient:
-                        sysexit = 2
 
                 result["File"] = ngsfilepath
-                result["Read group"] = rg
+                result["ReadGroup"] = rg
                 writer.writerow(result)
                 outfile.flush()
-
-    if sysexit != 0:
-        raise SystemExit(sysexit)

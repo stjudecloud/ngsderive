@@ -1,16 +1,11 @@
 import csv
 import itertools
-import pysam
-import re
-import sys
-
 import logging
-from collections import defaultdict
+import re
 
 from ..utils import NGSFile
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger = logging.getLogger("instrument")
 
 instrument_ids = {
     "^HWI-M[0-9]{4}$": ["MiSeq"],
@@ -69,8 +64,7 @@ flowcell_ids = {
     "^H[A-Z0-9]{4}ALXX$": ["HiSeq X"],  # (8-lane) flow cell
     "^H[A-Z0-9]{4}BGX[A-Z,0-9]$": ["NextSeq"],  # High output flow cell
     "^H[A-Z0-9]{4}AFXX$": ["NextSeq"],  # Mid output flow cell
-    "^H[A-Z0-9]{5}RXX$": ["NovaSeq"],  # S1 flow cell
-    "^H[A-Z0-9]{5}RXX$": ["NovaSeq"],  # SP flow cell
+    "^H[A-Z0-9]{5}RXX$": ["NovaSeq"],  # S1/SP flow cell
     "^H[A-Z0-9]{5}MXX$": ["NovaSeq"],  # S2 flow cell
     "^H[A-Z0-9]{5}SXX$": ["NovaSeq"],  # S4 flow cell
     "^A[A-Z0-9]{4}$": ["MiSeq"],  # MiSeq flow cell
@@ -86,9 +80,9 @@ upgrade_sets = [(set(["HiSeq 2000", "HiSeq 2500"]), ["HiSeq 2000", "HiSeq 2500"]
 def derive_instrument_from_iid(iid):
     matching_instruments = set()
 
-    for pattern in instrument_ids.keys():
+    for pattern, instruments in instrument_ids.items():
         if re.search(pattern, iid):
-            matching_instruments |= set(instrument_ids[pattern])
+            matching_instruments |= set(instruments)
 
     return matching_instruments
 
@@ -110,9 +104,9 @@ def predict_instrument_from_iids(iids):
 def derive_instrument_from_fcid(fcid):
     matching_instruments = set()
 
-    for pattern in flowcell_ids.keys():
+    for pattern, instruments in flowcell_ids.items():
         if re.search(pattern, fcid):
-            matching_instruments |= set(flowcell_ids[pattern])
+            matching_instruments |= set(instruments)
 
     return matching_instruments
 
@@ -144,14 +138,13 @@ def resolve_instrument(
                 "unknown confidence",
                 "multiple instruments were detected in this sample",
             )
-        elif malformed_read_names_detected:
+        if malformed_read_names_detected:
             return (
                 set(["unknown"]),
                 "no confidence",
                 "read names not in Illumina format",
             )
-        else:
-            return set(["unknown"]), "no confidence", "no match"
+        return set(["unknown"]), "no confidence", "no match"
 
     if len(possible_instruments_by_iid) == 0:
         if not malformed_read_names_detected:
@@ -159,9 +152,8 @@ def resolve_instrument(
             if len(possible_instruments_by_fcid) > 1:
                 confidence = "low confidence"
             return possible_instruments_by_fcid, confidence, "flowcell id"
-        else:
-            confidence = "low confidence"
-            return possible_instruments_by_fcid, confidence, "flowcell id"
+        confidence = "low confidence"
+        return possible_instruments_by_fcid, confidence, "flowcell id"
 
     if len(possible_instruments_by_fcid) == 0:
         if not malformed_read_names_detected:
@@ -169,30 +161,25 @@ def resolve_instrument(
             if len(possible_instruments_by_iid) > 1:
                 confidence = "low confidence"
             return possible_instruments_by_iid, confidence, "instrument id"
-        else:
-            confidence = "low confidence"
-            return (
-                possible_instruments_by_iid,
-                confidence,
-                "instrument id",
-            )
+        confidence = "low confidence"
+        return (
+            possible_instruments_by_iid,
+            confidence,
+            "instrument id",
+        )
 
     overlapping_instruments = possible_instruments_by_iid & possible_instruments_by_fcid
     if len(overlapping_instruments) == 0:
         return (
             set(["conflicting evidence"]),
             "high confidence",
-            "Case needs triaging: {} by iid, {} by fcid".format(
-                " or ".join(possible_instruments_by_iid),
-                " or ".join(possible_instruments_by_fcid),
-            ),
+            f"Case needs triaging: {' or '.join(possible_instruments_by_iid)} by iid, {' or '.join(possible_instruments_by_fcid)} by fcid",
         )
-    else:
-        return (
-            overlapping_instruments,
-            "high confidence",
-            "instrument id and flowcell id",
-        )
+    return (
+        overlapping_instruments,
+        "high confidence",
+        "instrument id and flowcell id",
+    )
 
 
 def main(ngsfiles, outfile, n_reads):
@@ -213,11 +200,10 @@ def main(ngsfiles, outfile, n_reads):
         except FileNotFoundError:
             result = {
                 "File": ngsfilepath,
-                "Instrument": "File not found.",
+                "Instrument": "Error opening file.",
                 "Confidence": "N/A",
                 "Basis": "N/A",
             }
-
             writer.writerow(result)
             outfile.flush()
             continue

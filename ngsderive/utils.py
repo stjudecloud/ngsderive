@@ -30,6 +30,7 @@ class NGSFile:
         self.ext = ".".join(self.basename.split(".")[1:])
         self.readmode = "r"
         self.gzipped = False
+        self.read_num = 0
 
         if (
             self.ext.endswith(".gz")
@@ -49,7 +50,7 @@ class NGSFile:
             if self.gzipped:
                 self.handle = gzip.open(self.filename, mode=self.readmode)
             else:
-                self.handle = open(self.filename, mode=self.readmode)
+                self.handle = open(self.filename, mode=self.readmode, encoding="utf-8")
         elif self.ext.endswith("sam"):
             self.filetype = NGSFileType.SAM
             self.handle = pysam.AlignmentFile(self.filename, self.readmode)
@@ -57,16 +58,13 @@ class NGSFile:
             self.filetype = NGSFileType.BAM
             self.handle = pysam.AlignmentFile(self.filename, self.readmode)
         else:
-            raise RuntimeError(
-                "Could not determine NGS file type: {}".format(self.filename)
-            )
+            raise RuntimeError(f"Could not determine NGS file type: {self.filename}")
 
-        logger.debug("Opened NGS file '{}' as {}".format(self.filename, self.filetype))
-        logger.debug("Gzipped: {}".format(self.gzipped))
-        logger.debug("Readmode: {}".format(self.readmode))
+        logger.debug(f"Opened NGS file '{self.filename}' as {self.filetype}")
+        logger.debug(f"Gzipped: {self.gzipped}")
+        logger.debug(f"Readmode: {self.readmode}")
 
     def __iter__(self):
-        self.read_num = 0
         return self
 
     def __next__(self):
@@ -109,38 +107,29 @@ class NGSFile:
 
         self.read_num += 1
 
+        result = {
+            "query_name": query_name,
+            "query": query,
+        }
         if self.store_qualities:
-            if read_group:
-                return {
-                    "query_name": query_name,
-                    "query": query,
-                    "read_group": read_group,
-                    "quality": quality,
-                }
-            else:
-                return {"query_name": query_name, "query": query, "quality": quality}
-        else:
-            if read_group:
-                return {
-                    "query_name": query_name,
-                    "query": query,
-                    "read_group": read_group,
-                }
-            else:
-                return {"query_name": query_name, "query": query}
+            result["quality"] = quality
+        if read_group:
+            result["read_group"] = read_group
+
+        return result
 
 
 def sort_gff(filename):
     sorted_gff_name_tmp = filename
     ext = sorted_gff_name_tmp.split(".")[-1]
     gzipped = False
-    if ext.endswith("gz"):
+    if ext == "gz":
         gzipped = True
         sorted_gff_name_tmp = ".".join(sorted_gff_name_tmp.split(".")[:-1])
-        ext = sorted_gff_name_tmp.split(".")[-1]
+        ext = sorted_gff_name_tmp.rsplit(".", maxsplit=1)[-1]  # get ext behind `.gz`
         handle = gzip.open(filename, "r")
     else:
-        handle = open(filename, "r")
+        handle = open(filename, "r", encoding="utf-8")
     sorted_gff_name_tmp = ".".join(
         sorted_gff_name_tmp.split(".")[:-1]
     )  # remove gtf/gff/gff3 ext
@@ -208,7 +197,7 @@ def sort_gff(filename):
         entries.append(result)
 
     entries.sort(key=itemgetter(0, 3, 4))  # seqname, start, end
-    new_gff = open(sorted_gff_name, "w")
+    new_gff = open(sorted_gff_name, "w", encoding="utf-8")
     for line in header_lines:
         print(line, file=new_gff)
     for entry in entries:
@@ -249,7 +238,12 @@ class GFF:
         self.gene_exclude_list = None
         if gene_exclude_list:
             self.gene_exclude_list = set(
-                [item.strip() for item in open(gene_exclude_list, "r").readlines()]
+                [
+                    item.strip()
+                    for item in open(
+                        gene_exclude_list, "r", encoding="utf-8"
+                    ).readlines()
+                ]
             )
         self.feature_type = feature_type
 
@@ -265,7 +259,7 @@ class GFF:
                     ]
                 else:
                     logger.warning(
-                        "`gene_name` field missing from GFF; could not filter using provided gene exclude_list."
+                        "`gene_name` field missing from GFF; could not filter using provided gene_exclude_list."
                     )
             if only_protein_coding_genes:
                 if "gene_type" in self.df:  # Gencode
@@ -284,7 +278,7 @@ class GFF:
                 self.gzipped = True
                 self._handle = gzip.open(filename, "r")
             else:
-                self._handle = open(filename, "r")
+                self._handle = open(filename, "r", encoding="utf-8")
 
             self._attr_regexes = [r"(\S+)=(\S+)", r"(\S+) \"(\S+)\""]
 
@@ -368,15 +362,15 @@ class GFF:
             return self.df.sample().to_dict("records")[0]
         return random.choice(self.entries)
 
-    def query(self, chr, start, end):
+    def query(self, contig, start, end):
         if self.df is None and not self.entries:
             raise NotImplementedError("query() not implemented in iterator mode")
         if self.df is not None:
             return self.df.query(
-                f"seqname=='{chr}' and start=={start} and end=={end}"
+                f"seqname=='{contig}' and start=={start} and end=={end}"
             ).to_dict("records")
 
-        raw_hits = self.tabix.query(chr, start, end)
+        raw_hits = self.tabix.query(contig, start, end)
         hits = []
         for hit in raw_hits:
             if self.gene_exclude_list:
@@ -415,9 +409,6 @@ class GFF:
             hits.append(result)
         return hits
 
-    def next(self):
-        return self.__next__()
-
 
 class JunctionCache:
     def __init__(self, gff):
@@ -429,7 +420,7 @@ class JunctionCache:
                 next(self)
             except StopIteration:
                 contigs = ", ".join(self.exon_starts.keys())
-                logger.debug("Cached " + contigs)
+                logger.debug(f"Cached {contigs}")
                 break
 
     def __iter__(self):
@@ -446,5 +437,32 @@ class JunctionCache:
         self.exon_starts[exon["seqname"]].add(start)
         self.exon_ends[exon["seqname"]].add(end)
 
-    def next(self):
-        self.__next__()
+
+MOCK_READ_GROUPS = {"overall", "unknown_read_group"}
+
+
+def get_reads_rg(read, default="unknown_read_group"):
+    for k, v in read.tags:
+        if k == "RG":
+            return v
+
+    return default
+
+
+def validate_read_group_info(sequence_read_groups, header):
+    sequence_read_groups -= MOCK_READ_GROUPS
+    header_read_groups = set()
+    if "RG" in header:
+        header_read_groups = {rg["ID"] for rg in header["RG"]}
+    rgs_in_seq_not_in_header = sequence_read_groups - header_read_groups
+    for rg in rgs_in_seq_not_in_header:
+        logger.warning(
+            f"Read group '{rg}' was found in sequences but not the file header!"
+        )
+    rgs_in_header_not_in_seq = header_read_groups - sequence_read_groups
+    for rg in rgs_in_header_not_in_seq:
+        logger.warning(
+            f"Read group '{rg}' is in the file header but was not found in sampled reads!"
+        )
+
+    return rgs_in_header_not_in_seq

@@ -1,12 +1,10 @@
-import logging
-import sys
-import os
 import csv
-
+import logging
+import os
 from collections import defaultdict
 from pathlib import Path
 
-from ..utils import NGSFile, NGSFileType, GFF, JunctionCache
+from ..utils import GFF, JunctionCache, NGSFile, NGSFileType
 
 logger = logging.getLogger("junction-annotation")
 
@@ -39,32 +37,32 @@ def annotate_junctions(
     except FileNotFoundError:
         result = {
             "File": ngsfilepath,
-            "total_junctions": "N/A",
-            "total_splice_events": "N/A",
-            "known_junctions": "N/A",
-            "partial_novel_junctions": "N/A",
-            "complete_novel_junctions": "N/A",
-            "known_spliced_reads": "N/A",
-            "complete_novel_spliced_reads": "N/A",
-            "partial_novel_spliced_reads": "N/A",
+            "TotalJunctions": "N/A",
+            "TotalSpliceEvents": "N/A",
+            "KnownJunctions": "N/A",
+            "PartialNovelJunctions": "N/A",
+            "CompleteNovelJunctions": "N/A",
+            "KnownSplicedReads": "N/A",
+            "PartialNovelSplicedReads": "N/A",
+            "CompleteNovelSplicedReads": "N/A",
         }
         return [result]
 
     if ngsfile.filetype != NGSFileType.BAM:
         raise RuntimeError(
-            "Invalid file: {}. `junction-annotation` only supports aligned BAM files!".format(
-                ngsfilepath
-            )
+            f"Invalid file: {ngsfilepath}. `junction-annotation` only supports aligned BAM files!"
         )
     samfile = ngsfile.handle
 
     junction_file = None
     if not disable_junction_files:
         junction_filename = os.path.join(junction_dir, ngsfile.basename)
-        junction_file = open(f"{junction_filename}.junctions.tsv", "w")
+        junction_file = open(
+            f"{junction_filename}.junctions.tsv", "w", encoding="utf-8"
+        )
         print(
             "\t".join(
-                ["chrom", "intron_start", "intron_end", "read_count", "annotation"]
+                ["Contig", "IntronStart", "IntronEnd", "ReadCount", "Annotation"]
             ),
             file=junction_file,
         )
@@ -98,10 +96,12 @@ def annotate_junctions(
         )
 
         if contig not in cache.exon_starts:
-            logger.info(f"{contig} not found in GFF. All events marked `unannotated_reference`.")
-            annotation = "unannotated_reference"
+            logger.info(
+                f"{contig} not found in GFF. All events marked `unannotated_reference`."
+            )
+            annotation = "UnannotatedReference"
             if consider_unannotated_references_novel:
-                logger.info(f"Events being considered novel for summary report.")
+                logger.info("Events being considered novel for summary report.")
 
             for intron_start, intron_end, num_reads in events:
                 if num_reads < min_reads:
@@ -160,15 +160,15 @@ def annotate_junctions(
                     num_too_few_reads += 1
                     continue
                 if start_novel and end_novel:
-                    annotation = "complete_novel"
+                    annotation = "CompleteNovel"
                     num_novel += 1
                     num_novel_spliced_reads += num_reads
                 elif start_novel or end_novel:
-                    annotation = "partial_novel"
+                    annotation = "PartialNovel"
                     num_partial += 1
                     num_partial_spliced_reads += num_reads
                 else:
-                    annotation = "annotated"
+                    annotation = "Annotated"
                     num_known += 1
                     num_known_spliced_reads += num_reads
 
@@ -199,15 +199,15 @@ def annotate_junctions(
             end_novel, _ = annotate_event(intron_end, cache.exon_starts[contig], 0)
 
             if start_novel and end_novel:
-                annotation = "complete_novel"
+                annotation = "CompleteNovel"
                 num_novel += 1
                 num_novel_spliced_reads += num_reads
             elif start_novel or end_novel:
-                annotation = "partial_novel"
+                annotation = "PartialNovel"
                 num_partial += 1
                 num_partial_spliced_reads += num_reads
             else:
-                annotation = "annotated"
+                annotation = "Annotated"
                 num_known += 1
                 num_known_spliced_reads += num_reads
 
@@ -239,16 +239,16 @@ def annotate_junctions(
 
     result = {
         "File": ngsfilepath,
-        "total_junctions": num_known + num_novel + num_partial,
-        "total_splice_events": num_known_spliced_reads
+        "TotalJunctions": num_known + num_novel + num_partial,
+        "TotalSpliceEvents": num_known_spliced_reads
         + num_novel_spliced_reads
         + num_partial_spliced_reads,
-        "known_junctions": num_known,
-        "partial_novel_junctions": num_partial,
-        "complete_novel_junctions": num_novel,
-        "known_spliced_reads": num_known_spliced_reads,
-        "partial_novel_spliced_reads": num_partial_spliced_reads,
-        "complete_novel_spliced_reads": num_novel_spliced_reads,
+        "KnownJunctions": num_known,
+        "PartialNovelJunctions": num_partial,
+        "CompleteNovelJunctions": num_novel,
+        "KnownSplicedReads": num_known_spliced_reads,
+        "PartialNovelSplicedReads": num_partial_spliced_reads,
+        "CompleteNovelSplicedReads": num_novel_spliced_reads,
     }
     return result
 
@@ -266,14 +266,16 @@ def main(
     disable_junction_files,
 ):
     logger.info("Arguments:")
-    logger.info("  - Gene model file: {}".format(gene_model_file))
-    logger.info("  - Minimum intron length: {}".format(min_intron))
-    logger.info("  - Minimum MAPQ: {}".format(min_mapq))
-    logger.info("  - Minimum reads per junction: {}".format(min_reads))
-    logger.info("  - Fuzzy junction range: +-{}".format(fuzzy_range))
-    logger.info("  - Consider unannotated references novel: {}".format(consider_unannotated_references_novel))
+    logger.info(f"  - Gene model file: {gene_model_file}")
+    logger.info(f"  - Minimum intron length: {min_intron}")
+    logger.info(f"  - Minimum MAPQ: {min_mapq}")
+    logger.info(f"  - Minimum reads per junction: {min_reads}")
+    logger.info(f"  - Fuzzy junction range: +-{fuzzy_range}")
+    logger.info(
+        f"  - Consider unannotated references novel: {consider_unannotated_references_novel}"
+    )
     if not disable_junction_files:
-        logger.info("  - Junction file directory: {}".format(junction_dir))
+        logger.info(f"  - Junction file directory: {junction_dir}")
     else:
         logger.info("  - Junction file directory: <disabled>")
 
@@ -307,14 +309,14 @@ def main(
         if not writer:
             fieldnames = [
                 "File",
-                "total_junctions",
-                "total_splice_events",
-                "known_junctions",
-                "partial_novel_junctions",
-                "complete_novel_junctions",
-                "known_spliced_reads",
-                "partial_novel_spliced_reads",
-                "complete_novel_spliced_reads",
+                "TotalJunctions",
+                "TotalSpliceEvents",
+                "KnownJunctions",
+                "PartialNovelJunctions",
+                "CompleteNovelJunctions",
+                "KnownSplicedReads",
+                "PartialNovelSplicedReads",
+                "CompleteNovelSplicedReads",
             ]
 
             writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter="\t")
