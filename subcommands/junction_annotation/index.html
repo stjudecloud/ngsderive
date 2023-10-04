@@ -117,6 +117,10 @@
 
 <h1 id="junction-annotation">junction-annotation</h1>
 <p>The <code>junction-annotation</code> command will search an RNA-Seq bam file for splice junctions, compare them to a gene model, and output whether the found junctions are novel, partially novel, or already annotated in a gene model. In addition to a summary of the junctions and spliced reads, per-junction annotations are output with their location and number of supporting reads.</p>
+<p><strong>CompleteNovel</strong>: Neither the 5' splice site or the 3' splice site are in the gene model
+<strong>PartialNovel</strong>: Only one of the 5' splice site or the 3' splice site are in the gene model
+<strong>Known/Annotated</strong>: Both the 5' splice site and the 3' splice site are in the gene model
+<strong>UnannotatedReference</strong>: The contig on which the splice was discovered is not in the gene model. Nothing can be stated about the known or novel status of this splice.</p>
 <p>The following criteria are adjustable for junction detection and read filtering:</p>
 <table>
 <thead>
