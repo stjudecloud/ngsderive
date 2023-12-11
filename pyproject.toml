@@ -43,7 +43,7 @@ pygtrie = "^2.5.0"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
 twine = "^3.7"
-mkdocs = "^1.2.3"
+mkdocs = "^1.5.3"
 mkdocs-bootswatch = "^1.1"
 python-semantic-release = "^7.23.0"
 pycodestyle = "^2.8.0"
