@@ -41,7 +41,7 @@ pysam = "^0.21"
 pygtrie = "^2.5.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.5"
+pytest = "^8.0.1"
 twine = "^3.7"
 mkdocs = "^1.2.3"
 mkdocs-bootswatch = "^1.1"
